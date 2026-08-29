@@ -120,9 +120,18 @@ MATRIX: tuple[Endpoint, ...] = (
         "POST",
         f"{PREFIX}/notifications/push-subscribe",
         EVERYONE,
+        # A real P-256 point and a real 16-byte secret. Registration verifies both, so a
+        # placeholder would be turned away at validation and this would never reach the routing
+        # this row exists to check.
         body={
             "endpoint": "https://push.example.test/subscription/abc",
-            "keys": {"p256dh": "a" * 32, "auth": "b" * 16},
+            "keys": {
+                "p256dh": (
+                    "BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3q"
+                    "BUYIHBQFLXYp5Nksh8U"
+                ),
+                "auth": "8eDyX_uCN0XRhSbY5hs7Hg",
+            },
         },
     ),
     Endpoint("DELETE", f"{PREFIX}/notifications/push-subscribe", EVERYONE),

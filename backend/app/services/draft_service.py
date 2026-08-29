@@ -60,6 +60,7 @@ from app.services.templates.renderer import (
     ClauseDirective,
     TemplateRenderError,
     clause_brief,
+    placeholder_brief,
     render_template,
 )
 from app.services.templates.sales_templates import (
@@ -160,11 +161,24 @@ def is_final(transaction: TradeTransaction) -> bool:
     return bool(leg is not None and leg.customer_fixation_status == FixationStatus.FIXED.value)
 
 
+# One name per document this platform writes. `contract` and `invoice` are the desk's own words
+# for the first two and are left exactly as they were; the two later documents get their own
+# rather than being folded into "invoice", which is what a proforma invoice and a bank cover
+# letter were both called - two different documents arriving on one transaction under one
+# filename, telling whoever downloaded them nothing about which was which.
+FILENAME_KIND: dict[str, str] = {
+    DocumentType.DRAFT_CONTRACT.value: "contract",
+    DocumentType.DRAFT_INVOICE.value: "invoice",
+    DocumentType.DRAFT_PERFORMA_INVOICE.value: "performa-invoice",
+    DocumentType.DRAFT_BANK_COVER_LETTER.value: "bank-cover-letter",
+}
+
+
 def storage_filename(transaction: TradeTransaction, document_type: str) -> str:
-    """`SO-{batch}-{qty}-{Final|Prov}`, the naming convention the desk already uses."""
+    """`SO-{batch}-{qty}-{Final|Prov}-{kind}`, the naming convention the desk already uses."""
     quantity = format_decimal(transaction.quantity_mt) or "0"
     suffix = "Final" if is_final(transaction) else "Prov"
-    kind = "contract" if document_type == DocumentType.DRAFT_CONTRACT.value else "invoice"
+    kind = FILENAME_KIND.get(document_type, "document")
     stem = f"SO-{transaction.batch_number}-{quantity}-{suffix}"
     return f"{stem}-{kind}.docx"
 
@@ -439,6 +453,7 @@ async def generate(
     plan = await generate_draft_content(
         document_type=template.document_type,
         clause_registry=clause_brief(template),
+        placeholder_registry=placeholder_brief(template),
         facts=build_facts(transaction),
     )
     directives = validate_plan(template, plan)

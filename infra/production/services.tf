@@ -110,6 +110,18 @@ resource "google_cloud_run_v2_service" "backend" {
           ":5432/agfze",
         ])
       }
+      # Web Push. The public half is configuration, not a credential - the standard hands it to
+      # every browser that subscribes - so it travels as a plain value beside the rest of them.
+      # The private half is mounted from Secret Manager with the other credentials below; the
+      # process needs both, and refuses to start holding only one.
+      env {
+        name  = "VAPID_PUBLIC_KEY"
+        value = var.vapid_public_key
+      }
+      env {
+        name  = "VAPID_SUBJECT"
+        value = var.vapid_subject
+      }
       env {
         name  = "RATE_LIMIT_ENABLED"
         value = "true"
@@ -297,6 +309,14 @@ resource "google_cloud_run_v2_service" "frontend" {
         # the bundle cannot disagree about where the API is.
         name  = "NEXT_PUBLIC_API_BASE_URL"
         value = "${var.api_base_url}/api/v1"
+      }
+      env {
+        # The same public key the API serves. Set here as well as baked in at build time so a
+        # server-rendered path reads the same value the bundle carries; if the two ever disagree,
+        # the browser subscribes against one key and the backend signs with another, and every
+        # delivery is rejected by the push service with nothing in this platform to show why.
+        name  = "NEXT_PUBLIC_VAPID_PUBLIC_KEY"
+        value = var.vapid_public_key
       }
 
       dynamic "env" {

@@ -61,6 +61,17 @@ TRANSACTIONS = "/api/v1/transactions"
 APPROVALS = "/api/v1/approvals"
 
 PUSH_ENDPOINT = "https://push.test/endpoint/marco-laptop"
+
+# What a browser actually hands over: a point that is genuinely on P-256, and a 16-byte secret.
+# Registration verifies both, so a placeholder string will not do here.
+P256DH = (
+    "BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U"
+)
+P256DH_ROTATED = (
+    "BEKw6DaJNkCy4HB2WQTDM2Alc8Egegqz8QRK0WYGK396cRY6tsInTzkptrimnJcTr0N1NHbCykLnY5iHZ_OMn8s"
+)
+AUTH_SECRET = "8eDyX_uCN0XRhSbY5hs7Hg"
+AUTH_SECRET_ROTATED = "tBHItJI5svbpez7KI4CCXg"
 SECOND_ENDPOINT = "https://push.test/endpoint/marco-phone"
 
 
@@ -769,12 +780,15 @@ async def test_resubscribing_the_same_browser_updates_rather_than_duplicates(
     client: AsyncClient, db_session: AsyncSession, signed_in
 ):
     user, headers = await purchase_user(signed_in)
-    body = {"endpoint": PUSH_ENDPOINT, "keys": {"p256dh": "first-key", "auth": "first-auth"}}
+    body = {"endpoint": PUSH_ENDPOINT, "keys": {"p256dh": P256DH, "auth": AUTH_SECRET}}
 
     first = await client.post(f"{NOTIFICATIONS}/push-subscribe", headers=headers, json=body)
     assert first.status_code == 200, first.text
 
-    rotated = {"endpoint": PUSH_ENDPOINT, "keys": {"p256dh": "second-key", "auth": "second-auth"}}
+    rotated = {
+        "endpoint": PUSH_ENDPOINT,
+        "keys": {"p256dh": P256DH_ROTATED, "auth": AUTH_SECRET_ROTATED},
+    }
     second = await client.post(f"{NOTIFICATIONS}/push-subscribe", headers=headers, json=rotated)
     assert second.status_code == 200, second.text
     assert second.json()["data"]["id"] == first.json()["data"]["id"]
@@ -787,7 +801,7 @@ async def test_resubscribing_the_same_browser_updates_rather_than_duplicates(
         ).all()
     )
     assert len(rows) == 1
-    assert rows[0].p256dh == "second-key"
+    assert rows[0].p256dh == P256DH_ROTATED
 
 
 async def test_a_subscription_endpoint_must_be_https(client: AsyncClient, signed_in):
@@ -795,9 +809,64 @@ async def test_a_subscription_endpoint_must_be_https(client: AsyncClient, signed
     response = await client.post(
         f"{NOTIFICATIONS}/push-subscribe",
         headers=headers,
-        json={"endpoint": "http://push.test/x", "keys": {"p256dh": "a", "auth": "b"}},
+        json={
+            "endpoint": "http://push.test/x",
+            "keys": {"p256dh": P256DH, "auth": AUTH_SECRET},
+        },
     )
     assert response.status_code == 422
+
+
+async def test_a_subscription_key_that_is_not_really_a_key_is_refused(
+    client: AsyncClient, signed_in, db_session: AsyncSession
+):
+    """The regression: 65 bytes with the right prefix, and not a point on the curve.
+
+    Stored, it would have failed inside the encryption on every delivery for ever - before any
+    push service was contacted, so nothing would ever have returned the 410 that prunes it.
+    """
+    forged = "BLc4xRzKlKORKWlbdgFaBrrPK3ydWAHo4M0gs0i1oek330lRWNfrEG1jSxKGiSJfxLcuAqjPQMUS-QwGLbmtRXY"
+    _, headers = await purchase_user(signed_in)
+
+    response = await client.post(
+        f"{NOTIFICATIONS}/push-subscribe",
+        json={"endpoint": PUSH_ENDPOINT, "keys": {"p256dh": forged, "auth": AUTH_SECRET}},
+        headers=headers,
+    )
+
+    assert response.status_code == 422
+    rows = (await db_session.execute(select(PushSubscription))).scalars().all()
+    assert rows == []
+
+
+async def test_an_auth_secret_of_the_wrong_length_is_refused(client: AsyncClient, signed_in):
+    _, headers = await purchase_user(signed_in)
+
+    response = await client.post(
+        f"{NOTIFICATIONS}/push-subscribe",
+        json={"endpoint": PUSH_ENDPOINT, "keys": {"p256dh": P256DH, "auth": "dG9vLXNob3J0"}},
+        headers=headers,
+    )
+
+    assert response.status_code == 422
+
+
+async def test_a_browsers_unpadded_base64_is_accepted_as_sent(
+    client: AsyncClient, signed_in, db_session: AsyncSession
+):
+    """JavaScript strips the padding. Demanding it back would reject every real browser."""
+    assert not P256DH.endswith("=") and not AUTH_SECRET.endswith("=")
+    _, headers = await purchase_user(signed_in)
+
+    response = await client.post(
+        f"{NOTIFICATIONS}/push-subscribe",
+        json={"endpoint": PUSH_ENDPOINT, "keys": {"p256dh": P256DH, "auth": AUTH_SECRET}},
+        headers=headers,
+    )
+
+    assert response.status_code == 200, response.text
+    rows = (await db_session.execute(select(PushSubscription))).scalars().all()
+    assert [row.p256dh for row in rows] == [P256DH]
 
 
 async def test_unsubscribing_touches_nobody_elses_browser(
@@ -852,7 +921,7 @@ async def test_the_push_endpoints_need_a_token(client: AsyncClient):
     assert (
         await client.post(
             f"{NOTIFICATIONS}/push-subscribe",
-            json={"endpoint": PUSH_ENDPOINT, "keys": {"p256dh": "a", "auth": "b"}},
+            json={"endpoint": PUSH_ENDPOINT, "keys": {"p256dh": P256DH, "auth": AUTH_SECRET}},
         )
     ).status_code == 401
     assert (await client.request("DELETE", f"{NOTIFICATIONS}/push-subscribe")).status_code == 401

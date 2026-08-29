@@ -114,3 +114,44 @@ variable "graph_machine_type" {
     bounded traversal per transaction workspace view.
   DESC
 }
+
+variable "vapid_public_key" {
+  type        = string
+  description = <<-DESC
+    The Web Push application server key, PUBLIC half only, in the raw unpadded URL-safe base64
+    form `make vapid-keys` prints.
+
+    It is a variable rather than a Secret Manager entry because it is public by the Web Push
+    standard's own design: the browser is handed it to bind a subscription with, the API serves
+    it from `/notifications/vapid-public-key`, and the frontend bundle carries it. Its private
+    counterpart is the `vapid-private-key` secret and never leaves Secret Manager.
+
+    There is no default, deliberately. The production settings profile refuses to start without
+    it - a deployment whose approvers cannot be pushed to is the exact failure the notification
+    work exists to remove - so an unset key must stop `terraform apply`, not surface later as a
+    container that will not come up.
+
+    Generate the pair ONCE per environment and keep it. Regenerating invalidates every push
+    subscription every browser has ever taken against this deployment, and each of those users
+    has to grant permission again.
+  DESC
+
+  validation {
+    condition     = length(trimspace(var.vapid_public_key)) > 0
+    error_message = "vapid_public_key must be set; run `make vapid-keys` and supply the public half."
+  }
+}
+
+variable "vapid_subject" {
+  type        = string
+  description = <<-DESC
+    The `sub` claim on every signed push delivery: a mailto: or https: URL a push service operator
+    can reach a human on if this deployment starts misbehaving. Required by the VAPID spec.
+  DESC
+  default     = "mailto:command-centre@agfze.ae"
+
+  validation {
+    condition     = can(regex("^(mailto:|https://)", var.vapid_subject))
+    error_message = "vapid_subject must be a mailto: address or an https: URL, as VAPID requires."
+  }
+}

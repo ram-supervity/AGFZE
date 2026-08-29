@@ -112,28 +112,40 @@ export function stalenessTone(isStale: boolean, lastCheckedAt: string | null): s
   return "border-border bg-muted text-muted-foreground";
 }
 
+// Fixed locale and timezone, the same rule `@/lib/utils` and `@/lib/analytics` already follow:
+// these render on the server and again during hydration, and the two have to produce the same
+// string. Left to the runtime's own zone they do not - the server is UTC and the browser is
+// wherever the reader is - and React discards the server's markup for the whole subtree. Pinning
+// to UTC also keeps a time on this screen the same instant as the one in the audit export, which
+// is the comparison somebody reading a shipment is usually making.
+const DATE_ONLY = new Intl.DateTimeFormat("en-GB", {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+  timeZone: "UTC",
+});
+
+const DATE_TIME = new Intl.DateTimeFormat("en-GB", {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: "UTC",
+});
+
 export function formatDate(value: string | null | undefined): string {
   if (!value) return "-";
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return String(value);
-  return parsed.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  return DATE_ONLY.format(parsed);
 }
 
 export function formatDateTime(value: string | null | undefined): string {
   if (!value) return "-";
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return String(value);
-  return parsed.toLocaleString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  return `${DATE_TIME.format(parsed)} UTC`;
 }
 
 /**

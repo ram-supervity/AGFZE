@@ -399,6 +399,66 @@ async def test_an_auditor_may_not_correct_a_transaction(
     assert response.status_code == 403
 
 
+async def test_a_corrected_grade_the_reference_list_does_not_carry_is_flagged_not_rejected(
+    client: AsyncClient, db_session: AsyncSession, signed_in
+) -> None:
+    """`commodity_code` is a foreign key onto the seeded grades, and a person correcting it types
+    whatever the document says. An unrecognised grade is kept verbatim and flagged for review -
+    it must never reach the constraint and surface as a server error."""
+    transaction = await _clean_transaction(db_session)
+    _, headers = await purchase_user(signed_in)
+
+    response = await client.patch(
+        f"{BASE}/{transaction.id}/fields",
+        headers=headers,
+        json={
+            "changes": [
+                {
+                    "name": "commodity_code",
+                    "value": "HMS1",
+                    "reason": "the mill's own grade label, taken from the invoice",
+                }
+            ]
+        },
+    )
+
+    assert response.status_code == 200, response.text
+    data = response.json()["data"]
+    assert data["commodity_code"] is None
+    assert data["extracted_commodity_value"] == "HMS1"
+    assert data["commodity_needs_review"] is True
+
+    await db_session.refresh(transaction)
+    assert transaction.commodity_code is None
+    assert transaction.extracted_commodity_value == "HMS1"
+
+
+async def test_a_corrected_grade_the_reference_list_carries_resolves_cleanly(
+    client: AsyncClient, db_session: AsyncSession, signed_in
+) -> None:
+    transaction = await _clean_transaction(db_session)
+    _, headers = await purchase_user(signed_in)
+
+    response = await client.patch(
+        f"{BASE}/{transaction.id}/fields",
+        headers=headers,
+        json={
+            "changes": [
+                {
+                    "name": "commodity_code",
+                    "value": "al",
+                    "reason": "the pack describes aluminium, not copper",
+                }
+            ]
+        },
+    )
+
+    assert response.status_code == 200, response.text
+    data = response.json()["data"]
+    assert data["commodity_code"] == "AL"
+    assert data["commodity_needs_review"] is False
+
+
 # --- tolerance acknowledgement -------------------------------------------------------------------
 
 

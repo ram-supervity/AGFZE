@@ -11,6 +11,8 @@ which is the one thing about notifications a client genuinely owns.
 
 from __future__ import annotations
 
+import base64
+import binascii
 from datetime import datetime
 from uuid import UUID
 
@@ -51,9 +53,56 @@ class VapidPublicKey(BaseModel):
     configured: bool
 
 
+def _urlsafe_bytes(value: str, field: str) -> bytes:
+    """Decode the unpadded URL-safe base64 the Push API hands out in JavaScript.
+
+    Browsers omit the padding, so it is restored here rather than demanded of the client.
+    """
+    padded = value + "=" * (-len(value) % 4)
+    try:
+        return base64.urlsafe_b64decode(padded)
+    except (binascii.Error, ValueError) as exc:
+        raise ValueError(f"{field} is not valid URL-safe base64.") from exc
+
+
 class PushSubscriptionKeys(BaseModel):
+    """The two values `PushSubscription.getKey()` yields, checked for what they claim to be.
+
+    Both are validated here rather than taken on trust, because a subscription carrying a key
+    that is not really a key is worse than a rejected one. Delivery to it fails inside the
+    encryption step, before any push service is contacted, so no push service ever returns the
+    404 or 410 that prunes dead endpoints - the row simply stays in the table and fails silently
+    for ever. Refusing it at the boundary hands the browser a 422 it can report instead.
+
+    A real browser always sends valid values, so this rejects nothing legitimate.
+    """
+
     p256dh: str = Field(min_length=1, max_length=255)
     auth: str = Field(min_length=1, max_length=255)
+
+    @field_validator("p256dh")
+    @classmethod
+    def _must_be_a_point_on_the_curve(cls, value: str) -> str:
+        # The length and the 0x04 uncompressed-point prefix are not sufficient: 65 arbitrary
+        # bytes starting 0x04 satisfy both and still fail to decode. Only asking the curve
+        # itself distinguishes a key from a string that resembles one, and that is precisely
+        # the check `http_ece` performs at delivery time, brought forward to registration.
+        from cryptography.hazmat.primitives.asymmetric import ec
+
+        raw = _urlsafe_bytes(value, "p256dh")
+        try:
+            ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256R1(), raw)
+        except ValueError as exc:
+            raise ValueError("p256dh is not a valid P-256 public key.") from exc
+        return value
+
+    @field_validator("auth")
+    @classmethod
+    def _must_be_sixteen_bytes(cls, value: str) -> str:
+        # RFC 8291 fixes the authentication secret at 16 octets; the encryption assumes it.
+        if len(_urlsafe_bytes(value, "auth")) != 16:
+            raise ValueError("auth must be a 16-byte value.")
+        return value
 
 
 class PushSubscriptionCreate(BaseModel):

@@ -10,7 +10,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.models.enums import ExtractionStatus, RequestSource, RequestStatus
+from app.models.enums import DocumentSource, ExtractionStatus, RequestSource, RequestStatus
 from app.models.intake import Document, ExtractedField, Request
 from app.services import request_service
 from tests.utils.fixtures import PNG_1PX, text_layer_pdf
@@ -526,6 +526,43 @@ async def test_the_document_index_searches_names_codes_and_extracted_values(
     assert row["id"] == str(document.id)
     # Forward-compatible column, honestly empty until Step 3 creates something to link to.
     assert row["transaction_id"] is None
+
+
+async def test_a_generated_draft_does_not_break_the_document_index(
+    client: AsyncClient, db_session: AsyncSession, signed_in
+) -> None:
+    """A draft this platform wrote has no request behind it, and the index has to survive it.
+
+    `documents.request_id` became nullable when generated drafts arrived, so a document with no
+    request is a normal row - not a broken one. A non-optional `request_id` on the response schema
+    fails serialisation for the whole page, and every reader loses the index over one draft.
+    """
+    received = await seed_extracted_invoice(db_session, confidences={"invoice_number": 0.95})
+    generated = Document(
+        request_id=None,
+        source=DocumentSource.GENERATED.value,
+        filename="SO-I2626-1-500-Final-contract.docx",
+        content_type=("application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
+        content_hash="a" * 64,
+        byte_size=2048,
+        storage_ref="documents/generated/x/SO-I2626-1-500-Final-contract.docx",
+        extraction_status=ExtractionStatus.NOT_APPLICABLE.value,
+    )
+    db_session.add(generated)
+    await db_session.commit()
+
+    _, headers = await purchase_user(signed_in)
+
+    listing = await client.get("/api/v1/documents", headers=headers)
+    assert listing.status_code == 200, listing.text
+    rows = {row["id"]: row for row in listing.json()["data"]["items"]}
+    assert str(received.id) in rows
+    assert rows[str(generated.id)]["request_id"] is None
+    assert rows[str(generated.id)]["request_code"] is None
+
+    detail = await client.get(f"/api/v1/documents/{generated.id}", headers=headers)
+    assert detail.status_code == 200, detail.text
+    assert detail.json()["data"]["request_id"] is None
 
 
 async def test_an_unauthenticated_caller_reaches_nothing(client: AsyncClient) -> None:

@@ -145,7 +145,10 @@ resource "google_sql_database_instance" "primary" {
       ipv4_enabled                                  = false
       private_network                               = google_compute_network.core.id
       enable_private_path_for_google_cloud_services = true
-      require_ssl                                   = true
+      # `require_ssl` was the v5 spelling and the v6 provider rejects it outright, so the whole
+      # configuration failed to validate. ENCRYPTED_ONLY is what it meant: connections must be
+      # TLS, without also demanding a client certificate this platform does not issue.
+      ssl_mode                                      = "ENCRYPTED_ONLY"
     }
 
     backup_configuration {

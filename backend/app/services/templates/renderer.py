@@ -253,6 +253,20 @@ def clause_brief(template: DocumentTemplate) -> str:
     return "\n".join(lines)
 
 
+def placeholder_brief(template: DocumentTemplate) -> str:
+    """The placeholders replacement wording may quote, named exactly as it must write them.
+
+    The instruction tells the model to refer to every figure by "the {{placeholder}} the template
+    already declares", and the validator rejects the whole generation over one it does not. Both
+    of those only work if the declarations are actually in front of it: left to guess, the model
+    writes a reasonable-sounding name the template has no slot for and a well-formed draft fails
+    for a reason nobody can act on.
+    """
+    lines = [f"{{{{{field.name}}}}} - {field.label}" for field in template.fields]
+    lines.append("{{territory_reference}} - the destination territory's import declaration line")
+    return "\n".join(lines)
+
+
 __all__ = [
     "ACTIONS",
     "CLAUSE_MARKER",
@@ -264,5 +278,6 @@ __all__ = [
     "RenderResult",
     "TemplateRenderError",
     "clause_brief",
+    "placeholder_brief",
     "render_template",
 ]

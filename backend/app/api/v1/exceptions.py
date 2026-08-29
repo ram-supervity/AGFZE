@@ -314,9 +314,9 @@ async def resolve_exception(
         await session.commit()
         refreshed = await exception_service.get_case(session, case_id)
         messages.append(
-            "Escalated to the HOD and given elevated priority in the queue. The underlying "
-            "problem is not resolved, and no notification has been sent - outbound notification "
-            "does not exist on this platform yet."
+            "Escalated to the HOD and given elevated priority in the queue. The owning desk and "
+            "the approving desk have both been notified. The underlying problem is not resolved: "
+            "escalating raises who is looking at it, never what it says."
         )
         return ResponseEnvelope[ExceptionCaseDetail](
             data=await _detail(session, refreshed, user), message=" ".join(messages)

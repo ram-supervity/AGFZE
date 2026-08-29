@@ -95,8 +95,18 @@ echo "Connectivity"
 public_ip=$(sql "settings.ipConfiguration.ipv4Enabled")
 expect "the database has no public address" "$public_ip" "False"
 
-require_ssl=$(sql "settings.ipConfiguration.requireSsl")
-expect "the database refuses an unencrypted connection" "$require_ssl" "True"
+# `sslMode` is the field that governs this now; `requireSsl` is the retired v5 spelling the API
+# still echoes. Reading the live one means this keeps telling the truth if the legacy field goes.
+ssl_mode=$(sql "settings.ipConfiguration.sslMode")
+case "$ssl_mode" in
+  ENCRYPTED_ONLY | TRUSTED_CLIENT_CERTIFICATE_REQUIRED)
+    pass "the database refuses an unencrypted connection (${ssl_mode})"
+    ;;
+  *)
+    fail "the database refuses an unencrypted connection" \
+      "sslMode is '${ssl_mode:-unset}', which permits plaintext connections"
+    ;;
+esac
 
 private_network=$(sql "settings.ipConfiguration.privateNetwork")
 if [ -n "$private_network" ]; then
@@ -212,6 +222,43 @@ for secret in keycloak-oidc-client-secret database-password nextauth-secret \
   fi
 done
 
+# --- 8.2 push delivery --------------------------------------------------------------------------
+# The failure this catches is specific and was real: the private half was provisioned while the
+# public half was never set on the service at all. The API then reports push as unconfigured and
+# the production settings profile refuses to start, so a deployment looks provisioned and is not.
+# Both halves, on both services, or push does not work.
+echo
+echo "Push delivery"
+
+# Read as raw JSON rather than through a resource path: the v1 and v2 representations nest the
+# container environment differently, and a path that misses would report a configured key as
+# absent - or worse, the reverse.
+env_names() {
+  gcloud run services describe "$1" --project "$PROJECT" --region "$REGION" \
+    --format json 2>/dev/null | grep -Eo '"name": *"[A-Z_]+"' | grep -Eo '[A-Z_]+"$' | tr -d '"'
+}
+
+if env_names "$BACKEND" | grep -qx 'VAPID_PUBLIC_KEY'; then
+  pass "the API carries a VAPID public key"
+else
+  fail "the API carries a VAPID public key" \
+    "only the private half is wired; the API reports push as unconfigured and refuses to start"
+fi
+
+if env_names "$BACKEND" | grep -qx 'VAPID_PRIVATE_KEY'; then
+  pass "the API carries a VAPID private key"
+else
+  fail "the API carries a VAPID private key" \
+    "nothing can sign a delivery; check the vapid-private-key secret is mounted on the service"
+fi
+
+if env_names "$FRONTEND" | grep -qx 'NEXT_PUBLIC_VAPID_PUBLIC_KEY'; then
+  pass "the web app carries the VAPID public key"
+else
+  fail "the web app carries the VAPID public key" \
+    "the bundle cannot call pushManager.subscribe, so no browser can ever take a subscription"
+fi
+
 placeholder=$(gcloud secrets versions access latest --secret database-password \
   --project "$PROJECT" 2>/dev/null)
 if [ "$placeholder" = "CHANGE-ME-BEFORE-GO-LIVE" ]; then
@@ -224,10 +271,17 @@ unset placeholder
 
 # Nothing may be sitting in a plain environment variable. Every credential is a secret reference,
 # and this reads the deployed revision back to prove it.
+#
+# Two names are excluded by name rather than by widening the pattern. A VAPID *public* key is
+# published to every browser that subscribes - that is what it is for - so it is configuration
+# that happens to end in _KEY, and it has to be a literal because the browser cannot read a
+# secret reference. Excluding the two exact names keeps the check as strict as it was for
+# everything else, including the private half, which must never appear here.
 for service in "$BACKEND" "$FRONTEND"; do
   literals=$(gcloud run services describe "$service" --project "$PROJECT" --region "$REGION" \
     --format json 2>/dev/null \
-    | grep -Eo '"name": *"[A-Z_]*(SECRET|PASSWORD|_KEY|TOKEN)[A-Z_]*"[^}]*"value":' | wc -l)
+    | grep -Eo '"name": *"[A-Z_]*(SECRET|PASSWORD|_KEY|TOKEN)[A-Z_]*"[^}]*"value":' \
+    | grep -Ev '"(NEXT_PUBLIC_)?VAPID_PUBLIC_KEY"' | wc -l)
   if [ "$literals" -eq 0 ]; then
     pass "${service} holds no credential as a literal environment value"
   else

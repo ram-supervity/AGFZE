@@ -64,6 +64,21 @@ class KeycloakAdminNotConfiguredError(KeycloakAdminError):
     )
 
 
+class KeycloakAdminForbiddenError(KeycloakAdminError):
+    """Reached, authenticated, and refused. A different failure from an unreachable server, and
+    it says so: a 403 here is this deployment's own configuration - the service account is
+    missing the `realm-management` `manage-users` grant, or the client's scope is filtering it
+    out of the token - and an operator sent looking for a network fault will not find one."""
+
+    status_code = 502
+    code = "identity_provider_forbidden"
+    message = (
+        "The identity provider refused the change: this deployment's Keycloak Admin API "
+        "credential is not granted the permission it needs. No role was changed, and nothing "
+        "on this platform was altered."
+    )
+
+
 class KeycloakUserNotFoundError(KeycloakAdminError):
     status_code = 404
     code = "identity_user_not_found"
@@ -203,6 +218,9 @@ class KeycloakAdminClient:
 
         if response.status_code == 404:
             raise KeycloakUserNotFoundError(reason="not_found")
+        if response.status_code == 403:
+            logger.warning("keycloak_admin_request_forbidden", extra={"method": method})
+            raise KeycloakAdminForbiddenError(reason="http_403")
         if response.status_code not in expected:
             logger.warning(
                 "keycloak_admin_request_rejected",
@@ -247,12 +265,42 @@ class KeycloakAdminClient:
             raise KeycloakUserNotFoundError(reason="ambiguous_or_missing")
         return str(rows[0]["id"])
 
-    async def realm_role(self, name: str) -> dict[str, Any]:
-        response = await self._request("GET", f"{self.realm_base}/roles/{name}", expected=(200,))
-        role = response.json()
-        if not isinstance(role, dict) or not role.get("id"):
+    async def _user_realm_roles(
+        self, keycloak_user_id: str, path: str
+    ) -> dict[str, dict[str, Any]]:
+        response = await self._request(
+            "GET",
+            f"{self.realm_base}/users/{keycloak_user_id}/role-mappings/realm{path}",
+            expected=(200,),
+        )
+        rows = response.json()
+        if not isinstance(rows, list):
             raise KeycloakAdminError(reason="malformed_role_response")
-        return {"id": role["id"], "name": role.get("name", name)}
+        return {
+            str(row["name"]): {"id": str(row["id"]), "name": str(row["name"])}
+            for row in rows
+            if isinstance(row, dict) and row.get("id") and row.get("name")
+        }
+
+    async def realm_roles_for(self, keycloak_user_id: str, names: set[str]) -> list[dict[str, Any]]:
+        """The `{id, name}` representations Keycloak wants for a role-mapping write.
+
+        Read through the user's own role-mapping endpoints - the roles already mapped to them,
+        and the ones still available to map - rather than through `GET /roles/{name}`. Both are
+        covered by the `view-users` grant the service account already holds; the realm-wide role
+        endpoint needs `view-realm`, a read over the entire realm configuration that this
+        credential is deliberately not given for the sake of one role assignment.
+        """
+        known = await self._user_realm_roles(keycloak_user_id, "")
+        missing = names - set(known)
+        if missing:
+            known.update(await self._user_realm_roles(keycloak_user_id, "/available"))
+
+        unresolved = sorted(names - set(known))
+        if unresolved:
+            logger.warning("keycloak_admin_role_missing", extra={"roles": unresolved})
+            raise KeycloakAdminError(reason="unknown_realm_role")
+        return [known[name] for name in sorted(names)]
 
     async def current_platform_roles(self, keycloak_user_id: str) -> list[str]:
         """The platform roles Keycloak currently holds for this account.
@@ -292,14 +340,14 @@ class KeycloakAdminClient:
             await self._request(
                 "POST",
                 mappings,
-                json_body=[await self.realm_role(name) for name in to_add],
+                json_body=await self.realm_roles_for(keycloak_user_id, set(to_add)),
                 expected=(204, 200),
             )
         if to_remove:
             await self._request(
                 "DELETE",
                 mappings,
-                json_body=[await self.realm_role(name) for name in to_remove],
+                json_body=await self.realm_roles_for(keycloak_user_id, set(to_remove)),
                 expected=(204, 200),
             )
         return to_add, to_remove

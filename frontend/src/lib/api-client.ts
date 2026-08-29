@@ -157,7 +157,8 @@ export interface ExtractedField {
 
 export interface DocumentListItem {
   id: string;
-  request_id: string;
+  /** Null on a document the platform generated: nothing received it, so there is no request. */
+  request_id: string | null;
   request_code: string | null;
   filename: string;
   document_type: string | null;
@@ -1330,6 +1331,8 @@ export interface ApprovalQueue {
   items: ApprovalListItem[];
   page: PageInfo;
   rank_by: string;
+  /** The business stream the queue is filtered to; null means both. */
+  stream: string | null;
   confirmation_threshold: string;
   bulk_value_ceiling: string;
   overdue_threshold_hours: number;

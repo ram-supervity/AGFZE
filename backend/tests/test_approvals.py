@@ -13,7 +13,7 @@ from decimal import Decimal
 
 import pytest
 from httpx import AsyncClient
-from sqlalchemy import func, select
+from sqlalchemy import event, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.base import utcnow
@@ -21,16 +21,19 @@ from app.models.audit import AuditEvent
 from app.models.enums import (
     ApprovalDecision,
     ExceptionCategory,
+    ExceptionPriority,
     IntegrationJobStatus,
     TransactionStatus,
 )
 from app.models.governance import ApprovalTask, ExceptionCase
 from app.models.integration import IntegrationJob
 from app.models.jobs import BackgroundJob
+from app.models.notifications import Notification
 from app.models.transactions import TradeTransaction
 from app.services import gemini_service
 from app.services.governance import approval_service, thresholds
 from app.services.governance.hooks import GovernanceAuditEvent
+from app.services.notification_service import NotificationType
 from app.services.rules.catalog import CheckKey, RuleId
 from tests.utils.governance import seeded_transaction
 
@@ -930,8 +933,20 @@ async def test_an_undecided_approval_ages_into_an_exception_and_closes_with_the_
     ]
     assert len(rows) == 1
     assert rows[0]["owner_role"] == "approver_hod"
-    # Honest about what it did and did not do.
-    assert "no reminder has been sent" in rows[0]["summary"].lower()
+    assert rows[0]["escalated"] is False, "the first tier tells the desk; it does not escalate"
+
+    # Honest about what it did, which since Step 10 includes actually telling somebody. The
+    # summary used to say no reminder had been sent, which stopped being true the moment
+    # outbound delivery shipped - `open_case` notifies the owning role - so the claim is
+    # asserted against the notification rows rather than against its own prose.
+    assert "has been notified" in rows[0]["summary"].lower()
+    told = await db_session.scalar(
+        select(func.count(Notification.id)).where(
+            Notification.notification_type == NotificationType.EXCEPTION_OPENED,
+            Notification.link == f"/exceptions/{rows[0]['id']}",
+        )
+    )
+    assert told >= 1, "the desk that owns an overdue approval is told it owns one"
 
     # Reading again reconciles the same state and adds nothing.
     await client.get("/api/v1/exceptions", headers=headers)
@@ -956,3 +971,214 @@ async def test_an_undecided_approval_ages_into_an_exception_and_closes_with_the_
     assert len(closed) == 1
     await db_session.refresh(closed[0])
     assert closed[0].resolved_at is not None
+
+
+async def test_a_second_approver_deciding_the_same_task_leaves_one_entry_in_the_trail(
+    client: AsyncClient, db_session: AsyncSession, signed_in
+) -> None:
+    """One decision, one audit entry, one notification - whoever else tries afterwards.
+
+    The guard this covers used to be a read-then-write with nothing holding the row between the
+    two. Two approvers deciding the same task in the same moment both read `pending`, both passed
+    it and both wrote: the task kept whichever committed last, the trail kept *two*
+    `approval.decided` events naming two different people, and the submitter was told twice. The
+    decision path now loads the task `FOR UPDATE`, so the second decider reads the first's
+    outcome and is refused.
+    """
+    _, purchase_headers = await purchase_user(signed_in)
+    winner, headers = await approver(signed_in)
+    _, deputy_headers = await second_approver(signed_in)
+    transaction = await _submitted(client, db_session, purchase_headers, batch_number="I2626-91")
+    task = await _task(db_session, transaction)
+
+    first = await client.post(
+        f"{BASE}/{task.id}/decide",
+        headers=headers,
+        json={"decision": "approved", "confirm_above_threshold": True},
+    )
+    assert first.status_code == 200, first.text
+
+    second = await client.post(
+        f"{BASE}/{task.id}/decide",
+        headers=deputy_headers,
+        json={"decision": "approved", "confirm_above_threshold": True},
+    )
+    assert second.status_code == 409, second.text
+
+    # A contradictory decision is refused for the same reason, not a different one.
+    third = await client.post(
+        f"{BASE}/{task.id}/decide",
+        headers=deputy_headers,
+        json={"decision": "rejected", "reason": "A second opinion arriving far too late."},
+    )
+    assert third.status_code == 409, third.text
+
+    await db_session.refresh(task)
+    assert task.decided_by_id == winner.id
+    decided = await db_session.scalar(
+        select(func.count())
+        .select_from(AuditEvent)
+        .where(
+            AuditEvent.entity_id == str(task.id),
+            AuditEvent.event_type == GovernanceAuditEvent.APPROVAL_DECIDED,
+        )
+    )
+    assert decided == 1, "one decision must leave exactly one entry in the approval trail"
+
+
+async def test_the_decision_path_reads_the_task_under_a_row_lock(
+    client: AsyncClient, db_session: AsyncSession, signed_in
+) -> None:
+    """The refusal above only holds because the read feeding it locks the row.
+
+    Asserted against the statement rather than by racing two sessions: a race that happens to
+    pass proves nothing, and `FOR UPDATE` is the property that makes the race impossible.
+    """
+    _, purchase_headers = await purchase_user(signed_in)
+    transaction = await _submitted(client, db_session, purchase_headers, batch_number="I2626-92")
+    task = await _task(db_session, transaction)
+    db_session.expunge(task)
+
+    statements: list[str] = []
+
+    def _record(state) -> None:
+        statements.append(str(state.statement))
+
+    event.listen(db_session.sync_session, "do_orm_execute", _record)
+    try:
+        await approval_service.get_task_for_decision(db_session, task.id)
+    finally:
+        event.remove(db_session.sync_session, "do_orm_execute", _record)
+
+    assert any("FOR UPDATE" in text.upper() for text in statements), statements
+
+    # The read paths stay unlocked: an approver opening a screen must never block a decision.
+    statements.clear()
+    db_session.expunge_all()
+    event.listen(db_session.sync_session, "do_orm_execute", _record)
+    try:
+        await approval_service.get_task(db_session, task.id)
+    finally:
+        event.remove(db_session.sync_session, "do_orm_execute", _record)
+    assert not any("FOR UPDATE" in text.upper() for text in statements), statements
+
+
+async def test_the_queue_filters_by_business_stream(
+    client: AsyncClient, db_session: AsyncSession, signed_in
+) -> None:
+    """Both of AGFZE's business lines reach one approver, so the queue has to separate them."""
+    _, purchase_headers = await purchase_user(signed_in)
+    _, headers = await approver(signed_in)
+    await _submitted(client, db_session, purchase_headers, batch_number="I2626-93")
+
+    both = await client.get(BASE, headers=headers)
+    assert both.status_code == 200, both.text
+    assert both.json()["data"]["page"]["total"] >= 1
+    assert both.json()["data"]["stream"] is None
+
+    scrap = await client.get(f"{BASE}?stream=scrap", headers=headers)
+    assert scrap.status_code == 200
+    assert scrap.json()["data"]["stream"] == "scrap"
+    assert {row["batch_number"] for row in scrap.json()["data"]["items"]} == {
+        row["batch_number"] for row in both.json()["data"]["items"]
+    }
+
+    # The other stream is empty rather than quietly showing this one's work.
+    fa = await client.get(f"{BASE}?stream=fa", headers=headers)
+    assert fa.status_code == 200
+    assert fa.json()["data"]["page"]["total"] == 0
+    assert fa.json()["data"]["items"] == []
+
+    # An unrecognised stream is refused, never silently ignored.
+    assert (await client.get(f"{BASE}?stream=nonsense", headers=headers)).status_code == 422
+
+
+async def test_an_approval_nobody_decides_escalates_at_the_second_threshold(
+    client: AsyncClient, db_session: AsyncSession, signed_in
+) -> None:
+    """Two tiers on one clock: the first tells the desk, the second says it did not act.
+
+    The platform had only the first. An approver who never came back was reminded once and then
+    left in a queue nobody was reading - which is the situation the ageing rule exists to catch,
+    so catching it once and stopping was the half that did not work.
+    """
+    _, purchase_headers = await purchase_user(signed_in)
+    _, headers = await approver(signed_in)
+    transaction = await _submitted(client, db_session, purchase_headers, batch_number="I2626-94")
+    task = await _task(db_session, transaction)
+
+    configured = await thresholds.resolve_many(
+        db_session,
+        thresholds.GovernanceKey.APPROVAL_OVERDUE_HOURS,
+        thresholds.GovernanceKey.APPROVAL_ESCALATION_HOURS,
+    )
+    overdue = float(configured[thresholds.GovernanceKey.APPROVAL_OVERDUE_HOURS])
+    escalate = float(configured[thresholds.GovernanceKey.APPROVAL_ESCALATION_HOURS])
+    assert escalate > overdue, "the second tier has to sit past the first to mean anything"
+
+    # Past the first threshold only: opened and owned, but not escalated.
+    task.requested_at = utcnow() - timedelta(hours=overdue + 1)
+    await db_session.commit()
+    await client.get("/api/v1/exceptions", headers=headers)
+
+    case = (
+        await db_session.scalars(
+            select(ExceptionCase).where(
+                ExceptionCase.exception_type == ExceptionCategory.APPROVAL_NOT_RECEIVED.value
+            )
+        )
+    ).one()
+    await db_session.refresh(case)
+    assert case.escalated is False
+
+    # Past the second: the same case is escalated rather than a second one opened.
+    task.requested_at = utcnow() - timedelta(hours=escalate + 1)
+    await db_session.commit()
+    await client.get("/api/v1/exceptions", headers=headers)
+    await db_session.refresh(case)
+
+    assert case.escalated is True
+    assert case.priority == ExceptionPriority.HIGH.value
+    # A clock escalated this, not a person, and the trail has to be able to say so.
+    assert case.escalated_by_id is None
+    assert "automatically" in (case.escalation_note or "").lower()
+    assert (
+        await db_session.scalar(
+            select(func.count(ExceptionCase.id)).where(
+                ExceptionCase.exception_type == ExceptionCategory.APPROVAL_NOT_RECEIVED.value
+            )
+        )
+        == 1
+    ), "escalation raises the case that exists; it never opens a second one"
+
+    escalated_events = await db_session.scalar(
+        select(func.count())
+        .select_from(AuditEvent)
+        .where(
+            AuditEvent.entity_id == str(case.id),
+            AuditEvent.event_type == GovernanceAuditEvent.EXCEPTION_ESCALATED,
+        )
+    )
+    assert escalated_events == 1
+
+    told = await db_session.scalar(
+        select(func.count(Notification.id)).where(
+            Notification.notification_type == NotificationType.EXCEPTION_ESCALATED,
+            Notification.link == f"/exceptions/{case.id}",
+        )
+    )
+    assert told >= 1, "an escalation nobody is told about is not an escalation"
+
+    # Reading the queue again must not re-escalate and re-notify on every page view.
+    await client.get("/api/v1/exceptions", headers=headers)
+    assert (
+        await db_session.scalar(
+            select(func.count())
+            .select_from(AuditEvent)
+            .where(
+                AuditEvent.entity_id == str(case.id),
+                AuditEvent.event_type == GovernanceAuditEvent.EXCEPTION_ESCALATED,
+            )
+        )
+        == 1
+    )

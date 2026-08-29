@@ -164,6 +164,9 @@ class ApprovalQueue(BaseModel):
     items: list[ApprovalListItem]
     page: Page
     rank_by: str
+    # Echoed back so the screen renders the filter it is actually showing rather than the one it
+    # believes it asked for. Null means both streams, which is the queue's default.
+    stream: str | None = None
     # Both read from configuration and sent to the screen, so the UI never restates a threshold.
     confirmation_threshold: Decimal
     bulk_value_ceiling: Decimal

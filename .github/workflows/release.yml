@@ -140,12 +140,20 @@ jobs:
       - name: Build and push
         # NEXT_PUBLIC_* values are inlined into the browser bundle at build time, so the real
         # deployment values have to be build arguments rather than runtime environment.
+        env:
+          API_BASE: ${{ vars.NEXT_PUBLIC_API_BASE_URL }}
+          VAPID_PUBLIC: ${{ vars.NEXT_PUBLIC_VAPID_PUBLIC_KEY }}
         run: |
+          # Both are baked in and cannot be corrected afterwards, so an unset repository variable
+          # would ship a bundle that calls the wrong API or cannot subscribe to push at all - and
+          # would do it silently. Better to fail the build than to deploy that.
+          : "${API_BASE:?set the NEXT_PUBLIC_API_BASE_URL repository variable}"
+          : "${VAPID_PUBLIC:?set the NEXT_PUBLIC_VAPID_PUBLIC_KEY repository variable to the public half of the pair whose private half is in the vapid-private-key secret}"
           gcloud auth configure-docker "${REGION}-docker.pkg.dev" --quiet
           image="${REGION}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/agfze/frontend:${GITHUB_SHA}"
           docker build \
-            --build-arg NEXT_PUBLIC_API_BASE_URL="${{ vars.NEXT_PUBLIC_API_BASE_URL }}" \
-            --build-arg NEXT_PUBLIC_VAPID_PUBLIC_KEY="${{ vars.NEXT_PUBLIC_VAPID_PUBLIC_KEY }}" \
+            --build-arg NEXT_PUBLIC_API_BASE_URL="$API_BASE" \
+            --build-arg NEXT_PUBLIC_VAPID_PUBLIC_KEY="$VAPID_PUBLIC" \
             -t "$image" ./frontend
           docker push "$image"
           echo "IMAGE=$image" >> "$GITHUB_ENV"

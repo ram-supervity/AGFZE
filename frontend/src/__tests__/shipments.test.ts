@@ -12,6 +12,7 @@ import {
   SHIPMENT_STATUS_LABELS,
   canManageShipments,
   formatDate,
+  formatDateTime,
   sourceLabel,
   stalenessLabel,
   stalenessTone,
@@ -107,6 +108,19 @@ describe("formatDate", () => {
   it("renders an em dash for an absent date rather than a misleading today", () => {
     expect(formatDate(null)).toBe("-");
     expect(formatDate(undefined)).toBe("-");
+  });
+
+  it("reads the same instant wherever the reader is", () => {
+    // Server-rendered and rendered again during hydration. Left to the runtime's own zone the
+    // two disagree - the Node server is UTC and the browser is not - and React throws away the
+    // server's markup for the subtree. Both of these are late enough in a UTC day that any
+    // eastward zone would roll them to the next one.
+    expect(formatDate("2026-03-31T23:30:00Z")).toBe("31 Mar 2026");
+    expect(formatDateTime("2026-03-31T23:30:00Z")).toBe("31 Mar 2026, 23:30 UTC");
+  });
+
+  it("says which zone the time is in, so nobody reads it as their own", () => {
+    expect(formatDateTime("2026-03-31T23:30:00Z")).toContain("UTC");
   });
 });
 

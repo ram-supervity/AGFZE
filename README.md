@@ -344,7 +344,7 @@ You should end the run staring at the seeded Keycloak logins. All of them share 
 | `DASHBOARD_CACHE_TTL_SECONDS` / `_MAX_ENTRIES` | 45s on purpose; the API reports the age of what it served | `45` / `512` |
 | `APP_BASE_URL` | Public origin - every email CTA is built from this, never from a request header; localhost refused in production | `http://localhost:3000` |
 | `SMTP_HOST` / `SMTP_PORT` / `SMTP_USERNAME` / `SMTP_PASSWORD` / `SMTP_STARTTLS` / `SMTP_FROM_ADDRESS` | The relay. Locally: MailHog (plain SMTP, STARTTLS off - and only off there) | `mailhog` / `1025` / `false` |
-| `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` / `PUSH_TTL_SECONDS` | Web Push pair - generate **once** per environment (`make vapid-keys`); the public half must equal `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | `mailto:command-centre@agfze.local` / `86400` |
+| `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` / `PUSH_TTL_SECONDS` | Web Push pair - generated **once** per environment by `make setup`, which writes it to `backend/.env`, `frontend/.env` and `./.env` (compose reads the last one for the frontend build arg); the public half must equal `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | `mailto:command-centre@agfze.local` / `86400` |
 | `NOTIFICATION_DELIVERY_ENABLED` | Master switch for email + push; in-app always works | `true` |
 | `DOCUMENT_RETENTION_ENABLED` / `DOCUMENT_RETENTION_DAYS` / `DOCUMENT_RETENTION_DRY_RUN` | Retention mechanism, off and dry-run: 0 days means *unset*, not immediate, and the sweep refuses to run on it | `false` / `0` / `true` |
 | `GRAPH_SYNC_ENABLED` / `NEO4J_URI` / `NEO4J_USER` / `NEO4J_PASSWORD` / `GRAPH_SYNC_INTERVAL_SECONDS` | The optional Neo4j traceability projection | `false` / `300` |
@@ -384,8 +384,8 @@ make migrate
 # jobs all wait honestly on a person
 make seed-demo
 
-# Generate the VAPID key pair once per environment and paste both lines into backend/.env
-# (+ the public one into frontend/.env as NEXT_PUBLIC_VAPID_PUBLIC_KEY)
+# Print a fresh VAPID key pair. `make setup` already generates one and writes it to all three
+# files that read it, so this is only for rotating or for setting up a second environment.
 make vapid-keys
 
 # Regenerate the PWA icon set / rebuild the Neo4j projection / rebuild the DOCX templates
@@ -614,9 +614,14 @@ The production shape is **two containers, one managed database, one secrets stor
 **Verify it, don't assume it:**
 
 ```bash
-# Apply the estate
+# Apply the estate. `vapid_public_key` has no default on purpose: the public half of the pair
+# is inlined into the browser bundle and served by the API, and the backend refuses to start
+# without it, so an unset key must stop the apply rather than surface as a container that will
+# not come up. Its private half goes into Secret Manager, never into a variable:
+#   gcloud secrets versions add vapid-private-key --data-file=- <<<"$private"
 cd infra/production
-terraform init && terraform plan -var project_id=<gcp-project-id> && terraform apply
+terraform init && terraform plan -var project_id=<gcp-project-id> -var vapid_public_key=<public-half> \
+  && terraform apply -var project_id=<gcp-project-id> -var vapid_public_key=<public-half>
 
 # Read the live estate back and fail on anything not actually configured:
 # TLS floor, HTTPS-only, WAF in front, DB private + SSL + PITR, readiness probe,

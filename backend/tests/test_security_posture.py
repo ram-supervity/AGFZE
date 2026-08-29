@@ -538,25 +538,41 @@ def test_no_request_schema_carries_a_server_authoritative_field() -> None:
     assert offenders == ["app.schemas.admin.UserRoleUpdate.user_id"], offenders
 
 
+# Every administrative screen this platform is meant to ship. A new directory under the admin
+# tree fails this test until it is added here deliberately, which is the point: an admin screen
+# is a write surface over governed configuration and one must never appear by accident.
+#
+# `report-templates` and `report-distribution` are here because they were shipped on purpose
+# after Step 9 - a report's structure and its recipients became configuration, editable with a
+# recorded reason, behind their own endpoints and their own migration. What still must not exist
+# is a screen that edits where a posting is sent or which desk owns which failure.
+EXPECTED_ADMIN_SCREENS = {
+    "admin",
+    "audit",
+    "document-types",
+    "integrations",
+    "report-distribution",
+    "report-templates",
+    "rules",
+    "users",
+}
+
+
 def test_no_admin_screen_exists_for_the_configuration_that_deliberately_has_none() -> None:
-    """Three things Step 9 excluded on purpose, checked against the real page tree.
+    """The administrative write surface, checked against the real page tree.
 
     The integration *monitor* is a page and is supposed to be: it shows jobs. What must not exist
-    is a screen that edits where a posting is sent, which desk owns which failure, or what a
-    report template contains.
+    is a screen that edits where a posting is sent, or which desk owns which failure.
     """
     admin_pages = REPO_ROOT / "frontend" / "src" / "app" / "(protected)" / "admin"
     if not admin_pages.exists():
         pytest.skip("frontend is not present in this checkout")
 
     present = {path.parent.name for path in admin_pages.rglob("page.tsx")}
-    assert present <= {"admin", "rules", "document-types", "users", "audit", "integrations"}, (
-        present
-    )
+    assert present <= EXPECTED_ADMIN_SCREENS, present
 
     forbidden_editors = (
         "rule-exception",
-        "report-template",
         "endpoint",
         "sap-config",
         "dms-config",

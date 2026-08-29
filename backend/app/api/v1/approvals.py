@@ -152,7 +152,17 @@ async def list_approvals(
     page_size: int = Query(25, ge=1, le=100),
     rank_by: str = Query("age", pattern="^(age|value|risk)$"),
     decision: str = Query("pending"),
+    stream: str | None = Query(None, pattern="^(scrap|fa)$"),
 ) -> ResponseEnvelope[ApprovalQueue]:
+    """The queue, filtered by business stream where one is named.
+
+    `stream` narrows the queue to one of AGFZE's two business lines. The approver holds both, so
+    this is a working filter rather than an access control - the unfiltered queue is still the
+    default and still shows everything they may decide. It is validated against the same two
+    values the rest of the platform uses, so an unrecognised stream is refused rather than
+    silently ignored: a filter that quietly returns the other stream's transactions is worse
+    than one that will not run.
+    """
     configured = await thresholds.resolve_many(
         session,
         thresholds.GovernanceKey.APPROVAL_CONFIRMATION_VALUE,
@@ -166,6 +176,14 @@ async def list_approvals(
     statement = select(ApprovalTask)
     if decision != "all":
         statement = statement.where(ApprovalTask.decision == decision)
+    if stream is not None:
+        # Joined rather than filtered in Python after the fact, so `total` counts the same rows
+        # the page is drawn from and the pager does not promise a page that is not there.
+        statement = statement.where(
+            ApprovalTask.transaction_id.in_(
+                select(TradeTransaction.id).where(TradeTransaction.stream == stream)
+            )
+        )
     total = int(await session.scalar(select(func.count()).select_from(statement.subquery())) or 0)
 
     tasks = list(
@@ -223,6 +241,7 @@ async def list_approvals(
                 total_pages=max(1, -(-total // page_size)),
             ),
             rank_by=rank_by,
+            stream=stream,
             confirmation_threshold=confirmation,
             bulk_value_ceiling=ceiling,
             overdue_threshold_hours=int(overdue_hours),
@@ -478,7 +497,7 @@ async def decide_approval(
     reason attached, creates no job at all, and is a correctable state the desk that raised it can
     work again - never a dead end.
     """
-    task = await approval_service.get_task(session, approval_id)
+    task = await approval_service.get_task_for_decision(session, approval_id)
     transaction = await _load_transaction(session, task)
 
     configured = await thresholds.resolve_many(
@@ -562,7 +581,9 @@ async def bulk_decide(
     refused: list[BulkApprovalOutcome] = []
 
     for approval_id in dict.fromkeys(payload.approval_ids):
-        task = await session.get(ApprovalTask, approval_id)
+        # Locked for the same reason a single decision is, and per row rather than for the whole
+        # batch: one contended transaction inside a batch must not hold up the rest of it.
+        task = await session.get(ApprovalTask, approval_id, with_for_update=True)
         if task is None:
             refused.append(
                 BulkApprovalOutcome(

@@ -31,6 +31,7 @@ from app.services.audit_service import ActorType, record_audit_event
 from app.services.governance import hooks, thresholds
 from app.services.governance.categories import desks_for
 from app.services.governance.hooks import GovernanceAuditEvent
+from app.services.notification_service import notify_exception_escalated
 
 # Who may act on an exception at all. Which categories each of them may act on is a second,
 # narrower question answered by `desks_for` - Finance works invoice-value cases, not every case.
@@ -130,16 +131,32 @@ def sort_key(case: ExceptionCase) -> tuple[int, int, datetime]:
 
 
 async def ensure_overdue_approval_cases(session: AsyncSession) -> list[ExceptionCase]:
-    """Open an 'approval not received' case for every decision that has waited too long.
+    """Age every undecided approval against both tiers of the approval clock.
 
-    Reconciled here, on the read, rather than by a scheduled sweep. There is no notification to
-    send yet, so a periodic job would exist only to write a row nobody is waiting on; computing
-    the same answer when the queue is opened gives the identical result with nothing to schedule,
-    monitor or leave stuck. It is idempotent, so a second read changes nothing.
+    Two thresholds, because one was never enough. The discovery material asks for a TAT *per
+    approval level* and for an approver who is absent to be escalated past rather than reminded
+    forever, and the product specification says the same thing in the same order: unresolved
+    after the first threshold re-notifies the approving desk, and after a second one it is
+    escalated. So:
+
+      * past `approval_overdue_hours` an "approval not received" case is opened against the
+        transaction and owned by the approving role. `open_case` notifies that role, which is the
+        reminder - in-app always, and by email for anyone whose channel says so.
+      * past `approval_escalation_hours` that same case is escalated. Nothing new is opened: the
+        problem has not changed, only how long it has been ignored, and a second row would age
+        from the wrong moment and double the queue.
+
+    Reconciled on the read rather than by a scheduled sweep. Both tiers are pure functions of
+    `requested_at` and the clock, so computing them when the queue is opened gives the identical
+    answer with nothing to schedule, monitor or leave stuck, and both steps are idempotent.
     """
-    overdue_hours = await thresholds.resolve(
-        session, thresholds.GovernanceKey.APPROVAL_OVERDUE_HOURS
+    configured = await thresholds.resolve_many(
+        session,
+        thresholds.GovernanceKey.APPROVAL_OVERDUE_HOURS,
+        thresholds.GovernanceKey.APPROVAL_ESCALATION_HOURS,
     )
+    overdue_hours = configured[thresholds.GovernanceKey.APPROVAL_OVERDUE_HOURS]
+    escalation_hours = configured[thresholds.GovernanceKey.APPROVAL_ESCALATION_HOURS]
     cutoff = utcnow() - timedelta(hours=float(overdue_hours))
 
     stale = list(
@@ -167,8 +184,9 @@ async def ensure_overdue_approval_cases(session: AsyncSession) -> list[Exception
             summary=(
                 f"Batch {transaction.batch_number} has been waiting for a decision for "
                 f"{waited} hours, past the configured {int(overdue_hours)}-hour threshold. "
-                "No reminder has been sent: outbound notification does not exist on this "
-                "platform yet, so the queue is the only place this is visible."
+                f"Everyone holding {task.approver_role.replace('_', ' ')} has been notified; "
+                f"if it is still undecided at {int(escalation_hours)} hours this case is "
+                "escalated."
             ),
             transaction_id=transaction.id,
             request_id=transaction.request_id,
@@ -179,7 +197,82 @@ async def ensure_overdue_approval_cases(session: AsyncSession) -> list[Exception
         )
         if case is not None:
             opened.append(case)
+
+        if waited >= float(escalation_hours):
+            await escalate_overdue_approval(
+                session,
+                transaction=transaction,
+                approver_role=task.approver_role,
+                waited_hours=waited,
+                escalation_hours=int(escalation_hours),
+            )
     return opened
+
+
+async def escalate_overdue_approval(
+    session: AsyncSession,
+    *,
+    transaction: TradeTransaction,
+    approver_role: str,
+    waited_hours: int,
+    escalation_hours: int,
+) -> ExceptionCase | None:
+    """Escalate the open ageing case for one transaction, once.
+
+    Idempotent on `escalated`: the queue is read constantly and an escalation that re-fired on
+    every read would re-notify every approver every time somebody opened the screen, which is
+    how a real signal becomes noise people filter out.
+
+    The actor is the system, not a person - nobody chose this, a clock did - so unlike the manual
+    escalation below there is no `escalated_by_id` to record. That distinction is the point: an
+    auditor reading the trail can tell an escalation somebody asked for from one that happened
+    because a decision was never made.
+    """
+    case = await session.scalar(
+        select(ExceptionCase).where(
+            ExceptionCase.transaction_id == transaction.id,
+            ExceptionCase.exception_type == ExceptionCategory.APPROVAL_NOT_RECEIVED.value,
+            ExceptionCase.resolved_at.is_(None),
+            ExceptionCase.escalated.is_(False),
+        )
+    )
+    if case is None:
+        return None
+
+    case.escalated = True
+    case.escalated_at = utcnow()
+    case.escalation_note = (
+        f"Escalated automatically: undecided for {waited_hours} hours, past the configured "
+        f"{escalation_hours}-hour escalation threshold."
+    )
+    case.priority = ExceptionPriority.HIGH.value
+    case.updated_at = utcnow()
+    await session.flush()
+
+    await record_audit_event(
+        session,
+        event_type=GovernanceAuditEvent.EXCEPTION_ESCALATED,
+        entity_type="exception_case",
+        entity_id=case.id,
+        actor_type=ActorType.SYSTEM,
+        metadata={
+            "exception_type": case.exception_type,
+            "transaction_id": str(transaction.id),
+            "batch_number": transaction.batch_number,
+            "approver_role": approver_role,
+            "waited_hours": waited_hours,
+            "escalation_hours": escalation_hours,
+            "automatic": True,
+        },
+    )
+    await notify_exception_escalated(
+        session,
+        case_id=case.id,
+        owner_role=approver_role,
+        batch_number=transaction.batch_number,
+        note=case.escalation_note,
+    )
+    return case
 
 
 async def get_case(session: AsyncSession, case_id: UUID) -> ExceptionCase:
@@ -297,9 +390,9 @@ async def escalate_case(
 
     This is not a resolution and is never treated as one: the case stays open, keeps ageing, and
     still needs the underlying problem fixed. It is for the person who cannot fix it themselves
-    and needs a more senior pair of eyes. No message is sent to anyone - outbound notification
-    does not exist on this platform yet - so the escalation is visible in the queue and nowhere
-    else, which is exactly what the queue says.
+    and needs a more senior pair of eyes - and since Step 10 those eyes are actually told. The
+    owning desk and the approving desk are both notified; the person who escalated is not,
+    because they were there.
     """
     if case.resolved_at is not None:
         raise ConflictError("This exception is already resolved; there is nothing to escalate.")
@@ -324,8 +417,19 @@ async def escalate_case(
             "rule_id": case.rule_id,
             "transaction_id": str(case.transaction_id) if case.transaction_id else None,
             "note": case.escalation_note,
-            "notification_sent": False,
+            "automatic": False,
         },
+    )
+    transaction = (
+        await session.get(TradeTransaction, case.transaction_id) if case.transaction_id else None
+    )
+    await notify_exception_escalated(
+        session,
+        case_id=case.id,
+        owner_role=case.owner_role,
+        batch_number=transaction.batch_number if transaction is not None else None,
+        note=case.escalation_note,
+        escalated_by_id=user.id,
     )
     return case
 

@@ -47,6 +47,15 @@ const RANKS: { key: string; label: string }[] = [
   { key: "risk", label: "Highest risk" },
 ];
 
+// AGFZE runs two business lines and one approver decides for both, so this narrows the queue
+// rather than restricting it. "Both" is the default and clears the parameter entirely, so the
+// unfiltered queue stays the plain one.
+const STREAMS: { key: string; label: string }[] = [
+  { key: "", label: "Both" },
+  { key: "scrap", label: "Scrap" },
+  { key: "fa", label: "FA" },
+];
+
 export function ApprovalTable({ queue, canDecide }: ApprovalTableProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -64,7 +73,12 @@ export function ApprovalTable({ queue, canDecide }: ApprovalTableProps) {
 
   function navigate(changes: Record<string, string>) {
     const next = new URLSearchParams(searchParams.toString());
-    for (const [key, value] of Object.entries(changes)) next.set(key, value);
+    for (const [key, value] of Object.entries(changes)) {
+      // An empty value drops the parameter rather than sending a blank one the API would have
+      // to interpret. "Both streams" is the absence of a filter, not a third value.
+      if (value) next.set(key, value);
+      else next.delete(key);
+    }
     router.push(`/approvals?${next.toString()}`);
   }
 
@@ -121,6 +135,20 @@ export function ApprovalTable({ queue, canDecide }: ApprovalTableProps) {
               onClick={() => navigate({ rank_by: rank.key, page: "1" })}
             >
               {rank.label}
+            </Button>
+          ))}
+
+          <span className="ml-3 text-xs font-medium uppercase tracking-widest text-muted-foreground">
+            Stream
+          </span>
+          {STREAMS.map((option) => (
+            <Button
+              key={option.key || "both"}
+              size="sm"
+              variant={(queue.stream ?? "") === option.key ? "secondary" : "outline"}
+              onClick={() => navigate({ stream: option.key, page: "1" })}
+            >
+              {option.label}
             </Button>
           ))}
         </div>

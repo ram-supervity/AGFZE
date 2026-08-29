@@ -63,6 +63,7 @@ class NotificationType:
     """What a notification is about. Kept parallel to the audit event vocabulary on purpose."""
 
     EXCEPTION_OPENED = "exception.opened"
+    EXCEPTION_ESCALATED = "exception.escalated"
     APPROVAL_REQUESTED = "approval.requested"
     APPROVAL_DECIDED = "approval.decided"
     INTEGRATION_ATTENTION = "integration.attention"
@@ -299,6 +300,36 @@ async def notify_exception_opened(
         message=f"A new exception needs attention on {subject}. {summary}",
         link=f"/exceptions/{case_id}",
         roles=[owner_role],
+    )
+
+
+async def notify_exception_escalated(
+    session: AsyncSession,
+    *,
+    case_id: UUID,
+    owner_role: str,
+    batch_number: str | None,
+    note: str | None,
+    escalated_by_id: UUID | None = None,
+) -> list[Notification]:
+    """Tell the owning desk, and the HOD, that a case has been raised over their heads.
+
+    An escalation that nobody is told about is a flag on a row in a queue that - by definition -
+    nobody has been looking at, which is why the case needed escalating in the first place. So it
+    goes to both: the desk that owns it, because it is still their work, and the approving desk,
+    because escalation means somebody more senior has to see it.
+
+    The person who pressed the button is dropped from the recipients. They know.
+    """
+    subject = f"batch {batch_number}" if batch_number else "an unmatched document"
+    roles = {owner_role, PlatformRole.APPROVER_HOD.value}
+    return await notify(
+        session,
+        notification_type=NotificationType.EXCEPTION_ESCALATED,
+        message=(f"An exception on {subject} has been escalated." + (f" {note}" if note else "")),
+        link=f"/exceptions/{case_id}",
+        roles=sorted(roles),
+        exclude_user_id=escalated_by_id,
     )
 
 

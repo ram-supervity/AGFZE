@@ -453,6 +453,7 @@ async def generate_draft_content(
     *,
     document_type: str,
     clause_registry: str,
+    placeholder_registry: str,
     facts: dict[str, Any],
 ) -> DraftContentPlan:
     """Decide which template clauses this deal needs. Structured JSON only, validated on arrival.
@@ -467,6 +468,9 @@ async def generate_draft_content(
         f"Document being prepared: {document_type}.\n\n"
         "Clause registry - these are the only keys you may return:\n"
         f"{clause_registry}\n\n"
+        "Declared placeholders - replacement wording may quote these and no others, written "
+        "exactly as shown. Anything else fails the whole generation:\n"
+        f"{placeholder_registry}\n\n"
         f"{wrap_source_data('transaction facts', render_transaction_facts(facts))}"
     )
     return await generate_structured(

@@ -21,6 +21,10 @@ from app.models.audit import AuditEvent
 
 class AuditEventType:
     USER_PROVISIONED = "user.provisioned"
+    # An account whose identity provider re-issued its subject: the same person, reached through a
+    # new `sub`. Recorded because it silently rewrites the join between a token and every row that
+    # account owns, and that is exactly the kind of change an auditor has to be able to see.
+    USER_IDENTITY_REBOUND = "user.identity_rebound"
     # Reserved for explicit session events a later step records; not emitted per request.
     USER_LOGIN = "user.login"
 

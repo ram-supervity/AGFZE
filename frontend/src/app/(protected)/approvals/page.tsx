@@ -17,6 +17,7 @@ interface SearchParams {
   page?: string;
   rank_by?: string;
   decision?: string;
+  stream?: string;
 }
 
 export default async function ApprovalsPage({
@@ -33,6 +34,9 @@ export default async function ApprovalsPage({
     ? (params.rank_by as string)
     : "age";
   const decision = params.decision ?? "pending";
+  // Validated here as well as by the API. A stream nobody recognises is dropped rather than
+  // forwarded, so a hand-edited URL narrows the queue to nothing it can explain.
+  const stream = ["scrap", "fa"].includes(params.stream ?? "") ? params.stream : undefined;
 
   let queue: ApprovalQueue | null = null;
   let failure: string | null = null;
@@ -43,6 +47,7 @@ export default async function ApprovalsPage({
       page_size: 25,
       rank_by: rankBy,
       decision,
+      stream,
     });
   } catch (error) {
     failure =

@@ -54,7 +54,10 @@ class DocumentListItem(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
-    request_id: UUID
+    # Null on a generated draft, matching the column. That document originates from no intake
+    # event at all - nothing received it, so there is no request to point at - and a non-optional
+    # type here fails validation for the whole page the moment one exists.
+    request_id: UUID | None = None
     request_code: str | None = None
     filename: str
     document_type: str | None

@@ -7,13 +7,25 @@ function under `@register`, keyed by its own identifier, with its threshold read
 persistence are untouched by it, which is the fourth time that claim has been made and the fourth
 time it has cost a single import to keep.
 
-What it deliberately does **not** do is block anything. The discovery material proposes rejecting
-a future-dated invoice outright and flagging one dated more than three months ago, and says in the
-same breath that AGFZE has not confirmed either the tolerance or the approval matrix behind them.
-A hard failure on an unconfirmed policy would stop real deals on a rule nobody has agreed, so both
-outcomes are `acknowledgeable`: the preparing desk sees the flag, and clears it on its own record
-with a stated reason exactly as it clears the invoice amount's middle tier. The day the business
-confirms the policy, the threshold is a row somebody edits and the severity is one word here.
+What it deliberately does **not** do is block anything, and the two halves of that now rest on
+different ground.
+
+The **backdated** half is still genuinely unconfirmed. Discovery proposes refusing an invoice
+dated more than three months ago and, in the same breath, lists both the maximum age and the
+approval matrix behind it as open items owned by AGFZE management. A hard failure on a policy
+nobody has agreed would stop real deals, so it stays `acknowledgeable`: the preparing desk sees
+the flag and clears it on its own record with a stated reason, exactly as it clears the invoice
+amount's middle tier.
+
+The **future-dated** half is a different case. Discovery states it flatly - a future-dated invoice
+is rejected - and, unlike the backdated rule, does not carry it into the open-questions list. What
+is still missing is not the decision but the routing: the exception matrix has ten categories and
+none of them covers an invoice whose date is impossible, so promoting this to a hard failure today
+would produce a blocking exception with no owner, no priority and no next action - precisely what
+the governance principles forbid, and precisely the hole BR-07's `draft_bl_present` sat in until
+it was given a row. It therefore stays a flag pending one business input: which desk owns a
+future-dated invoice, and under which category. The day that is answered, the severity is one word
+here and the routing is one row in `rule_exception_mappings`.
 
 The India note is an advisory and nothing more. The local rule it refers to - interest becoming
 payable on an overdue payment to a registered small supplier - turns on the counterparty's
@@ -94,18 +106,20 @@ def _window_outcome(invoice_date: date, *, today: date, months: int, raw: str) -
             rule_id=RuleId.IV_01,
             check_key=CheckKey.INVOICE_DATE_WINDOW,
             passed=False,
-            # Flagged, never blocked. AGFZE has not confirmed what a future-dated invoice should
-            # cost a transaction, and stopping a live deal on an unconfirmed policy is worse than
-            # putting the fact in front of the person preparing it.
+            # Flagged, not blocked - and for a narrower reason than the backdated branch below.
+            # The decision to refuse a future-dated invoice *is* confirmed; what is not is who
+            # owns the resulting exception. Blocking without an owner would strand the
+            # transaction in a queue with nobody's name on it. See the module docstring.
             severity=RuleSeverity.ACKNOWLEDGEABLE.value,
             field_name="invoice_date",
             expected_value=window,
             actual_value=raw,
             message=(
                 f"IV-01: the invoice is dated {invoice_date.isoformat()}, which is in the future. "
-                "Check the date against the document before this transaction goes forward, or "
-                "accept it with a reason. AGFZE has not confirmed a policy for a future-dated "
-                "invoice, so this is a flag rather than a block."
+                "Correct the date against the document before this transaction goes forward, or "
+                "accept it with a stated reason. AGFZE's rule is that a future-dated invoice is "
+                "refused; until the desk that owns that refusal is confirmed this platform flags "
+                "it rather than blocking on an exception nobody would be assigned."
             ),
         )
 

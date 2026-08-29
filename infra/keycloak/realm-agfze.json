@@ -482,7 +482,17 @@
       "groups": []
     }
   ],
-  "clientScopeMappings": {},
+  "clientScopeMappings": {
+    "realm-management": [
+      {
+        "client": "agfze-admin-api",
+        "roles": [
+          "manage-users",
+          "view-users"
+        ]
+      }
+    ]
+  },
   "identityProviders": [
     {
       "alias": "entra-id",

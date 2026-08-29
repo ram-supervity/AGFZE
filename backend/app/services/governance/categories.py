@@ -326,6 +326,41 @@ def shipment_rule_exception_mappings() -> list[dict[str, Any]]:
     ]
 
 
+def draft_bl_rule_exception_mapping() -> list[dict[str, Any]]:
+    """BR-07's other half, which has been a hard failure with nobody's name on it.
+
+    BR-07 carries two checks. `final_bl_present` has routed to the sales desk since Step 5;
+    `draft_bl_present` never got a row, so a transaction failing it produced a blocking failure,
+    an `exception_mapping_missing` warning in the log, and no case for anyone to work - against
+    the governing document's plain requirement that *every* exception have an accountable owner,
+    reason, age, priority and next action, and against BR-08's requirement that a missing
+    document reach the queue at all.
+
+    Nothing about the routing had to be invented to close it. It is the same rule, about the same
+    document, at the same desk as the sibling check already mapped beside it, and the exception
+    matrix routes a missing mandatory document to the desk that owns the transaction. So:
+    the missing-document category, the sales desk.
+
+    Priority is the one judgement here, and it is `low` rather than the sibling's `medium` on
+    purpose. `final_bl_present` blocks a submission; this one only blocks *preparing a draft*
+    ahead of the paperwork arriving, which is a normal early state on a live deal rather than
+    something going wrong. Ranking it alongside a stalled submission would push genuinely stuck
+    work down the queue behind cargo that is simply still in transit.
+    """
+    return [
+        _mapping(
+            RuleId.BR_07,
+            CheckKey.DRAFT_BL_PRESENT,
+            ExceptionCategory.MISSING_MANDATORY_DOCUMENT.value,
+            PlatformRole.SALES_USER.value,
+            ExceptionPriority.LOW.value,
+            "No bill of lading - draft or original - and no B/L reference is recorded, so no "
+            "sales document can be prepared against this cargo yet. The sales desk chases the "
+            "reference from the carrier or the shipper; it clears itself the moment one arrives.",
+        ),
+    ]
+
+
 def obl_weight_rule_exception_mappings() -> list[dict[str, Any]]:
     """LG-01's single routing row, and the whole of what routing its failures required.
 

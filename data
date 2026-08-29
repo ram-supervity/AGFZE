@@ -1,0 +1,13 @@
+Seeded Keycloak logins - local development only, password Passw0rd!
+
+  username        email                         roles
+  --------------  ----------------------------  ---------------------------
+  hod.approver    hod.approver@agfze.local      approver_hod
+  purchase.user   purchase.user@agfze.local     purchase_user
+  sales.user      sales.user@agfze.local        sales_user
+  fa.user         fa.user@agfze.local           fa_user
+  logistics.user  logistics.user@agfze.local    logistics_user
+  finance.user    finance.user@agfze.local      finance_user
+  admin.user      admin.user@agfze.local        admin
+  auditor.user    auditor.user@agfze.local      auditor
+  dual.user       dual.user@agfze.local         purchase_user, approver_hod

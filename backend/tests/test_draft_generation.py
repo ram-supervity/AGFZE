@@ -314,6 +314,37 @@ async def test_a_fixed_customer_produces_a_final_named_draft(
     assert result.document_type == DocumentType.DRAFT_INVOICE.value
 
 
+async def test_every_document_this_platform_writes_gets_its_own_filename(
+    db_session: AsyncSession, sales_user: User
+) -> None:
+    """A proforma invoice and a bank cover letter are not "the invoice".
+
+    They land on the same transaction with the same batch and the same quantity, so a naming rule
+    that calls everything except a contract an invoice hands the desk two files with one name and
+    no way to tell which document is which.
+    """
+    transaction = await sales_transaction(db_session, batch_number="I2626-110")
+
+    names = {
+        document_type: draft_service.storage_filename(transaction, document_type)
+        for document_type in (
+            DocumentType.DRAFT_CONTRACT.value,
+            DocumentType.DRAFT_INVOICE.value,
+            DocumentType.DRAFT_PERFORMA_INVOICE.value,
+            DocumentType.DRAFT_BANK_COVER_LETTER.value,
+        )
+    }
+
+    assert len(set(names.values())) == len(names), names
+    # The two the desk already had keep the words the desk already uses.
+    assert names[DocumentType.DRAFT_CONTRACT.value].endswith("-contract.docx")
+    assert names[DocumentType.DRAFT_INVOICE.value].endswith("-invoice.docx")
+    assert names[DocumentType.DRAFT_PERFORMA_INVOICE.value].endswith("-performa-invoice.docx")
+    assert names[DocumentType.DRAFT_BANK_COVER_LETTER.value].endswith("-bank-cover-letter.docx")
+    for name in names.values():
+        assert name.startswith("SO-I2626-110-")
+
+
 async def test_a_malformed_model_response_fails_cleanly_and_produces_no_document(
     db_session: AsyncSession, sales_user: User, model_reply
 ) -> None:

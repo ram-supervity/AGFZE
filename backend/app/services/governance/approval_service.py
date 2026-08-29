@@ -121,6 +121,29 @@ async def get_task(session: AsyncSession, task_id: UUID) -> ApprovalTask:
     return task
 
 
+async def get_task_for_decision(session: AsyncSession, task_id: UUID) -> ApprovalTask:
+    """The same row, locked until this transaction commits. For the decision paths only.
+
+    `decide` reads `task.decision`, finds it pending, and writes the outcome several statements
+    later. Under PostgreSQL's default READ COMMITTED two approvers deciding the same task in the
+    same moment both read `pending`, both pass the guard and both write: the task row keeps
+    whichever committed last, while the audit trail keeps *two* `approval.decided` events naming
+    two different people, and the submitter is told twice. Nothing downstream is posted twice -
+    `integration_jobs` is unique on (transaction, target) - so the damage is not a double
+    posting; it is an approval trail that contradicts the record it describes, on a platform
+    whose whole claim is that every figure can name the approval behind it (BR-12).
+
+    `FOR UPDATE` closes it at the only place it can be closed: the second decider now waits for
+    the first to commit, re-reads `approved`, and gets the same 409 it would have got a second
+    later. Reads are deliberately left unlocked - `get_task` above is what the queue and the
+    detail screen use, and an approver opening a screen must never block another one deciding.
+    """
+    task = await session.get(ApprovalTask, task_id, with_for_update=True)
+    if task is None:
+        raise NotFoundError("Approval task not found.")
+    return task
+
+
 @dataclass(frozen=True)
 class RiskProfile:
     """Why a transaction is ranked where it is, in words a person can check.

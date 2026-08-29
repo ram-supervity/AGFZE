@@ -36,6 +36,11 @@ class GovernanceKey:
     # Hours a transaction may sit undecided before the queue calls it overdue and an
     # "approval not received" case is opened against it.
     APPROVAL_OVERDUE_HOURS = "approval_overdue_hours"
+    # The second tier of the same clock. Past this, the case that was opened at the first
+    # threshold is escalated in its own right, because an approver who has not acted on a
+    # reminder is not going to be reached by repeating it. The discovery material asks for a TAT
+    # per approval level rather than a single deadline; this is the second level's.
+    APPROVAL_ESCALATION_HOURS = "approval_escalation_hours"
     # Hours an exception may sit open before the queue shows it as breaching its ageing threshold.
     EXCEPTION_AGEING_HOURS = "exception_ageing_hours"
     # Hours a shipment may go without anybody establishing where it is - by adapter or by hand -
@@ -58,6 +63,7 @@ FALLBACKS: dict[str, Decimal] = {
     GovernanceKey.APPROVAL_CONFIRMATION_VALUE: Decimal("0"),
     GovernanceKey.BULK_APPROVAL_VALUE_CEILING: Decimal("0"),
     GovernanceKey.APPROVAL_OVERDUE_HOURS: Decimal("24"),
+    GovernanceKey.APPROVAL_ESCALATION_HOURS: Decimal("48"),
     GovernanceKey.EXCEPTION_AGEING_HOURS: Decimal("24"),
     GovernanceKey.SHIPMENT_STALE_HOURS: Decimal("24"),
     GovernanceKey.SHIPMENT_FAILURE_LIMIT: Decimal("2"),
@@ -68,6 +74,7 @@ _RULE_FOR_KEY: dict[str, str] = {
     GovernanceKey.APPROVAL_CONFIRMATION_VALUE: GovernanceRule.APPROVALS,
     GovernanceKey.BULK_APPROVAL_VALUE_CEILING: GovernanceRule.APPROVALS,
     GovernanceKey.APPROVAL_OVERDUE_HOURS: GovernanceRule.APPROVALS,
+    GovernanceKey.APPROVAL_ESCALATION_HOURS: GovernanceRule.APPROVALS,
     GovernanceKey.EXCEPTION_AGEING_HOURS: GovernanceRule.EXCEPTIONS,
     GovernanceKey.SHIPMENT_STALE_HOURS: GovernanceRule.SHIPMENTS,
     GovernanceKey.SHIPMENT_FAILURE_LIMIT: GovernanceRule.SHIPMENTS,
@@ -140,6 +147,15 @@ def default_governance_configurations() -> list[dict[str, Any]]:
             "count",
             "Hours a transaction may wait on a decision before the queue treats it as overdue "
             "and opens an 'approval not received' exception against it.",
+        ),
+        _row(
+            GovernanceRule.APPROVALS,
+            GovernanceKey.APPROVAL_ESCALATION_HOURS,
+            "96",
+            "count",
+            "Hours a transaction may wait on a decision before the 'approval not received' case "
+            "already open against it is escalated. The second tier of the same clock: the first "
+            "tells the approving desk, this one says the desk has not acted on being told.",
         ),
         _row(
             GovernanceRule.EXCEPTIONS,

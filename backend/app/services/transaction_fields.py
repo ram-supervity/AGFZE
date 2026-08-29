@@ -787,11 +787,17 @@ async def apply_corrections(
         # status would leave a "fixed" price the platform still reports as unfixed.
         _settle_fixation(transaction, recorded)
         # Commodity is reference data, so a corrected grade is re-resolved rather than trusted.
+        # `apply_change` has already put what the person typed into `commodity_code`, which is a
+        # foreign key onto the seeded grades, and the resolution below issues a query. Autoflush
+        # is held off across it so an unrecognised grade reaches `commodity_needs_review` - the
+        # documented outcome - instead of being flushed against the constraint first.
         if any(item["field"] == "commodity_code" for item in recorded):
-            resolved, needs_review = await transaction_service.resolve_commodity(
-                session, transaction.commodity_code
-            )
-            transaction.extracted_commodity_value = transaction.commodity_code
+            stated = transaction.commodity_code
+            with session.no_autoflush:
+                resolved, needs_review = await transaction_service.resolve_commodity(
+                    session, stated
+                )
+            transaction.extracted_commodity_value = stated
             transaction.commodity_code = resolved
             transaction.commodity_needs_review = needs_review
         transaction.updated_at = utcnow()

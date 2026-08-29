@@ -83,12 +83,18 @@ export function DocumentTable({ list }: { list: DocumentList }) {
                 )}
               </TableCell>
               <TableCell>
-                <Link
-                  href={`/inbox/${document.request_id}`}
-                  className="text-sm text-secondary underline-offset-4 hover:underline"
-                >
-                  {document.request_code ?? "Open request"}
-                </Link>
+                {document.request_id ? (
+                  <Link
+                    href={`/inbox/${document.request_id}`}
+                    className="text-sm text-secondary underline-offset-4 hover:underline"
+                  >
+                    {document.request_code ?? "Open request"}
+                  </Link>
+                ) : (
+                  // A draft this platform wrote. Nothing received it, so there is no request to
+                  // open - and a link to one would be a dead end dressed up as a route somewhere.
+                  <span className="text-sm text-muted-foreground">Generated here</span>
+                )}
               </TableCell>
               <TableCell>
                 <div className="flex flex-wrap items-center gap-1.5">

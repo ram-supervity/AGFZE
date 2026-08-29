@@ -158,11 +158,15 @@ export function DocumentReview({
           "Extracted fields shown beside the pages they were read from."
         }
         actions={
-          <Button asChild variant="outline" size="sm">
-            <Link href={`/inbox/${detail.request_id}`}>
-              Back to {detail.request_code ?? "the request"}
-            </Link>
-          </Button>
+          // A generated draft came from no request, so there is nowhere to go back to and the
+          // button is simply not offered rather than pointing at an intake row that never existed.
+          detail.request_id ? (
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/inbox/${detail.request_id}`}>
+                Back to {detail.request_code ?? "the request"}
+              </Link>
+            </Button>
+          ) : null
         }
       />
 

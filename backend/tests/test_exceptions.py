@@ -467,7 +467,10 @@ async def test_escalating_flags_the_case_without_claiming_a_fix(
     assert body["resolved_at"] is None
     assert body["rule_now_passes"] is False
     # And nothing pretends a message went anywhere.
-    assert "no notification has been sent" in response.json()["message"].lower()
+    # It used to say no notification had been sent, which stopped being true when outbound
+    # delivery shipped: an escalation nobody is told about is exactly the failure escalating
+    # exists to fix, so both desks are now messaged and the screen says so.
+    assert "have both been notified" in response.json()["message"].lower()
 
     logged = (
         await db_session.scalars(
@@ -477,7 +480,8 @@ async def test_escalating_flags_the_case_without_claiming_a_fix(
         )
     ).all()
     assert len(logged) == 1
-    assert logged[0].event_metadata["notification_sent"] is False
+    # `automatic` distinguishes an escalation somebody asked for from one a clock produced.
+    assert logged[0].event_metadata["automatic"] is False
 
 
 async def test_a_desk_that_does_not_own_the_category_cannot_resolve_it(

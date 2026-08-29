@@ -207,3 +207,88 @@ async def test_require_roles_admits_a_matching_role(app: FastAPI, client: AsyncC
     response = await client.get(PROBE_URL, headers=auth_header(token))
     assert response.status_code == 200
     assert response.json() == {"subject_id": subject_id}
+
+
+async def test_a_reissued_subject_rebinds_the_existing_account(
+    client: AsyncClient, db_session: AsyncSession
+) -> None:
+    """A realm re-import hands the same person a new `sub`. The account is the one their address
+    already names, so it is re-bound - inserting a second row collides with the unique email and
+    locks them out of every endpoint on the platform."""
+    email = "logistics.user@agfze.ae"
+    first = await client.get(
+        ME_URL,
+        headers=auth_header(
+            build_token(
+                sub="0b6d41f7-0000-4000-8000-0000000000d6",
+                email=email,
+                name="Priya Nair",
+                realm_access={"roles": ["logistics_user"]},
+            )
+        ),
+    )
+    assert first.status_code == 200
+
+    reissued = "77c9e2b0-0000-4000-8000-0000000000d7"
+    second = await client.get(
+        ME_URL,
+        headers=auth_header(
+            build_token(
+                sub=reissued,
+                email=email,
+                name="Priya Nair",
+                realm_access={"roles": ["logistics_user", "finance_user"]},
+            )
+        ),
+    )
+    assert second.status_code == 200
+
+    # Same row, so everything the account owns still resolves; the token still wins on roles.
+    assert second.json()["data"]["id"] == first.json()["data"]["id"]
+    assert second.json()["data"]["subject_id"] == reissued
+    assert second.json()["data"]["roles"] == ["logistics_user", "finance_user"]
+    assert await db_session.scalar(select(func.count()).select_from(User)) == 1
+
+    rebound = (
+        await db_session.scalars(
+            select(AuditEvent).where(AuditEvent.event_type == AuditEventType.USER_IDENTITY_REBOUND)
+        )
+    ).one()
+    assert rebound.event_metadata["previous_subject_id"] == "0b6d41f7-0000-4000-8000-0000000000d6"
+    assert rebound.event_metadata["subject_id"] == reissued
+
+
+async def test_a_reissued_subject_still_cannot_wake_a_disabled_account(
+    client: AsyncClient, db_session: AsyncSession
+) -> None:
+    email = "auditor.user@agfze.ae"
+    first = await client.get(
+        ME_URL,
+        headers=auth_header(
+            build_token(
+                sub="2f8b0c31-0000-4000-8000-0000000000d8",
+                email=email,
+                name="Kenji Watanabe",
+                realm_access={"roles": ["auditor"]},
+            )
+        ),
+    )
+    assert first.status_code == 200
+
+    user = (await db_session.scalars(select(User))).one()
+    user.is_active = False
+    await db_session.commit()
+
+    response = await client.get(
+        ME_URL,
+        headers=auth_header(
+            build_token(
+                sub="90a4d6e5-0000-4000-8000-0000000000d9",
+                email=email,
+                name="Kenji Watanabe",
+                realm_access={"roles": ["auditor"]},
+            )
+        ),
+    )
+    assert response.status_code == 403
+    assert_error_envelope(response.json(), "account_disabled")
