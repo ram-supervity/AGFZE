@@ -1,0 +1,28 @@
+{# The plaintext part. Not an afterthought and not a stripped copy of the HTML: it carries the
+   same summary, the same link and the same disclaimer, so a client that renders only this loses
+   presentation and nothing else.
+
+   Rendered by an environment with block trimming OFF, because here the blank lines are the
+   layout. -#}
+AGFZE COMMAND CENTRE
+{% block kicker %}Notification{% endblock %}
+===================================================================
+
+{% block heading %}{{ subject }}{% endblock %}
+
+{{ message }}
+{%- block detail %}{% endblock %}
+
+{% block cta %}Open in the Command Centre{% endblock %}:
+{{ url }}
+
+You will be asked to sign in. Nothing in this email contains transaction detail beyond the line
+above.
+{% if show_disclaimer %}
+-------------------------------------------------------------------
+{{ disclaimer }}
+{% endif %}
+-------------------------------------------------------------------
+Sent to {{ recipient_name }} because your account's notification channel is set to email. This
+copy is a courtesy - the notification itself is always waiting in your notification centre at
+{{ centre_url }}. Change the channel in Settings: {{ settings_url }}

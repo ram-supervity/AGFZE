@@ -1,0 +1,155 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: agfze-postgres
+    environment:
+      POSTGRES_USER: agfze
+      POSTGRES_PASSWORD: agfze
+      POSTGRES_DB: agfze
+    ports:
+      - "5432:5432"
+    volumes:
+      - agfze-postgres-data:/var/lib/postgresql/data
+      - ./infra/postgres/init-test-db.sh:/docker-entrypoint-initdb.d/init-test-db.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agfze -d agfze"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - agfze-net
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    container_name: agfze-keycloak
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HTTP_PORT: "8080"
+      KC_HEALTH_ENABLED: "true"
+      # Pins the issuer to the browser-facing host so tokens minted through the
+      # container hostname still validate against http://localhost:8080/realms/agfze.
+      KC_HOSTNAME: http://localhost:8080
+      KC_HOSTNAME_STRICT: "false"
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./infra/keycloak:/opt/keycloak/data/import:ro
+    healthcheck:
+      # The image has no HTTP client at all (no curl, no wget, no nc) and its bash is built
+      # without /dev/tcp, so the management health endpoint cannot be requested from inside the
+      # container. Grepping /proc for a listening socket on the management port (9000 = 0x2328),
+      # which only opens once KC_HEALTH_ENABLED has brought the server up, is the strongest
+      # signal the image can actually produce. It proves the server is listening, not that the
+      # realm finished importing - nothing in the stack gates on Keycloak being healthy.
+      test: ["CMD-SHELL", "grep -qE ':2328 .* 0A ' /proc/net/tcp6 /proc/net/tcp"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    networks:
+      - agfze-net
+
+  # A disposable SMTP catcher, so local development never hands a message to a real relay. It
+  # accepts everything on 1025 and shows it at http://localhost:8025 - HTML part, plaintext part
+  # and headers - which is the only way to check what a notification email actually looks like
+  # without sending one to somebody.
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    container_name: agfze-mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - agfze-net
+
+  backend:
+    build:
+      context: ./backend
+    container_name: agfze-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+      mailhog:
+        condition: service_started
+    environment:
+      ENV: development
+      LOG_LEVEL: INFO
+      DATABASE_URL: postgresql+asyncpg://agfze:agfze@postgres:5432/agfze
+      KEYCLOAK_ISSUER: http://localhost:8080/realms/agfze
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/agfze/protocol/openid-connect/certs
+      KEYCLOAK_AUDIENCE: agfze-command-centre
+      # The Admin REST API credential, seeded in the dev realm. A third machine identity,
+      # separate from the login client above and from the Graph app registration, used only by
+      # the manual role override on /admin/users.
+      KEYCLOAK_SERVER_URL: http://keycloak:8080
+      KEYCLOAK_REALM: agfze
+      KEYCLOAK_ADMIN_CLIENT_ID: agfze-admin-api
+      KEYCLOAK_ADMIN_CLIENT_SECRET: agfze-local-admin-api-secret
+      CORS_ALLOWED_ORIGINS: http://localhost:3000
+      RATE_LIMIT_ENABLED: "false"
+      STORAGE_BACKEND: local
+      STORAGE_LOCAL_ROOT: /app/var/storage
+      # Notification delivery. Mail goes to the catcher above and never to a real relay; MailHog
+      # has no certificate, so STARTTLS is off here and only here.
+      APP_BASE_URL: http://localhost:3000
+      SMTP_HOST: mailhog
+      SMTP_PORT: "1025"
+      SMTP_STARTTLS: "false"
+      SMTP_FROM_ADDRESS: command-centre@agfze.local
+      # Push stays unconfigured until somebody runs `make vapid-keys` and puts the pair in
+      # backend/.env. Unset, a subscribe attempt is told plainly that this deployment has no key
+      # rather than being handed an empty one.
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+      VAPID_SUBJECT: mailto:command-centre@agfze.local
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      # Keeps the storage root and sqlite artefacts out of the bind mount.
+      - agfze-backend-var:/app/var
+    command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    networks:
+      - agfze-net
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # Inlined into the browser bundle at build time, so it must be set here and not only
+        # in `environment:` below. The VAPID public key is the same: the browser needs it to
+        # subscribe, and it is public by the Web Push standard's own design.
+        NEXT_PUBLIC_API_BASE_URL: http://localhost:8000/api/v1
+        NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+    container_name: agfze-frontend
+    depends_on:
+      - backend
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8000/api/v1
+      NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+      # Server-rendered pages reach the API over the compose network, not the published port.
+      API_INTERNAL_BASE_URL: http://backend:8000/api/v1
+      KEYCLOAK_CLIENT_ID: agfze-command-centre
+      KEYCLOAK_CLIENT_SECRET: agfze-local-dev-secret
+      # Browser-facing endpoints (authorize, logout) and the expected `iss`.
+      KEYCLOAK_ISSUER: http://localhost:8080/realms/agfze
+      # Server-side endpoints (token, userinfo, jwks, refresh) inside the compose network.
+      KEYCLOAK_INTERNAL_ISSUER: http://keycloak:8080/realms/agfze
+      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-local-development-only-not-a-production-secret}
+    ports:
+      - "3000:3000"
+    networks:
+      - agfze-net
+
+networks:
+  agfze-net:
+    driver: bridge
+
+volumes:
+  agfze-postgres-data:
+  agfze-backend-var:

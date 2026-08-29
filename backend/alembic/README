@@ -1,0 +1,14 @@
+Single-database Alembic configuration running on an async driver.
+
+env.py resolves the database URL from app.core.config (settings.DATABASE_URL), so alembic.ini
+carries no URL. With ENV=testing a TEST_DATABASE_URL environment variable takes precedence, and a
+caller may instead pass an open connection through config.attributes["connection"] — that is the
+path the pytest fixtures use.
+
+Apply everything:      alembic upgrade head
+Autogenerate a change: alembic revision --autogenerate -m "add shipment tables"
+Inspect the SQL only:  alembic upgrade head --sql
+
+Run these from the backend/ directory (alembic.ini sets prepend_sys_path = . so the app package is
+importable). Every generated revision must be read before it is committed: autogenerate does not
+detect table or column renames, server-side default changes, or check constraint edits.

@@ -1,0 +1,28 @@
+[tool.pytest.ini_options]
+minversion = "8.0"
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+filterwarnings = [
+    "error::DeprecationWarning:app",
+    "error::DeprecationWarning:tests",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+extend-exclude = ["var"]
+
+[tool.ruff.lint]
+select = ["ASYNC", "B", "C4", "E", "F", "I", "SIM", "UP", "W", "RUF"]
+# B008: FastAPI declares dependencies as function calls in argument defaults by design.
+# UP017: datetime.UTC is 3.11+; the source stays importable on 3.10.
+ignore = ["B008", "UP017"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["ASYNC230", "E501"]
+"alembic/versions/*.py" = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app", "tests"]

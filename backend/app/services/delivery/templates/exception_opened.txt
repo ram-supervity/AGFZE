@@ -1,0 +1,8 @@
+{% extends "base.txt" %}
+{% block kicker %}Exception{% endblock %}
+{% block heading %}An exception needs attention{% endblock %}
+{% block detail %}
+
+It was raised against the desk you hold the role for, so it is waiting for whoever picks it up
+first rather than for one named person.{% endblock %}
+{% block cta %}Open the exception{% endblock %}

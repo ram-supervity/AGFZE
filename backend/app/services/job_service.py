@@ -1,0 +1,87 @@
+from __future__ import annotations
+
+from uuid import UUID
+
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.errors import NotFoundError
+from app.core.roles import PlatformRole
+from app.models.identity import User
+from app.models.jobs import BackgroundJob, JobStatus
+
+READ_ANY_JOB_ROLES: frozenset[str] = frozenset(
+    {PlatformRole.ADMIN.value, PlatformRole.AUDITOR.value}
+)
+
+
+async def create_job(
+    session: AsyncSession,
+    *,
+    job_type: str,
+    created_by_id: UUID | None = None,
+    transaction_id: UUID | None = None,
+) -> BackgroundJob:
+    job = BackgroundJob(
+        job_type=job_type,
+        status=JobStatus.QUEUED.value,
+        progress=0,
+        created_by_id=created_by_id,
+        transaction_id=transaction_id,
+    )
+    session.add(job)
+    await session.flush()
+    return job
+
+
+async def get_job(session: AsyncSession, job_id: UUID) -> BackgroundJob | None:
+    return await session.get(BackgroundJob, job_id)
+
+
+async def update_job_progress(
+    session: AsyncSession,
+    job_id: UUID,
+    progress: int,
+    *,
+    status: str | None = None,
+) -> BackgroundJob:
+    job = await _require_job(session, job_id)
+    job.progress = max(0, min(100, progress))
+    if status is not None:
+        job.status = status
+    elif job.progress > 0 and job.status == JobStatus.QUEUED.value:
+        job.status = JobStatus.PROCESSING.value
+    await session.flush()
+    return job
+
+
+async def complete_job(
+    session: AsyncSession,
+    job_id: UUID,
+    *,
+    result_ref: str | None = None,
+) -> BackgroundJob:
+    job = await _require_job(session, job_id)
+    job.status = JobStatus.COMPLETED.value
+    job.progress = 100
+    job.result_ref = result_ref
+    await session.flush()
+    return job
+
+
+async def fail_job(session: AsyncSession, job_id: UUID, *, error_message: str) -> BackgroundJob:
+    job = await _require_job(session, job_id)
+    job.status = JobStatus.FAILED.value
+    job.error_message = error_message
+    await session.flush()
+    return job
+
+
+def user_may_read_job(user: User, job: BackgroundJob) -> bool:
+    return job.created_by_id == user.id or bool(READ_ANY_JOB_ROLES.intersection(user.roles or ()))
+
+
+async def _require_job(session: AsyncSession, job_id: UUID) -> BackgroundJob:
+    job = await session.get(BackgroundJob, job_id)
+    if job is None:
+        raise NotFoundError("Job not found.")
+    return job

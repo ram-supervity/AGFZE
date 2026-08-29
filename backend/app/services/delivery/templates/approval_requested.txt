@@ -1,0 +1,8 @@
+{% extends "base.txt" %}
+{% block kicker %}Approval{% endblock %}
+{% block heading %}A decision is waiting on you{% endblock %}
+{% block detail %}
+
+Nothing moves downstream until it is decided. You can approve it, reject it, or send it back for
+changes with a reason.{% endblock %}
+{% block cta %}Review the approval{% endblock %}

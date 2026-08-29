@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block kicker %}Report{% endblock %}
+{% block heading %}A scheduled report has finished{% endblock %}
+{% block detail %}
+<p style="margin:12px 0 0 0;color:#61707f;font-size:13px;line-height:1.55;">
+  The file is held in the platform and downloaded through a signed, expiring link. It is not
+  attached to this email.
+</p>
+{% endblock %}
+{% block cta %}Open the report{% endblock %}

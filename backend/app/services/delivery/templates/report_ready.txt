@@ -1,0 +1,8 @@
+{% extends "base.txt" %}
+{% block kicker %}Report{% endblock %}
+{% block heading %}A scheduled report has finished{% endblock %}
+{% block detail %}
+
+The file is held in the platform and downloaded through a signed, expiring link. It is not
+attached to this email.{% endblock %}
+{% block cta %}Open the report{% endblock %}

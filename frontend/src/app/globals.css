@@ -1,0 +1,125 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 219 40% 16%;
+    --card: 0 0% 100%;
+    --card-foreground: 219 40% 16%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 219 40% 16%;
+    --primary: 219 40% 16%; /* #182338 ink navy */
+    --primary-foreground: 210 33% 96%;
+    --secondary: 208 31% 35%; /* #3E5C76 steel blue */
+    --secondary-foreground: 0 0% 100%;
+    --accent: 21 52% 43%; /* #A75D35 copper */
+    --accent-foreground: 0 0% 100%;
+    --muted: 214 24% 95%;
+    --muted-foreground: 214 14% 42%;
+    --border: 214 22% 88%;
+    --input: 214 22% 88%;
+    --ring: 21 52% 43%;
+    --destructive: 5 53% 42%; /* #A23B32 */
+    --destructive-foreground: 0 0% 100%;
+    --surface: 214 30% 98%;
+    --surface-foreground: 219 40% 16%;
+    --sidebar: 219 40% 16%;
+    --sidebar-foreground: 210 25% 82%;
+    --sidebar-muted: 214 16% 58%;
+    --sidebar-active: 21 52% 43%;
+    --sidebar-border: 219 32% 24%;
+    --signal-confident: 152 39% 30%; /* #2F6B4F */
+    --signal-review: 42 70% 34%; /* #95701A */
+    --signal-blocked: 5 53% 42%; /* #A23B32 */
+    --radius: 0.375rem; /* 6px */
+
+    /* Chart palette, added with the dashboard in Step 8.
+       Two ramps, and they do different jobs. The categorical slots carry identity - two or three
+       series that are not ordered, assigned in this fixed order and never cycled. The ordinal
+       ramp carries a sequence: the lifecycle phases a transaction moves through, light for the
+       earliest and dark for the last.
+       Both were validated for colour-vision deficiency separation and for contrast against the
+       surface they are drawn on, in this mode and in dark mode separately - the dark values below
+       are their own steps, not an automatic flip. Do not substitute a value here without
+       re-validating the set. The signal triad above stays reserved for confidence and validation
+       state and is never used as a series colour. */
+    --chart-1: 213 68% 50%; /* #2a78d6 */
+    --chart-2: 17 82% 56%; /* #eb6834 */
+    --chart-3: 161 74% 40%; /* #1baf7a */
+    --chart-4: 41 100% 46%; /* #eda100 */
+    --chart-phase-1: 213 76% 67%; /* #6da7ec */
+    --chart-phase-2: 213 77% 56%; /* #3987e5 */
+    --chart-phase-3: 213 68% 44%; /* #256abf */
+    --chart-phase-4: 214 72% 34%; /* #184f95 */
+    --chart-phase-5: 214 78% 23%; /* #0d366b */
+    --chart-grid: 214 22% 88%;
+  }
+
+  /* The signal triad (--signal-confident / --signal-review / --signal-blocked) carries the
+     confidence banding introduced with intake: green at or above 0.9, amber from 0.7, red
+     below 0.7. Use it only for confidence and validation state, never for decoration. */
+
+  .dark {
+    --background: 219 32% 10%;
+    --foreground: 210 25% 92%;
+    --card: 219 30% 13%;
+    --card-foreground: 210 25% 92%;
+    --popover: 219 30% 13%;
+    --popover-foreground: 210 25% 92%;
+    --primary: 210 25% 92%;
+    --primary-foreground: 219 40% 16%;
+    --secondary: 208 28% 46%;
+    --secondary-foreground: 219 40% 12%;
+    --accent: 21 56% 55%;
+    --accent-foreground: 219 40% 12%;
+    --muted: 219 26% 18%;
+    --muted-foreground: 214 14% 66%;
+    --border: 219 24% 22%;
+    --input: 219 24% 22%;
+    --ring: 21 56% 55%;
+    --destructive: 5 55% 55%;
+    --destructive-foreground: 219 40% 12%;
+    --surface: 219 30% 13%;
+    --surface-foreground: 210 25% 92%;
+    --sidebar: 219 36% 12%;
+    --sidebar-foreground: 210 22% 80%;
+    --sidebar-muted: 214 14% 55%;
+    --sidebar-active: 21 56% 55%;
+    --sidebar-border: 219 26% 20%;
+    --signal-confident: 152 34% 45%;
+    --signal-review: 42 62% 50%;
+    --signal-blocked: 5 55% 58%;
+    --chart-1: 213 77% 56%; /* #3987e5 */
+    --chart-2: 17 71% 50%; /* #d95926 */
+    --chart-3: 161 73% 36%; /* #199e70 */
+    --chart-4: 39 100% 39%; /* #c98500 */
+    --chart-phase-1: 213 71% 39%; /* #1c5cab */
+    --chart-phase-2: 213 68% 50%; /* #2a78d6 */
+    --chart-phase-3: 213 76% 62%; /* #5598e7 */
+    --chart-phase-4: 213 74% 73%; /* #86b6ef */
+    --chart-phase-5: 213 76% 84%; /* #b7d3f6 */
+    --chart-grid: 219 24% 26%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    /* Inter's contextual alternates and disambiguated glyphs keep long reference ids legible. */
+    font-feature-settings: "cv11", "ss01", "calt";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+}

@@ -1,0 +1,8 @@
+{% extends "base.txt" %}
+{% block kicker %}Integration{% endblock %}
+{% block heading %}An integration job needs a person{% endblock %}
+{% block detail %}
+
+The transaction itself is unaffected and its record stands. What is outstanding is the posting to
+the downstream system.{% endblock %}
+{% block cta %}Open the integration monitor{% endblock %}

@@ -1,0 +1,486 @@
+{
+  "realm": "agfze",
+  "displayName": "AGFZE Command Centre",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "registrationEmailAsUsername": false,
+  "rememberMe": false,
+  "verifyEmail": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": false,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "failureFactor": 10,
+  "waitIncrementSeconds": 60,
+  "maxFailureWaitSeconds": 900,
+  "defaultSignatureAlgorithm": "RS256",
+  "accessTokenLifespan": 900,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "offlineSessionIdleTimeout": 2592000,
+  "requiredCredentials": [
+    "password"
+  ],
+  "defaultRole": {
+    "name": "default-roles-agfze",
+    "description": "${role_default-roles}",
+    "composite": true,
+    "clientRole": false,
+    "containerId": "agfze"
+  },
+  "roles": {
+    "realm": [
+      {
+        "name": "offline_access",
+        "description": "${role_offline-access}",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "agfze",
+        "attributes": {}
+      },
+      {
+        "name": "uma_authorization",
+        "description": "${role_uma_authorization}",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "agfze",
+        "attributes": {}
+      },
+      {
+        "name": "default-roles-agfze",
+        "description": "${role_default-roles}",
+        "composite": true,
+        "composites": {
+          "realm": [
+            "offline_access",
+            "uma_authorization"
+          ]
+        },
+        "clientRole": false,
+        "containerId": "agfze",
+        "attributes": {}
+      },
+      {
+        "name": "approver_hod",
+        "description": "Approver / HOD",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "agfze",
+        "attributes": {}
+      },
+      {
+        "name": "purchase_user",
+        "description": "Purchase User",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "agfze",
+        "attributes": {}
+      },
+      {
+        "name": "sales_user",
+        "description": "Sales User",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "agfze",
+        "attributes": {}
+      },
+      {
+        "name": "fa_user",
+        "description": "FA User",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "agfze",
+        "attributes": {}
+      },
+      {
+        "name": "logistics_user",
+        "description": "Logistics User",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "agfze",
+        "attributes": {}
+      },
+      {
+        "name": "finance_user",
+        "description": "Finance User",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "agfze",
+        "attributes": {}
+      },
+      {
+        "name": "admin",
+        "description": "Admin",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "agfze",
+        "attributes": {}
+      },
+      {
+        "name": "auditor",
+        "description": "Auditor",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "agfze",
+        "attributes": {}
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "agfze-command-centre",
+      "name": "AGFZE Command Centre",
+      "description": "Next.js command centre application and its FastAPI backend audience.",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "bearerOnly": false,
+      "secret": "agfze-local-dev-secret",
+      "clientAuthenticatorType": "client-secret",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "authorizationServicesEnabled": false,
+      "frontchannelLogout": true,
+      "fullScopeAllowed": true,
+      "surrogateAuthRequired": false,
+      "consentRequired": false,
+      "rootUrl": "http://localhost:3000",
+      "baseUrl": "/",
+      "adminUrl": "http://localhost:3000",
+      "redirectUris": [
+        "http://localhost:3000/*"
+      ],
+      "webOrigins": [
+        "http://localhost:3000"
+      ],
+      "attributes": {
+        "post.logout.redirect.uris": "http://localhost:3000/*",
+        "pkce.code.challenge.method": "S256"
+      },
+      "protocolMappers": [
+        {
+          "name": "audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "agfze-command-centre",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "email",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "email",
+            "claim.name": "email",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "given name",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "firstName",
+            "claim.name": "given_name",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "family name",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "lastName",
+            "claim.name": "family_name",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "full name",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-full-name-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "username",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "username",
+            "claim.name": "preferred_username",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "agfze-admin-api",
+      "name": "AGFZE Admin API integration",
+      "description": "Service account used by the platform's /admin/users role override, and by nothing else. Separate from the login client above and from the Microsoft Graph app registration: three capabilities, three credentials, three blast radii. Its only grant is realm-management: manage-users.",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "bearerOnly": false,
+      "secret": "agfze-local-admin-api-secret",
+      "clientAuthenticatorType": "client-secret",
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "authorizationServicesEnabled": false,
+      "frontchannelLogout": false,
+      "fullScopeAllowed": false,
+      "surrogateAuthRequired": false,
+      "consentRequired": false,
+      "redirectUris": [],
+      "webOrigins": [],
+      "attributes": {
+        "use.refresh.tokens": "false"
+      }
+    }
+  ],
+  "users": [
+    {
+      "username": "hod.approver",
+      "email": "hod.approver@agfze.local",
+      "firstName": "Rania",
+      "lastName": "Haddad",
+      "enabled": true,
+      "emailVerified": true,
+      "requiredActions": [],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Passw0rd!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "default-roles-agfze",
+        "approver_hod"
+      ],
+      "groups": []
+    },
+    {
+      "username": "purchase.user",
+      "email": "purchase.user@agfze.local",
+      "firstName": "Marco",
+      "lastName": "Bellini",
+      "enabled": true,
+      "emailVerified": true,
+      "requiredActions": [],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Passw0rd!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "default-roles-agfze",
+        "purchase_user"
+      ],
+      "groups": []
+    },
+    {
+      "username": "sales.user",
+      "email": "sales.user@agfze.local",
+      "firstName": "Aisha",
+      "lastName": "Rahman",
+      "enabled": true,
+      "emailVerified": true,
+      "requiredActions": [],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Passw0rd!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "default-roles-agfze",
+        "sales_user"
+      ],
+      "groups": []
+    },
+    {
+      "username": "fa.user",
+      "email": "fa.user@agfze.local",
+      "firstName": "Daniel",
+      "lastName": "Okafor",
+      "enabled": true,
+      "emailVerified": true,
+      "requiredActions": [],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Passw0rd!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "default-roles-agfze",
+        "fa_user"
+      ],
+      "groups": []
+    },
+    {
+      "username": "logistics.user",
+      "email": "logistics.user@agfze.local",
+      "firstName": "Priya",
+      "lastName": "Nair",
+      "enabled": true,
+      "emailVerified": true,
+      "requiredActions": [],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Passw0rd!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "default-roles-agfze",
+        "logistics_user"
+      ],
+      "groups": []
+    },
+    {
+      "username": "finance.user",
+      "email": "finance.user@agfze.local",
+      "firstName": "Tomas",
+      "lastName": "Ceballos",
+      "enabled": true,
+      "emailVerified": true,
+      "requiredActions": [],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Passw0rd!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "default-roles-agfze",
+        "finance_user"
+      ],
+      "groups": []
+    },
+    {
+      "username": "admin.user",
+      "email": "admin.user@agfze.local",
+      "firstName": "Sofia",
+      "lastName": "Lindqvist",
+      "enabled": true,
+      "emailVerified": true,
+      "requiredActions": [],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Passw0rd!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "default-roles-agfze",
+        "admin"
+      ],
+      "groups": []
+    },
+    {
+      "username": "auditor.user",
+      "email": "auditor.user@agfze.local",
+      "firstName": "Kenji",
+      "lastName": "Watanabe",
+      "enabled": true,
+      "emailVerified": true,
+      "requiredActions": [],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Passw0rd!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "default-roles-agfze",
+        "auditor"
+      ],
+      "groups": []
+    },
+    {
+      "username": "dual.user",
+      "email": "dual.user@agfze.local",
+      "firstName": "Nadia",
+      "lastName": "Farouk",
+      "enabled": true,
+      "emailVerified": true,
+      "requiredActions": [],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Passw0rd!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "default-roles-agfze",
+        "purchase_user",
+        "approver_hod"
+      ],
+      "groups": []
+    },
+    {
+      "username": "service-account-agfze-admin-api",
+      "enabled": true,
+      "serviceAccountClientId": "agfze-admin-api",
+      "clientRoles": {
+        "realm-management": [
+          "manage-users",
+          "view-users"
+        ]
+      },
+      "realmRoles": [
+        "default-roles-agfze"
+      ],
+      "groups": []
+    }
+  ],
+  "clientScopeMappings": {}
+}
