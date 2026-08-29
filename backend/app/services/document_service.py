@@ -1,6 +1,6 @@
 """Orchestration: classify a request, then classify and extract each of its documents.
 
-This is the first real consumer of the Step 1 background-job service, and it reuses it exactly
+This is the first real consumer of the  background-job service, and it reuses it exactly
 as built - `create_job` / `update_job_progress` / `complete_job` / `fail_job`, polled by the
 frontend through the existing `GET /jobs/{job_id}/status`. There is no parallel mechanism.
 

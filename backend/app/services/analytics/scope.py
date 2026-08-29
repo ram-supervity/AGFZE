@@ -8,9 +8,9 @@ full-platform count with the Purchase rows painted out - it is a count that neve
 The scope is derived from three things that already exist and are already the platform's answer
 to "who may see what":
 
-* the stream visibility map Step 3 put in `transaction_service`, so a role's streams are decided
+* the stream visibility map  put in `transaction_service`, so a role's streams are decided
   in one place rather than in two that can drift;
-* the exception matrix Step 4 put in `governance.categories`, so a desk's categories are exactly
+* the exception matrix  put in `governance.categories`, so a desk's categories are exactly
   the ones it can actually work;
 * the three cross-cutting roles - Admin, Approver/HOD and Auditor - whose whole function is to
   see across the desks, and which are named here rather than inferred.

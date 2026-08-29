@@ -480,7 +480,7 @@ async def test_a_successful_ai_summary_is_labelled_as_the_model_s_work(
     assert report.ai_summary_error is None
 
 
-# --- the schedule, riding Step 7's sweep -----------------------------------------------------------------
+# --- the schedule, riding 's sweep -----------------------------------------------------------------
 
 
 async def test_the_daily_task_produces_the_report_for_the_day_that_has_ended(
@@ -529,7 +529,7 @@ async def test_the_schedule_is_idempotent_across_repeated_sweeps(db_session, sto
 
 
 async def test_the_reused_sweep_loop_reaches_the_scheduled_tasks(db_session, monkeypatch):
-    """Step 7's periodic loop is the mechanism; this step only added tasks to it."""
+    """'s periodic loop is the mechanism; this  only added tasks to it."""
     from app.services import integration_worker
 
     seen: list[str] = []
@@ -639,7 +639,7 @@ def test_a_request_for_something_the_platform_does_not_produce_is_refused():
         )
 
 
-# --- the prohibition this whole step turns on -------------------------------------------------
+# --- the prohibition this whole  turns on -------------------------------------------------
 
 
 async def test_generating_a_report_alters_no_transaction_exception_approval_or_job(
@@ -647,7 +647,7 @@ async def test_generating_a_report_alters_no_transaction_exception_approval_or_j
 ):
     """The read-only guarantee, proved rather than asserted in a comment.
 
-    Every row of every table this step reads is snapshotted, a report is generated over all of
+    Every row of every table this  reads is snapshotted, a report is generated over all of
     them, and the snapshot is compared. A single altered column anywhere fails this test.
     """
     from sqlalchemy import inspect

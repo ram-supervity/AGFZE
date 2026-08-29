@@ -4,7 +4,7 @@ Revision ID: 20251101_000011
 Revises: 20251001_000010
 Create Date: 2025-11-01 00:00:11.000000+00:00
 
-The smallest migration in the build, and deliberately so. The hardening step adds exactly one
+The smallest migration in the build, and deliberately so. The hardening  adds exactly one
 business rule, and a rule that reads its threshold out of `rule_configurations` needs one row -
 no table, no column, no constraint and no change to anything eleven prior migrations wrote.
 

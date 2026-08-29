@@ -17,7 +17,7 @@ export interface MilestoneTimelineProps {
  *
  * There is no `shipment_milestones` table behind this and there is not going to be one. Every
  * status and milestone change is already audit-logged, and a second store of the same facts would
- * be a second thing to keep in step - with the certainty that one day this timeline and the trail
+ * be a second thing to keep in  - with the certainty that one day this timeline and the trail
  * an auditor reads would disagree, and nobody would be able to say which was right.
  */
 export function MilestoneTimeline({ entries }: MilestoneTimelineProps) {

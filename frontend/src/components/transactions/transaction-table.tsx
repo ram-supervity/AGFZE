@@ -158,7 +158,7 @@ export function TransactionTable({ list, sortBy, sortDir }: TransactionTableProp
                 {formatMoney(row.value, row.currency)}
               </TableCell>
               <TableCell>
-                {/* Real from Step 6. An em dash still means something specific and true: no
+                {/* Real from . An em dash still means something specific and true: no
                     shipment record exists, which is not a claim that the cargo is on schedule. */}
                 {row.shipment_status ? (
                   <div className="flex flex-wrap items-center gap-1.5">

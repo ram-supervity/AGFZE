@@ -44,7 +44,7 @@ FINANCIAL_YEAR_START_MONTH = 4
 
 # Where a batch sequence starts when a prefix is seen for the first time.
 SEQUENCE_START = 1
-# How many times the allocator will step past a number some other record already holds.
+# How many times the allocator will  past a number some other record already holds.
 MAX_ALLOCATION_ATTEMPTS = 50
 
 # A commodity name has to look like the seeded grade to be accepted as it. Below this the value
@@ -78,7 +78,7 @@ def batch_prefix(moment: datetime | None = None) -> str:
 
     A single default company code, deliberately: routing between SAP company codes (2000 for the
     UAE entity, 3010 for Singapore) only becomes a real decision once there is an SAP posting to
-    route, which is Step 7's problem and not this step's.
+    route, which is 's problem and not this 's.
     """
     company = f"{settings.BATCH_COMPANY_CODE:>2.2}".replace(" ", "0")
     return f"I{financial_year_suffix(moment)}{company}"
@@ -476,7 +476,7 @@ async def get_transaction(session: AsyncSession, transaction_id: UUID) -> TradeT
 EVERY_STREAM = frozenset({BusinessStream.SCRAP.value, BusinessStream.FA.value})
 
 # Which streams a role may read. Every role in the matrix reads across both streams at this
-# stage; the map exists so Steps 5 and 6 narrow visibility in one place, and so the restriction
+# stage; the map exists so  5 and 6 narrow visibility in one place, and so the restriction
 # lives in the query rather than in whether a button was rendered.
 ROLE_STREAM_VISIBILITY: dict[str, frozenset[str]] = {
     PlatformRole.PURCHASE_USER.value: EVERY_STREAM,

@@ -4,11 +4,11 @@ Revision ID: 20250501_000005
 Revises: 20250401_000004
 Create Date: 2025-05-01 00:00:05.000000+00:00
 
-Layered on the Step 4 schema. One table is added and one is altered.
+Layered on the  schema. One table is added and one is altered.
 
-`sales_legs` is the whole of the attachment described in Step 5: it carries its own one-to-one
+`sales_legs` is the whole of the attachment described in : it carries its own one-to-one
 foreign key to `trade_transactions`, and `trade_transactions` itself is not touched by this
-migration at all. That is the design Step 3 committed to when it built the parent record, and
+migration at all. That is the design  committed to when it built the parent record, and
 this migration is the check on it.
 
 `documents` is altered in three ways, all of them to make room for the first document in the
@@ -16,7 +16,7 @@ platform that nothing received: `request_id` becomes nullable, a `source` column
 document came to exist, and the document-type and extraction-status vocabularies widen to carry
 the draft/original bill-of-lading distinction BR-07 turns on, the two documents the platform
 generates, and the honest `not_applicable` extraction state of a document the system wrote
-itself. As in Steps 3 and 4, the SQLite fallback the test suite can run on rebuilds the table
+itself. As in, the SQLite fallback the test suite can run on rebuilds the table
 from an explicit `copy_from` definition rather than from partial reflection, and PostgreSQL takes
 the plain ALTER path.
 """
@@ -207,7 +207,7 @@ def _documents_table(
 def _alter_documents_upgrade() -> None:
     """Widen `documents` to carry a document the platform wrote itself.
 
-    Split by dialect for the same reason the Step 4 migration split its constraint change: batch
+    Split by dialect for the same reason the  migration split its constraint change: batch
     mode's constraint operations re-apply the metadata naming template to names that already
     carry it. PostgreSQL takes plain ALTERs; SQLite, which cannot alter a constraint at all,
     rebuilds the table from the definition above with the new vocabularies already in place.
@@ -381,7 +381,7 @@ def upgrade() -> None:
     now = datetime.now(timezone.utc)
 
     # The bill-of-lading extraction schema. The sales workflow triggers off this document type,
-    # and Step 2 seeded only the invoice and the contract.
+    # and  seeded only the invoice and the contract.
     op.bulk_insert(
         sa.table(
             "document_type_schemas",

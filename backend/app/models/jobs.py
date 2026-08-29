@@ -20,7 +20,7 @@ class JobStatus(str, Enum):
 
 class BackgroundJob(Base):
     __tablename__ = "background_jobs"
-    # status is a plain String, not a PG enum: later steps add job states without a DDL migration.
+    # status is a plain String, not a PG enum: later  add job states without a DDL migration.
     __table_args__ = (
         CheckConstraint(
             "status IN ('queued', 'processing', 'completed', 'failed')", name="status_valid"
@@ -34,7 +34,7 @@ class BackgroundJob(Base):
     progress: Mapped[int] = mapped_column(Integer, default=0)
     result_ref: Mapped[str | None] = mapped_column(String(512))
     error_message: Mapped[str | None] = mapped_column(Text)
-    # Constrained from Step 3 onwards, once `trade_transactions` exists to point at. A job whose
+    # Constrained from  onwards, once `trade_transactions` exists to point at. A job whose
     # transaction is deleted keeps its own history rather than disappearing with it.
     transaction_id: Mapped[uuid.UUID | None] = mapped_column(
         GUID, ForeignKey("trade_transactions.id", ondelete="SET NULL"), index=True

@@ -1,6 +1,6 @@
 """AGFZE's second business line, and the claim it exists to test.
 
-The claim is that the engine built in Steps 3 and 4 absorbs a whole second business stream through
+The claim is that the engine built in  3 and 4 absorbs a whole second business stream through
 configuration. These tests are what makes that claim falsifiable: if `FaLeg` needed a column on the
 parent table, if a single evaluator had to be copied, if the exception hook had to learn what an FA
 transaction is, or if the workspace had to be taught an FA field name, one of the tests below would
@@ -53,7 +53,7 @@ async def purchase_user(signed_in):
 async def test_the_fa_leg_attaches_with_no_change_to_the_parent_table(
     db_session: AsyncSession,
 ) -> None:
-    """Step 3's design, checked for the third time: the attachment is the child's own key.
+    """'s design, checked for the third time: the attachment is the child's own key.
 
     `trade_transactions` carries no `fa_leg_id`, no `stream`-specific column and no nullable
     foreign key waiting for FA to exist. The relationship is expressed entirely by
@@ -93,7 +93,7 @@ async def test_the_seeded_fa_schema_is_exactly_the_minimal_field_set(
 ) -> None:
     """Seven fields, drawn from AGFZE's own material, and not an eighth.
 
-    This test is a guard against the most tempting mistake in the whole step: filling in what
+    This test is a guard against the most tempting mistake in the whole : filling in what
     looks like a gap. If somebody adds an FA document type, a mandatory-document list or a
     tolerance the business has not agreed, this fails.
     """
@@ -201,7 +201,7 @@ async def test_the_panel_grows_the_moment_configuration_adds_a_field(
 ) -> None:
     """The "no frontend code change" promise, proved on the side of the wire that decides it.
 
-    A field is added to the stored schema - which is what the Step 9 admin screen will do - and it
+    A field is added to the stored schema - which is what the  admin screen will do - and it
     becomes an editable, correctable, audited field with no code change anywhere.
     """
     transaction = await make_fa_transaction(db_session)
@@ -287,7 +287,7 @@ async def test_the_configuration_lookup_distinguishes_fa_from_scrap(
     """FA resolves to its own row; scrap resolves to the unscoped platform default.
 
     The two currently carry the same number, because AGFZE has confirmed no FA figure and this
-    step is instructed not to invent one. What matters is that they are separately addressable:
+     is instructed not to invent one. What matters is that they are separately addressable:
     the day the business decides FA's tolerance, it is a row change on a row that already exists.
     """
     from app.models.configuration import RuleConfiguration

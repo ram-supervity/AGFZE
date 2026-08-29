@@ -1,7 +1,7 @@
-"""Trade transaction models - added in Step 3, extended in Steps 5 and 6.
+"""Trade transaction models - added in , extended in  5 and 6.
 
-`TradeTransaction` is the shared parent every stream hangs its own leg off. `SalesLeg` (Step 5)
-and `FaLeg` (Step 6) sit beside `PurchaseLeg`, each attaching through its own one-to-one foreign
+`TradeTransaction` is the shared parent every stream hangs its own leg off. `SalesLeg` ()
+and `FaLeg` () sit beside `PurchaseLeg`, each attaching through its own one-to-one foreign
 key; the parent table was never altered to make room for either.
 """
 

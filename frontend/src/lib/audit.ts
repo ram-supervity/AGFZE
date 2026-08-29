@@ -11,7 +11,7 @@ export function canReadAuditTrail(roles: PlatformRole[]): boolean {
 /**
  * Prose for an event type, derived rather than enumerated.
  *
- * There is deliberately no map of every event type here. Ten steps have contributed to this
+ * There is deliberately no map of every event type here. Ten  have contributed to this
  * vocabulary and an eleventh will contribute more, so the explorer's filter is populated from the
  * data the API actually holds and each value is rendered by splitting it on its own separators.
  * A hardcoded list would be wrong the day a new event is first recorded.

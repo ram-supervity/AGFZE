@@ -32,14 +32,14 @@ async def update_my_preferences(
     user: CurrentUser,
     session: DbSession,
 ) -> ResponseEnvelope[UserRead]:
-    """Declared in Step 1 and deliberately left unbuilt until the settings page existed.
+    """Declared in  and deliberately left unbuilt until the settings page existed.
 
     Self-only, structurally: the row written is the one the dependency resolved from the verified
     token, and there is no parameter anywhere on this path naming another account. The schema
     carries no `roles`, no `email` and no `is_active` either, so a request cannot reach anything
     the identity provider owns even by asking.
 
-    `notification_channel` means one thing from Step 10 onwards: whether this account ALSO
+    `notification_channel` means one thing from  onwards: whether this account ALSO
     receives an email. In-app is created either way, for everybody, because it is the platform's
     record rather than a channel. Push is not reachable from here at all - it is gated on the
     existence of a `PushSubscription`, which only the browser's own permission prompt can create.

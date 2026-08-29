@@ -8,7 +8,7 @@ One table, three rows, and no change to a single report's output.
 
 The reporting module was always built against a template rather than against hard-coded layouts -
 the PDF and XLSX renderers switch on a section's declared kind and on nothing else, and neither
-one has ever known a section's name. What was missing was the last step of that promise: the
+one has ever known a section's name. What was missing was the last  of that promise: the
 structures themselves lived in a Python module, so confirming a report's shape with AGFZE meant a
 release rather than an edit.
 

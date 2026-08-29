@@ -27,7 +27,7 @@ interface SearchParams {
 /**
  * The home screen, with real content for the first time.
  *
- * It has been a real, clickable route since the platform's first step and has shown no metric of
+ * It has been a real, clickable route since the platform's first  and has shown no metric of
  * any kind until now, because until now there was nothing genuine to count. Everything on it is
  * queried from the transaction records, scoped to this account's roles inside those queries, and
  * clickable through to the rows behind it.
@@ -64,7 +64,7 @@ export default async function DashboardPage({
     <div className="space-y-6">
       <PageHeader
         title="Dashboard"
-        description={`Where AGFZE's trading stands right now — what is open, what is stuck, and how much of it ran without anybody having to step in. Signed in as ${displayName}.`}
+        description={`Where AGFZE's trading stands right now — what is open, what is stuck, and how much of it ran without anybody having to  in. Signed in as ${displayName}.`}
         actions={
           <div className="flex flex-wrap justify-end gap-1.5">
             {roles.map((role) => (

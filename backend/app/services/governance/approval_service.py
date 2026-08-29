@@ -125,7 +125,7 @@ async def get_task(session: AsyncSession, task_id: UUID) -> ApprovalTask:
 class RiskProfile:
     """Why a transaction is ranked where it is, in words a person can check.
 
-    A stated assumption, not an invented score. Nothing in this step's governing material defines
+    A stated assumption, not an invented score. Nothing in this 's governing material defines
     a risk model, so rather than manufacture one, risk here means exactly two observable facts: a
     tolerance somebody had to accept by hand, and a history of having gone wrong before. A
     transaction with neither is the clean case; that is the whole of the claim.
@@ -235,7 +235,7 @@ async def decide(
 ) -> ApprovalTask:
     """Record one decision, and move the transaction exactly as far as that decision goes.
 
-    An approval reaches `Approved`, and from Step 7 that state finally has a consumer: the
+    An approval reaches `Approved`, and from  that state finally has a consumer: the
     caller raises the three integration jobs against it and the transaction moves on to
     `Integration Pending`. This function still stops at `Approved` itself, deliberately - the
     decision and the postings it authorises are two different acts, and a rejected approval must

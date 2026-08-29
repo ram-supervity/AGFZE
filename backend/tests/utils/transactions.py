@@ -1,4 +1,4 @@
-"""Builders for the transaction fixtures the Step 3 suite works against.
+"""Builders for the transaction fixtures the  suite works against.
 
 Everything here is written directly into the database, exactly as the services would leave it,
 so the tests exercise the real matching and validation code against real rows rather than
@@ -32,7 +32,7 @@ from app.models.transactions import PurchaseLeg, TradeTransaction
 SUPPLIER = "Emirates Metal Trading LLC"
 CONTRACT = "AGF-CT-2026-118"
 
-# A pack that satisfies every rule this step evaluates for real: the amount is exactly rate
+# A pack that satisfies every rule this  evaluates for real: the amount is exactly rate
 # multiplied by quantity, the quantity matches the contract, and the price matches the contract's rate.
 CLEAN_INVOICE_VALUES: dict[str, str | None] = {
     "invoice_number": "INV-2026-0451",

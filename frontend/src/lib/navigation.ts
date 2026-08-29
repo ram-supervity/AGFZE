@@ -22,7 +22,7 @@ export type NavStatus = "available" | "planned";
  * A live screen inside a section.
  *
  * The Admin section carried exactly one of these while the section itself was still to come - the
- * integration monitor. The section is real from Step 9, and its children are now what the
+ * integration monitor. The section is real from , and its children are now what the
  * administration module actually consists of: users and roles, the rule thresholds, the document
  * schemas, the audit explorer, and the monitor that was already there.
  */

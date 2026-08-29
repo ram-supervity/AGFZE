@@ -16,7 +16,7 @@ export const metadata: Metadata = { title: "Report templates" };
  *
  * The reporting engine was always built against a template rather than against hard-coded
  * layouts: the PDF and XLSX renderers switch on a section's declared kind and have never known a
- * section's name. This is the last step of that promise. Confirming a report's shape with AGFZE
+ * section's name. This is the last  of that promise. Confirming a report's shape with AGFZE
  * is a conversation, and a conversation should not need a release.
  *
  * No figure is reachable from here. Every number a report prints is computed from the governed

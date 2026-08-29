@@ -1,6 +1,6 @@
 """The compiled document package one transaction is filed under.
 
-Scoped narrowly, and on purpose. Step 5 already generates draft contracts and invoices as
+Scoped narrowly, and on purpose.  already generates draft contracts and invoices as
 `Document` rows, so a table that stored "the documents of a deal" a second time would be the same
 capability under two names. What is genuinely new here is *compilation*: taking documents that
 already exist - received ones and the drafts the platform wrote - and merging them into one file

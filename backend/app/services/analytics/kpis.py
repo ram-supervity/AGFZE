@@ -1,4 +1,4 @@
-"""Every figure this step displays, computed here and nowhere else.
+"""Every figure this  displays, computed here and nowhere else.
 
 Read the definitions in :data:`KPI_DEFINITIONS` before the code. Several of the KPIs this platform
 is asked for are named descriptively rather than defined, and where that is so the definition
@@ -155,7 +155,7 @@ class Figure:
     """One number, what it means, and the query that reproduces it.
 
     `drill_through` is not decoration. Every figure this platform shows has to be openable, and a
-    figure carrying no route back to its rows is exactly the dead end this step exists to remove.
+    figure carrying no route back to its rows is exactly the dead end this  exists to remove.
     """
 
     key: str
@@ -549,11 +549,11 @@ def bucket_series(rows: list[ApprovedRow], period: Period, *, interval: str) -> 
     platform runs on truncate a timestamp differently, and a KPI that reads differently on the
     test database than on the production one is worse than no KPI.
     """
-    step = timedelta(days=7 if interval == "week" else 1)
+     = timedelta(days=7 if interval == "week" else 1)
     buckets: list[dict[str, Any]] = []
     cursor = _floor(period.start, interval)
     while cursor < period.end:
-        window_end = cursor + step
+        window_end = cursor + 
         inside = [row for row in rows if cursor <= _aware(row.decided_at) < window_end]
         durations = sorted(row.hours for row in inside)
         automated = sum(1 for row in inside if not row.had_exception)
@@ -586,7 +586,7 @@ def _floor(moment: datetime, interval: str) -> datetime:
 async def integration_counts(session: AsyncSession, scope: DashboardScope) -> dict[str, Any]:
     """Two separate figures, and this function will never return one that merges them.
 
-    Step 7 was explicit that a job waiting on a person is neither a success nor a failure. A
+     was explicit that a job waiting on a person is neither a success nor a failure. A
     dashboard that added them together would undo, in one tile, the distinction that module was
     built to preserve.
     """

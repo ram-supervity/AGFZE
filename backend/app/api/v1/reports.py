@@ -7,7 +7,7 @@ break. Asking for a new one is narrower - Admin and Approver/HOD - and is enforc
 server, rather than by which button the browser drew.
 
 Generation runs as a tracked background job through the exact `job_service` and
-`GET /jobs/{job_id}/status` endpoint Step 1 established and every step since has reused. There is
+`GET /jobs/{job_id}/status` endpoint  established and every  since has reused. There is
 no second job mechanism here.
 
 The file itself is never handed out as a path. `download_url` is minted per request as a
@@ -15,7 +15,7 @@ short-lived signed URL through the same authenticated route every document in th
 served through, so a link that leaks is a link that expires.
 
 Nothing in this module sends a report anywhere, and no response from it claims that anything was
-sent. Distribution arrives with the notification step; until it does, every report says plainly
+sent. Distribution arrives with the notification ; until it does, every report says plainly
 that it was generated and stored and nothing more.
 """
 

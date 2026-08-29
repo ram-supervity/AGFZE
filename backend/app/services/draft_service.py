@@ -10,7 +10,7 @@ The division of labour here is the whole point of the module, and it is not nego
 
 A model reply that does not survive validation fails the job. It does not fall back to the
 shipped wording, it does not populate a partial template and it does not produce a document at
-all. That asymmetry is deliberate: earlier steps' AI output was always read by somebody before it
+all. That asymmetry is deliberate: earlier ' AI output was always read by somebody before it
 mattered, and a polished-looking draft contract is exactly the kind of artefact that gets acted
 on with less scrutiny than it deserves.
 
@@ -626,7 +626,7 @@ async def queue_generation(
 ) -> UUID:
     """Create the tracked job and start the generation. Returns the job id the client polls.
 
-    The same `job_service` and the same `GET /jobs/{job_id}/status` Step 2 established for
+    The same `job_service` and the same `GET /jobs/{job_id}/status`  established for
     extraction. There is no second job mechanism, and this one reports progress into the same
     row the intake pipeline uses.
     """

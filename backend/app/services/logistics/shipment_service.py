@@ -266,7 +266,7 @@ async def milestone_timeline(session: AsyncSession, shipment: Shipment) -> list[
 
     There is no shipment-history table and there is not going to be one. Every status and
     milestone change is already required to be audit-logged, and a second table holding the same
-    facts would be a second thing to keep in step - with the certainty that one day the timeline
+    facts would be a second thing to keep in  - with the certainty that one day the timeline
     on the screen and the trail an auditor reads would disagree, and nobody would know which was
     right.
     """

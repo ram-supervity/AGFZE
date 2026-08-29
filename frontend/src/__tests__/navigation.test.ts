@@ -8,8 +8,8 @@ const keysFor = (roles: PlatformRole[]) => visibleNavItems(roles).map((item) => 
 
 describe("NAV_ITEMS", () => {
   it("declares the twelve modules in navigation order", () => {
-    // Admin becomes a real section in Step 9, and Settings and Notifications join it as the last
-    // two entries that had been "coming soon" since the very first step.
+    // Admin becomes a real section in , and Settings and Notifications join it as the last
+    // two entries that had been "coming soon" since the very first .
     expect(allKeys).toEqual([
       "dashboard",
       "inbox",
@@ -26,9 +26,9 @@ describe("NAV_ITEMS", () => {
     ]);
   });
 
-  it("leaves nothing deferred, and gives no live module an arrival step", () => {
-    // Step 9 is where the sidebar stops promising anything. Every module in it is a working
-    // screen, so none of them carries an arrival step any more.
+  it("leaves nothing deferred, and gives no live module an arrival ", () => {
+    //  is where the sidebar stops promising anything. Every module in it is a working
+    // screen, so none of them carries an arrival  any more.
     expect(NAV_ITEMS.filter((item) => item.status !== "available")).toEqual([]);
     for (const item of NAV_ITEMS) {
       expect(item.availableFrom, item.key).toBeUndefined();
@@ -120,7 +120,7 @@ describe("visibleNavItems", () => {
   it("shows an account with no role only the role-agnostic modules", () => {
     const roleAgnostic = NAV_ITEMS.filter((item) => item.roles.length === 0).map((item) => item.key);
 
-    // Notifications and Settings join this list in Step 9: both are scoped to the caller by the
+    // Notifications and Settings join this list in : both are scoped to the caller by the
     // API on every read and every write, so there is no role that could be required for them.
     expect(roleAgnostic).toEqual([
       "dashboard",

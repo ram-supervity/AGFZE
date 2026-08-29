@@ -1,8 +1,8 @@
 """Vocabularies shared by the intake models, the API schemas and the AI prompts.
 
 Every value is stored as a plain string column guarded by a check constraint rather than a
-PostgreSQL enum, matching the pattern `background_jobs.status` established in Step 1: a later
-step adds a state without a type-altering migration.
+PostgreSQL enum, matching the pattern `background_jobs.status` established in : a later
+ adds a state without a type-altering migration.
 """
 
 from __future__ import annotations
@@ -32,10 +32,10 @@ class BusinessStream(str, Enum):
 
 
 class RequestStatus(str, Enum):
-    """Step 2 owns exactly these four states.
+    """ owns exactly these four states.
 
     `Matched`, `Validation Pending`, `Approval Pending`, `Committed` and the rest of the
-    lifecycle are introduced from Step 3 onwards and must not be referenced here.
+    lifecycle are introduced from  onwards and must not be referenced here.
     """
 
     RECEIVED = "received"
@@ -47,12 +47,12 @@ class RequestStatus(str, Enum):
 class TransactionStatus(str, Enum):
     """The trade transaction lifecycle.
 
-    The first four mirror the request states Step 2 owns, so a transaction created straight off a
-    confirmed extraction carries the same vocabulary its request does. Step 3 added the three that
-    follow and Step 4 added `APPROVED`, which was where the lifecycle stopped for exactly as long
+    The first four mirror the request states  owns, so a transaction created straight off a
+    confirmed extraction carries the same vocabulary its request does.  added the three that
+    follow and  added `APPROVED`, which was where the lifecycle stopped for exactly as long
     as there was nothing downstream of it.
 
-    Step 7 adds the two states that make an approval mean something outside this platform.
+     adds the two states that make an approval mean something outside this platform.
     `INTEGRATION_PENDING` is set the moment a transaction's three integration jobs are created,
     and `COMMITTED` only once all three are genuinely resolved - by a real automated success or
     by an admin's explicit, reasoned confirmation that they finished the posting by hand.
@@ -143,7 +143,7 @@ class ExceptionCategory(str, Enum):
     All ten are registered from the outset so the queue's structure is complete and needs no
     restructuring later. Three of them were dormant for a while - the container mismatch and the
     stalled shipment until the shipment module arrived, and the integration failure until the
-    integration hub did. From Step 7 onwards every category has producing code behind it.
+    integration hub did. From  onwards every category has producing code behind it.
     """
 
     MISSING_MANDATORY_DOCUMENT = "missing_mandatory_document"
@@ -379,7 +379,7 @@ class IntegrationJobStatus(str, Enum):
 class DocumentPackType(str, Enum):
     """The two compiled packages, named for what a person calls them.
 
-    A pack is a merge of documents that already exist, never a new document. The drafts Step 5
+    A pack is a merge of documents that already exist, never a new document. The drafts 
     generates are inputs to one of these, not a third pack type.
     """
 

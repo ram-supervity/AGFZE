@@ -1,7 +1,7 @@
 /**
  * Mirrors the backend `NotificationType` vocabulary.
  *
- * Three channels deliver from Step 10 and they are independent of one another: in-app always,
+ * Three channels deliver from  and they are independent of one another: in-app always,
  * for everybody; email additionally, by the preference below; push additionally, by a browser
  * subscription that no preference here can grant or revoke.
  */
@@ -56,7 +56,7 @@ export function badgeCount(unread: number): string {
  * somebody can switch off — and push is gated solely on whether this browser holds a
  * subscription, which is a browser permission and not a database value.
  *
- * `push` remains a value the API accepts so that anything stored before Step 10 still validates.
+ * `push` remains a value the API accepts so that anything stored before  still validates.
  * It grants nothing, and the settings page never writes it: enabling push is a browser permission
  * interaction with its own control beside this one.
  */

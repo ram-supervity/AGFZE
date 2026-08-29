@@ -3,7 +3,7 @@
 One entry point, one loop, no knowledge of any individual rule. Given a transaction it assembles
 the context, walks the registry, calls whatever evaluators the transaction's legs make relevant,
 and writes a fresh row for each outcome. Bringing the sales, shipment and FA work into it meant
-registering evaluators and extending one map; the loop below is unchanged since Step 3.
+registering evaluators and extending one map; the loop below is unchanged since .
 """
 
 from __future__ import annotations
@@ -262,7 +262,7 @@ async def run_validation(
     # Every genuine hard failure becomes an owned, ageing exception case, whichever rule produced
     # it. The hook reads the rule-to-category mapping table; it is handed the rows this run wrote
     # and knows nothing about what any of them mean, which is what makes it work unchanged for
-    # the rules Steps 5 and 6 bring with them.
+    # the rules  5 and 6 bring with them.
     await governance_hooks.record_hard_failures(session, transaction, written)
     await session.flush()
     return written

@@ -289,7 +289,7 @@ async def test_the_same_check_beyond_the_ceiling_does_open_a_case(
 async def test_the_queue_carries_all_ten_categories_and_none_is_dormant_any_more(
     client: AsyncClient, db_session: AsyncSession, signed_in
 ) -> None:
-    """The structure was complete from Step 4; the last empty category filled in Step 7.
+    """The structure was complete from ; the last empty category filled in .
 
     The container and shipment categories came to life with the shipment module, and the
     integration failure with the integration hub - so every one of the ten now has code behind it

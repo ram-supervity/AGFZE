@@ -2,7 +2,7 @@
 
 `DocumentTypeSchema` is the only place a document type's field list is allowed to live. No
 service may carry a hardcoded field list: adding a field or a whole document type is a row
-change here, never a code change. Step 9 adds the screen that edits these rows; this step ships
+change here, never a code change.  adds the screen that edits these rows; this  ships
 the table, its defaults, and the selection logic that reads it.
 """
 
@@ -50,7 +50,7 @@ class DocumentTypeSchema(Base):
     territory: Mapped[str | None] = mapped_column(String(16), index=True)
     # {"fields": [{"name", "label", "type", "required", "tolerance", "section", "description"}]}
     field_schema: Mapped[dict[str, Any]] = mapped_column(JSONBType, default=dict)
-    # Completeness checklist for the territory's document pack. Stored now, enforced in Step 3.
+    # Completeness checklist for the territory's document pack. Stored now, enforced in .
     mandatory_documents: Mapped[list[str]] = mapped_column(JSONBType, default=list)
     change_reason: Mapped[str] = mapped_column(Text)
     changed_by_id: Mapped[uuid.UUID | None] = mapped_column(

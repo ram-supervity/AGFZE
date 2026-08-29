@@ -78,7 +78,7 @@ NEW_TRANSACTION_BODY = {
 
 
 async def _clean_transaction(session: AsyncSession, **invoice_overrides):
-    """A transaction whose pack satisfies every rule this step evaluates for real."""
+    """A transaction whose pack satisfies every rule this  evaluates for real."""
     request = await make_request(session)
     transaction = await make_transaction(session, request=request)
     await make_document(
@@ -151,7 +151,7 @@ async def test_the_list_reports_an_honest_empty_shipment_column(
     response = await client.get(BASE, headers=headers)
 
     row = response.json()["data"]["items"][0]
-    # Declared for Step 6 and honestly empty until there is a shipment to report.
+    # Declared for  and honestly empty until there is a shipment to report.
     assert row["shipment_status"] is None
 
 
@@ -610,7 +610,7 @@ async def test_submission_succeeds_once_every_applicable_rule_is_satisfied(
 
     assert response.status_code == 200, response.text
     data = response.json()["data"]
-    # `Approval Pending` is the end of the road in this step. Nothing was posted anywhere.
+    # `Approval Pending` is the end of the road in this . Nothing was posted anywhere.
     assert data["status"] == TransactionStatus.APPROVAL_PENDING.value
     assert data["submitted_at"] is not None
 
@@ -743,7 +743,7 @@ async def test_a_rule_that_cannot_be_configured_is_never_silently_passed(
     """A missing configuration blocks rather than waving the rule through."""
     from app.models.configuration import RuleConfiguration
 
-    # The unscoped row specifically. BR-05 also carries an FA-scoped row from Step 6, and a
+    # The unscoped row specifically. BR-05 also carries an FA-scoped row from , and a
     # transaction on the scrap stream resolves to the unscoped one - so this names it rather than
     # taking whichever of the two the database happens to return first.
     row = await db_session.scalar(

@@ -10,16 +10,16 @@ incidental - `Integration Pending` and `Committed` are new states, and a constra
 before they existed would refuse them - so it is done explicitly here rather than left to a
 model definition that a database migrated months ago has never seen.
 
-`Closed` is added to the constraint too, and this migration is the only place in the entire step
+`Closed` is added to the constraint too, and this migration is the only place in the entire 
 that mentions it. It is declared so the vocabulary is honest that the state exists; no code path
-in this step sets it, because the real closure conditions - payment confirmation, complete
+in this  sets it, because the real closure conditions - payment confirmation, complete
 documentation, shipment completeness - are not specified anywhere in this platform's material.
 A state the schema permits and no code can reach is the correct way to say that.
 
-No previously-deferred foreign key needs upgrading here. Nothing built in Steps 1-6 held a
+No previously-deferred foreign key needs upgrading here. Nothing built in held a
 reference to an integration job or a document pack waiting for a table to exist, and no seed data
 is needed either: the integration-failure exception category has been registered in the catalog
-since Step 4 and routes through the standalone case-creation function rather than through a
+since  and routes through the standalone case-creation function rather than through a
 rule-to-category mapping row, exactly as shipment staleness does.
 """
 

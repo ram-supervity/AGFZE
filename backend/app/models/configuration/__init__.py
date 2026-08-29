@@ -1,8 +1,8 @@
 """Tenant configuration models.
 
-`DocumentTypeSchema` (Step 2) drives extraction and `RuleConfiguration` (Step 3) drives the
+`DocumentTypeSchema` () drives extraction and `RuleConfiguration` () drives the
 business-rule engine. Both are read at call time, so a threshold change is a row change; the
-account and settings models arrive with the administration module in Step 9.
+account and settings models arrive with the administration module in .
 """
 
 from app.models.configuration.document_schema import DocumentTypeSchema

@@ -184,7 +184,7 @@ DISTRIBUTABLE_REPORT_TYPES: tuple[str, ...] = ("daily", "monthly")
 
 # What a rule may ask for, as a ceiling on delivery rather than an instruction to it. `in_app`
 # means the notification row and nothing else; `email` and `both` additionally permit the email
-# attempt the notification service's delivery step already makes. A recipient's own
+# attempt the notification service's delivery  already makes. A recipient's own
 # `User.notification_channel` preference still governs whether that attempt is made - a rule
 # cannot email somebody who did not ask to be emailed, it can only decline to.
 DISTRIBUTION_CHANNELS: tuple[str, ...] = ("in_app", "email", "both")

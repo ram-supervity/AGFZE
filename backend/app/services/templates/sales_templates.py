@@ -7,7 +7,7 @@ file does not name is caught before anything is written - the model cannot inven
 a document, and it cannot delete one the declaration marks as required.
 
 Territory selects field content and the territory-specific reference line, not a separate
-template file. **Stated assumption:** the governing material for this step describes what each
+template file. **Stated assumption:** the governing material for this  describes what each
 territory's paperwork must reference, not four structurally different legal layouts, so building
 four separate documents would be inventing three sets of contract structure nobody specified.
 One template per document type, with territory-driven content inside it, is what the available

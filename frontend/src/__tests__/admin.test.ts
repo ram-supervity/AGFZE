@@ -99,7 +99,7 @@ describe("scopeLabel", () => {
     expect(scopeLabel(unscoped)).toBe("Applies to everything");
   });
 
-  it("renders an FA-stream row seeded in Step 6 the same way as any other", () => {
+  it("renders an FA-stream row seeded in  the same way as any other", () => {
     expect(scopeLabel({ ...unscoped, scope_stream: "fa" })).toBe("fa stream");
   });
 
@@ -136,7 +136,7 @@ describe("labels", () => {
     expect(documentTypeLabel("draft_invoice")).toBe("Draft invoice (generated)");
   });
 
-  it("falls back readably for a document type a later step adds", () => {
+  it("falls back readably for a document type a later  adds", () => {
     expect(documentTypeLabel("customs_declaration")).toBe("customs declaration");
   });
 

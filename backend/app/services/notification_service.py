@@ -12,7 +12,7 @@ Recipients are specified two ways, because the platform genuinely has two shapes
   an owner *role* and no assignee, so an exception notification is a broadcast to every currently
   active holder of that role, which is exactly who could pick it up.
 
-Step 10 gave `notify` two more delivery channels, and gave them to it *inside its own body*. Not
+ gave `notify` two more delivery channels, and gave them to it *inside its own body*. Not
 one of the five trigger points below - nor any of their callers - changed by a line, which is the
 whole reason this function was built as the single seam in the first place: attaching a channel is
 an edit here, not an edit in five places that then have to be kept in agreement for ever.
@@ -145,13 +145,13 @@ async def notify(
         created.append(row)
     if created:
         await session.flush()
-        # Everything above this line is Step 9, unchanged. Everything below it is Step 10, and it
+        # Everything above this line is , unchanged. Everything below it is , and it
         # is here rather than at any call site on purpose.
         await dispatch_deliveries(session, created, allow_email=allow_email)
     return created
 
 
-# --- delivery, added in Step 10 inside this function rather than at any of its callers ----------
+# --- delivery, added in  inside this function rather than at any of its callers ----------
 
 
 async def dispatch_deliveries(
@@ -168,7 +168,7 @@ async def dispatch_deliveries(
     sent.
 
     Nothing raised in here escapes. The outer guard is not belt-and-braces over the inner ones -
-    it is the guarantee this step is built on, and the reason a mail relay refusing a connection
+    it is the guarantee this  is built on, and the reason a mail relay refusing a connection
     cannot reverse an approval.
     """
     if not settings.NOTIFICATION_DELIVERY_ENABLED or not notifications:

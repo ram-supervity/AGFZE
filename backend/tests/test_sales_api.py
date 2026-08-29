@@ -1,7 +1,7 @@
 """The sales endpoints, over HTTP, with the real role gates in front of them.
 
 `POST /transactions/{id}/sales-leg` and `POST /transactions/{id}/generate-draft` are the two this
-step adds. Everything else it touches - the field correction, the submission, the detail read -
+ adds. Everything else it touches - the field correction, the submission, the detail read -
 is an existing endpoint whose behaviour widened without its contract changing, and that is what
 most of these tests are actually about.
 """
@@ -256,7 +256,7 @@ async def test_generating_a_draft_returns_a_job_and_lands_a_document(
     assert response.status_code == 202, response.text
     job_id = response.json()["data"]["job_id"]
 
-    # Polled through the job endpoint Step 2 already established; no second mechanism.
+    # Polled through the job endpoint  already established; no second mechanism.
     status = await client.get(f"/api/v1/jobs/{job_id}/status", headers=headers)
     assert status.status_code == 200
 

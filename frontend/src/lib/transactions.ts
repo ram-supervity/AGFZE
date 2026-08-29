@@ -115,7 +115,7 @@ export const SEVERITY_LABELS: Record<RuleSeverity, string> = {
 
 /**
  * The desks that may create, correct and submit a purchase transaction. The approver signs off
- * from Step 4 onwards rather than preparing, and the auditor observes. This decides only what the
+ * from  onwards rather than preparing, and the auditor observes. This decides only what the
  * UI offers; the API enforces the same list on every call.
  */
 export const PURCHASE_WRITE_ROLES: readonly PlatformRole[] = ["purchase_user", "admin"];

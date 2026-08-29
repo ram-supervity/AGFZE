@@ -1,4 +1,4 @@
-"""Shipment and cargo tracking - the module added in Step 6.
+"""Shipment and cargo tracking - the module added in .
 
 Split three ways on purpose. `adapters` is the seam a carrier integration would plug into and is
 deliberately empty of concrete implementations. `shipment_service` reads and creates. And

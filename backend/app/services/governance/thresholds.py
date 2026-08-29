@@ -158,8 +158,8 @@ SHIPMENT_SEED_CHANGE_REASON = "Platform default shipped with the shipment tracki
 def shipment_governance_configurations() -> list[dict[str, Any]]:
     """The shipment module's own thresholds, in the same table and the same namespace.
 
-    Kept apart from `default_governance_configurations` for the reason every step's seed list is
-    kept apart from the ones before it: that function is what the Step 4 migration writes, and it
+    Kept apart from `default_governance_configurations` for the reason every 's seed list is
+    kept apart from the ones before it: that function is what the  migration writes, and it
     has to keep writing exactly what it wrote.
     """
     return [

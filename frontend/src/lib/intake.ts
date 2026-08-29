@@ -34,7 +34,7 @@ export const STREAM_LABELS: Record<BusinessStream, string> = {
   fa: "Finished aluminium",
 };
 
-/** The four states this step owns. The rest of the lifecycle arrives from Step 3 onwards. */
+/** The four states this  owns. The rest of the lifecycle arrives from  onwards. */
 export const REQUEST_STATUSES = [
   "received",
   "classified",

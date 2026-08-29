@@ -43,7 +43,7 @@ export function drillThroughHref(figure: DrillThrough): string | null {
  *
  * The API counts every status separately, and the table beside the chart shows all of them. The
  * donut groups them because ten ordered segments cannot be told apart by colour at any size - the
- * ordinal ramp behind it only carries five distinguishable steps. Nothing is hidden by the
+ * ordinal ramp behind it only carries five distinguishable . Nothing is hidden by the
  * grouping: each arc names the statuses inside it and drills through to them.
  */
 export const LIFECYCLE_PHASES = [

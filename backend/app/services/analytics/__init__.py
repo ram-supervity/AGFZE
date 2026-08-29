@@ -1,4 +1,4 @@
-"""Aggregates, analytics and report generation - the module added in Step 8.
+"""Aggregates, analytics and report generation - the module added in .
 
 Split five ways, and the split is the argument. `scope` decides what one account's queries may
 count; `kpis` computes every figure, from the governed tables and nothing else; `report_templates`

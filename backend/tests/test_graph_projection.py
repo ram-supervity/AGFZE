@@ -128,7 +128,7 @@ async def test_a_traversal_depth_is_clamped_before_it_reaches_the_driver(
 async def test_there_is_no_general_query_function_on_the_client() -> None:
     """The property that keeps an internal read model from acquiring an ad-hoc query endpoint.
 
-    If a `run`/`query`/`execute` ever becomes public here, the next step is somebody passing it a
+    If a `run`/`query`/`execute` ever becomes public here, the next  is somebody passing it a
     string from a request. Deleting this test is the deliberate act that would have to precede it.
     """
     public = {name for name in dir(Neo4jClient) if not name.startswith("_")}

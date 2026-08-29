@@ -3,7 +3,7 @@
 Five rules could genuinely be judged with the data that existed when this file was written -
 BR-02, BR-04, BR-05, BR-06 and BR-13 - and those five are implemented here for real. The rest
 were registered too, so the registry was complete and the orchestrator's dispatch never had to
-learn about a new rule; each reported itself unevaluated and wrote nothing until the step that
+learn about a new rule; each reported itself unevaluated and wrote nothing until the  that
 brought its data replaced the body.
 
 BR-07 was the first of those to come to life, beside SL-01 in `sales_evaluators`. BR-03 is the
@@ -131,7 +131,7 @@ def _pack_entry_present(entry: str, documents: list[Document]) -> Document | Non
 
 @register(RuleId.BR_04)
 async def evaluate_mandatory_documents(context: RuleContext) -> list[RuleOutcome]:
-    """Read the checklist Step 2 seeded against the territory and check the pack against it."""
+    """Read the checklist  seeded against the territory and check the pack against it."""
     ratio, _ = context.threshold(RuleId.BR_04, CheckKey.DOCUMENT_PACK)
     if ratio is None:
         return [_unconfigured(RuleId.BR_04, CheckKey.DOCUMENT_PACK, "document_pack")]
@@ -502,7 +502,7 @@ async def evaluate_duplicate_handling(context: RuleContext) -> list[RuleOutcome]
 #
 # Each of these is a real entry in the registry with a real evaluator signature. None of them
 # writes a row or shows a user a check, because none of them can be judged with the data that
-# exists yet. The step that brings that data replaces the body and touches nothing else.
+# exists yet. The  that brings that data replaces the body and touches nothing else.
 
 
 @register(RuleId.BR_01, implemented=False)

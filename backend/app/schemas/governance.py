@@ -92,7 +92,7 @@ class ExceptionFieldCorrection(BaseModel):
     """Exactly the shape `PATCH /transactions/{id}/fields` already takes.
 
     Same shape because it is the same path: the resolve endpoint hands this straight to the
-    correction service Step 3 built rather than writing a second way to change a value.
+    correction service  built rather than writing a second way to change a value.
     """
 
     name: str = Field(min_length=1, max_length=128)
@@ -194,7 +194,7 @@ class ApprovalDetail(ApprovalListItem):
 class ApprovalDecisionRequest(BaseModel):
     decision: str
     reason: str | None = Field(default=None, max_length=2000)
-    # The explicit second step for a high-value approval. It is a confirmation of intent, not an
+    # The explicit second  for a high-value approval. It is a confirmation of intent, not an
     # identity claim: who approved is taken from the token regardless of what is sent here.
     confirm_above_threshold: bool = False
 

@@ -77,7 +77,7 @@ async def sales_reader(signed_in):
 async def test_a_confirmed_document_creates_the_containers_it_quotes(
     db_session: AsyncSession,
 ) -> None:
-    """Container capture is a side effect of the link that already happens, not a second step."""
+    """Container capture is a side effect of the link that already happens, not a second ."""
     from app.services import matching_service
 
     request = await make_request(db_session)
@@ -987,7 +987,7 @@ async def test_an_issue_needs_a_real_description(
 async def test_the_transaction_list_shows_the_real_linked_shipment_status(
     client: AsyncClient, db_session: AsyncSession, signed_in
 ) -> None:
-    """The column that has been an honest placeholder since Step 3, populated for real."""
+    """The column that has been an honest placeholder since , populated for real."""
     tracked = await make_transaction(db_session, batch_number="I2626-110")
     await add_shipment(db_session, tracked, status=ShipmentStatus.DELAYED.value)
     untracked = await make_transaction(

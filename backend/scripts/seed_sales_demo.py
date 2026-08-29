@@ -10,7 +10,7 @@ one deliberately last checked three days ago. That second one is what makes the 
 staleness indicator and the exception the sweep opens visible immediately, rather than after
 somebody has waited 48 real hours to see whether either works.
 
-From Step 7 there is also one batch sitting in `Approval Pending` with a real approval task
+From  there is also one batch sitting in `Approval Pending` with a real approval task
 against it, so a local environment can be walked through the whole remaining lifecycle in one
 sitting: approve it in /approvals, watch its three integration jobs appear, and - with nothing
 configured, which is the shipped default - watch all three land honestly in "waiting on a person"
@@ -119,7 +119,7 @@ DEMO_CONTAINERS = ("DEMU7781234", "DEMU7781235")
 RECENT_CHECK_HOURS = 0.5
 STALE_CHECK_HOURS = 72
 
-# --- history for the dashboard and the reports (Step 8) --------------------------------------
+# --- history for the dashboard and the reports () --------------------------------------
 #
 # The four batches above show the lifecycle. They do not, on their own, make a dashboard worth
 # looking at: with nothing behind them the turnaround chart has one point, the automation figure
@@ -564,7 +564,7 @@ async def _history(session: AsyncSession) -> tuple[int, int]:
 
         if had_exception:
             # Opened and resolved. It still counts against the automation percentage, because the
-            # measure is whether a person had to step in - not whether anything is open now.
+            # measure is whether a person had to  in - not whether anything is open now.
             session.add(
                 ExceptionCase(
                     transaction_id=transaction.id,

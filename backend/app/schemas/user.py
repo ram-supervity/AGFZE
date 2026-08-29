@@ -26,14 +26,14 @@ class UserRead(BaseModel):
     last_login_at: datetime | None
 
 
-# Every value the column will accept, with the meaning Step 10 settled on it.
+# Every value the column will accept, with the meaning  settled on it.
 #
 # In-app delivery is created for every notification and every user regardless of what is stored
 # here - it is the platform's durable record, not a channel somebody can be without. So this
 # column answers exactly one question: does this account ALSO get an email? `email` means yes,
 # `in_app` (the default) means no.
 #
-# `push` remains accepted so that a value stored before Step 10 still validates, but it grants
+# `push` remains accepted so that a value stored before  still validates, but it grants
 # nothing: push is gated solely on whether the account has an active `PushSubscription`, which is
 # a browser permission rather than a settings-page flag. Stored here it behaves as `in_app`. The
 # settings page accordingly presents email as a simple toggle and push as its own, quite different
@@ -46,7 +46,7 @@ STREAM_FILTERS: tuple[str, ...] = ("scrap", "fa")
 
 
 class UserPreferencesUpdate(BaseModel):
-    """The endpoint deliberately left unbuilt in Step 1, completed here.
+    """The endpoint deliberately left unbuilt in , completed here.
 
     Both fields are optional and each is applied only when present, so a client sending one never
     silently resets the other. There is no `roles`, no `is_active` and no `email` on this schema:

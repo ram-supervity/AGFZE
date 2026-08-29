@@ -4,8 +4,8 @@ Revision ID: 20250301_000003
 Revises: 20250201_000002
 Create Date: 2025-03-01 00:00:03.000000+00:00
 
-Layered on the Step 1 and Step 2 schemas. Two columns that have carried a transaction identifier
-without a constraint since the steps that introduced them - `background_jobs.transaction_id` and
+Layered on the  and  schemas. Two columns that have carried a transaction identifier
+without a constraint since the s that introduced them - `background_jobs.transaction_id` and
 `documents.transaction_id` - become real foreign keys here, now that there is finally a table for
 them to point at. Both are altered through `batch_alter_table` with an explicit `copy_from`, so
 the SQLite fallback the test suite can run on rebuilds the table from a complete definition
@@ -56,7 +56,7 @@ ADDED_INVOICE_FIELDS = ("supplier_name", "invoice_status")
 
 
 def _documents_table(*, with_transaction_fk: bool = False) -> sa.Table:
-    """`documents` exactly as Step 2 created it, so a batch rebuild loses nothing.
+    """`documents` exactly as  created it, so a batch rebuild loses nothing.
 
     A SQLite batch rebuild works from this definition rather than from reflection, so it has to
     describe the table as it stands at that moment: without the transaction foreign key when the
@@ -150,7 +150,7 @@ def _documents_table(*, with_transaction_fk: bool = False) -> sa.Table:
 
 
 def _background_jobs_table(*, with_transaction_fk: bool = False) -> sa.Table:
-    """`background_jobs` exactly as Step 1 created it, plus the key when there is one to drop."""
+    """`background_jobs` exactly as  created it, plus the key when there is one to drop."""
     metadata = sa.MetaData()
     constraints: list[sa.schema.SchemaItem] = []
     if with_transaction_fk:

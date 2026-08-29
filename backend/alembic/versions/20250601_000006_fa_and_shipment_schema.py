@@ -4,9 +4,9 @@ Revision ID: 20250601_000006
 Revises: 20250501_000005
 Create Date: 2025-06-01 00:00:06.000000+00:00
 
-Layered on the Step 5 schema. Five tables are added and **no existing table is altered at all** -
+Layered on the  schema. Five tables are added and **no existing table is altered at all** -
 not `trade_transactions`, not `documents`, not `rule_configurations`. That is worth stating
-plainly, because it is the claim the last three steps have each been making about the design:
+plainly, because it is the claim the have each been making about the design:
 `fa_legs` attaches through its own one-to-one foreign key exactly as `sales_legs` did, and
 `containers` and `shipments` attach through their own many-to-one keys, so the parent record is
 untouched for the third time running.
@@ -14,12 +14,12 @@ untouched for the third time running.
 No previously-deferred foreign key needs upgrading here either. Nothing built earlier held a
 reference to a container, a shipment or an FA leg waiting for a table to exist.
 
-The seed data is the other half of the step. The `fa_document` schema Step 2 anticipated as a
+The seed data is the other half of the . The `fa_document` schema  anticipated as a
 `document_type` value and never gave a field list finally gets one - seven fields, exactly the
 minimal set AGFZE's material names and nothing beyond it. The FA-scoped rule configurations sit
 beside the unscoped platform defaults rather than replacing them, so FA can be given a figure of
 its own the day the business decides one. And BR-03's threshold and mapping row make a rule that
-has been registered-but-dormant since Step 3 real.
+has been registered-but-dormant since  real.
 """
 
 from __future__ import annotations
@@ -300,7 +300,7 @@ def upgrade() -> None:
 
     now = datetime.now(timezone.utc)
 
-    # The `fa_document` extraction schema. Step 2 declared the document type and deliberately
+    # The `fa_document` extraction schema.  declared the document type and deliberately
     # never gave it a field list; this is that field list, and it is exactly the minimal set
     # AGFZE's material names. Nothing has been added to round it out.
     op.bulk_insert(

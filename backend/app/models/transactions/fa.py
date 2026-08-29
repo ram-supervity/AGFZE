@@ -57,7 +57,7 @@ class FaLeg(Base):
     fa_contract_reference: Mapped[str | None] = mapped_column(String(64), index=True)
     # The FA document type this leg was raised off, as the business names it. Free text on
     # purpose: no FA document-type vocabulary exists to constrain it against, and inventing one
-    # is exactly what this step is told not to do.
+    # is exactly what this  is told not to do.
     document_type: Mapped[str | None] = mapped_column(String(64), index=True)
     # Every confirmed field the configured schema carries that has no named column here, keyed by
     # field name. Written only through the validated correction path, never as arbitrary JSON.

@@ -52,7 +52,7 @@ class LocalFileSystemStorage(StorageService):
         return f"{self._base_url}/{quote(key)}?expires={expires}&signature={signature}"
 
     async def resolve_signed_request(self, key: str, expires: int, signature: str) -> bytes:
-        """Verification behind the authenticated file route added in Step 2.
+        """Verification behind the authenticated file route added in .
 
         Constant-time signature comparison first, then expiry, then the read. A key that was
         never signed for cannot be reached by guessing the path.

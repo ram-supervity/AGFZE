@@ -1,7 +1,7 @@
 """When the daily and monthly reports are due, and producing them when they are.
 
 This module holds the *tasks*, not a scheduler. There is exactly one periodic loop in this
-application - the sweep Step 7 introduced for integration retries - and it is already awake every
+application - the sweep  introduced for integration retries - and it is already awake every
 sixty seconds. All this needs from it is to be asked, on the way past, whether anything is due;
 that is what :func:`run_due` answers. Adding a cron daemon, a second worker loop or a scheduling
 library here would be a third mechanism for a job that needs none of them.
@@ -13,7 +13,7 @@ restarting mid-tick, produce one report rather than two, and a deployment that w
 over the weekend produces the reports it missed on the way back up rather than losing them
 silently.
 
-Every scheduled report is a real generation with a real file behind it. Since Step 12 a scheduled
+Every scheduled report is a real generation with a real file behind it. Since 2 a scheduled
 report is also *distributed*, to whichever recipients an administrator has configured for its type
 and on whichever channel they configured - and to nobody at all where no rule has been configured,
 which is the shipped state. What is distributed is a notification carrying a link to the report's
@@ -92,7 +92,7 @@ def monthly_due(now: datetime) -> DueReport:
         microsecond=0,
     )
     if scheduled > moment:
-        # Step back into the previous month and land on the configured day of it.
+        #  back into the previous month and land on the configured day of it.
         previous = scheduled.replace(day=1) - timedelta(days=1)
         scheduled = scheduled.replace(year=previous.year, month=previous.month)
     return DueReport(
@@ -162,7 +162,7 @@ async def run_due(session: AsyncSession, *, now: datetime | None = None) -> Sche
             #
             # Two separate acts, in this order and deliberately not merged. The first is the
             # standing notice to Admin and the approving desk that a scheduled report exists,
-            # which is a property of the platform and has been here since Step 8. The second is
+            # which is a property of the platform and has been here since . The second is
             # configured distribution, which is a property of what an administrator asked for and
             # reaches nobody until somebody configures it. Collapsing them would make turning
             # distribution on silently change who is told a report exists at all.

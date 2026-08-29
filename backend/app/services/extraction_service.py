@@ -133,7 +133,7 @@ async def select_schema(
 async def mandatory_documents_for(
     session: AsyncSession, *, document_type: str, territory: str | None
 ) -> tuple[str, ...]:
-    """Read the stored completeness checklist. Step 3 is what enforces it."""
+    """Read the stored completeness checklist.  is what enforces it."""
     try:
         schema = await select_schema(session, document_type=document_type, territory=territory)
     except SchemaNotConfiguredError:

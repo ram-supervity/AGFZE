@@ -8,7 +8,7 @@ import { useCallback, useRef, type KeyboardEvent } from "react";
  * Two things make a set of buttons a tablist rather than a row of buttons, and only one of them is
  * markup. The ARIA roles say what it is; this says how it behaves. Without it a tab strip puts
  * every tab in the page's tab order, so somebody reaching the exception queue by keyboard has to
- * step through ten tabs to get past them, and the arrow keys - which is what a screen-reader user
+ *  through ten tabs to get past them, and the arrow keys - which is what a screen-reader user
  * expects to work here - do nothing at all.
  *
  * Roving tabindex: exactly one tab is focusable at a time, so Tab enters and leaves the strip in

@@ -14,7 +14,7 @@ export interface SignOutFlowProps {
 }
 
 /**
- * Sign-out, extended in Step 10 to leave nothing about this account on the device.
+ * Sign-out, extended in  to leave nothing about this account on the device.
  *
  * Before the session is closed, three things happen, in this order and for this reason:
  *

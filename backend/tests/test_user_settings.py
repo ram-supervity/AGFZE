@@ -1,4 +1,4 @@
-"""`PATCH /users/me/preferences` - the endpoint declared in Step 1 and left unbuilt until now.
+"""`PATCH /users/me/preferences` - the endpoint declared in  and left unbuilt until now.
 
 Self-only, structurally: the row written is the one the dependency resolved from the verified
 token, and the schema has no field for an account identifier, a role, an email or an active flag.
@@ -65,14 +65,14 @@ async def test_a_preference_change_is_audited_and_says_what_the_column_governs(
     assert event.actor_id == user_id
     assert event.event_metadata["notification_channel"] == "email"
     # The column's name is broader than its meaning, so the trail spells the meaning out: all
-    # three channels deliver from Step 10, but this write governs email only - in-app happens for
+    # three channels deliver from , but this write governs email only - in-app happens for
     # everybody regardless, and push is governed by the browser subscription.
     assert event.event_metadata["delivery_channels_available"] == ["in_app", "email", "push"]
     assert event.event_metadata["push_governed_by"] == "push_subscription"
 
 
 async def test_every_recognised_channel_value_is_still_accepted(client: AsyncClient, signed_in):
-    """`push` is accepted so a value stored before Step 10 still validates.
+    """`push` is accepted so a value stored before  still validates.
 
     It grants nothing on its own: push delivery is gated solely on an active `PushSubscription`,
     which only the browser's own permission prompt can create. Stored here it behaves as `in_app`.

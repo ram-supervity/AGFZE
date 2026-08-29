@@ -1,7 +1,7 @@
 """The reference data and default rule configuration shipped with the platform.
 
 Both lists are data, not behaviour. The migration writes them; the engine reads whatever the
-tables hold at call time. Changing a threshold once Step 9 has an editing screen is a row change
+tables hold at call time. Changing a threshold once  has an editing screen is a row change
 with a mandatory reason attached, and needs no release.
 """
 
@@ -62,7 +62,7 @@ def _row(
 
 
 def default_rule_configurations() -> list[dict[str, Any]]:
-    """The unscoped defaults for every rule this step evaluates for real.
+    """The unscoped defaults for every rule this  evaluates for real.
 
     Every row is scoped to nothing, which makes it the fall-back the resolver lands on when no
     narrower row exists. A commodity-specific override is added as a second row beside its
@@ -172,8 +172,8 @@ def default_rule_configurations() -> list[dict[str, Any]]:
 def sales_rule_configurations() -> list[dict[str, Any]]:
     """The defaults the sales module brings with it. A separate list, deliberately.
 
-    `default_rule_configurations` is what the Step 3 migration wrote and must keep writing
-    unchanged; appending to it would make that migration insert rows the Step 5 migration then
+    `default_rule_configurations` is what the  migration wrote and must keep writing
+    unchanged; appending to it would make that migration insert rows the  migration then
     inserts again, against a unique constraint. New rules ship their own list.
     """
     return [
@@ -201,7 +201,7 @@ INVOICE_DATE_SEED_CHANGE_REASON = (
 def invoice_date_rule_configurations() -> list[dict[str, Any]]:
     """IV-01's one threshold, in the same table every other threshold already lives in.
 
-    A separate list for the same reason every previous step's is separate: each migration has to
+    A separate list for the same reason every previous 's is separate: each migration has to
     keep writing exactly what it wrote, and the unique constraint on (rule, check, scope) would
     reject a second insert of the same row.
 
@@ -258,7 +258,7 @@ def fa_rule_configurations() -> list[dict[str, Any]]:
     checks the first one is, through rows rather than code.
 
     Every value is copied from the platform default rather than chosen, because AGFZE's material
-    gives no FA figure and this step is instructed not to invent one. Copying it is not a no-op:
+    gives no FA figure and this  is instructed not to invent one. Copying it is not a no-op:
     it gives FA a row of its own to change later, which an unscoped default shared with the scrap
     stream could never be.
     """

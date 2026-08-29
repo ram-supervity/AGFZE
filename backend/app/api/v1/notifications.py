@@ -6,7 +6,7 @@ path parameter naming a user, no query parameter that could widen the scope, and
 reads or writes another account's rows - so there is nothing here for a crafted request to reach
 even if a screen were to ask for it.
 
-Step 10 adds the push-subscription endpoints, under exactly the same rule. `user_id` is taken
+ adds the push-subscription endpoints, under exactly the same rule. `user_id` is taken
 from the verified token on every one of them, the body never carries an account identifier, and
 the DELETE's ownership predicate is part of the statement rather than a check performed before
 it - so quoting somebody else's endpoint deletes nothing.
@@ -102,7 +102,7 @@ async def mark_all_read(
     )
 
 
-# --- push subscriptions (Step 10), self-only in exactly the same way -----------------------------
+# --- push subscriptions (), self-only in exactly the same way -----------------------------
 
 
 @router.get(

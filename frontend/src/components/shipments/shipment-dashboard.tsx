@@ -89,7 +89,7 @@ export function ShipmentDashboard({ list, filters }: ShipmentDashboardProps) {
         toast.success(result.message);
       } else {
         // Not an error. No adapter handles this shipment, which is the ordinary case, and the
-        // right next step is to open it and type in what the carrier said.
+        // right next  is to open it and type in what the carrier said.
         toast(result.message, { icon: "✎" });
       }
       router.refresh();

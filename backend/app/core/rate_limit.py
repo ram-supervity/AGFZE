@@ -1,8 +1,8 @@
 """Rate limiting: a default ceiling for everything, and real per-category limits on top of it.
 
-`slowapi` has been installed since Step 1 as a switch with a single default limit behind it, and
+`slowapi` has been installed since  as a switch with a single default limit behind it, and
 that was honest for a foundation - there was nothing worth protecting individually yet. There is
-now, and this step names the four categories this platform's specification identifies as the ones
+now, and this  names the four categories this platform's specification identifies as the ones
 most exposed to abuse or accidental overload, gives each a specific value, and enforces them in
 running code rather than describing them in a document.
 

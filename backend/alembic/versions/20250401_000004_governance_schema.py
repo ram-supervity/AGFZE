@@ -4,14 +4,14 @@ Revision ID: 20250401_000004
 Revises: 20250301_000003
 Create Date: 2025-04-01 00:00:04.000000+00:00
 
-Layered on the Step 3 schema. No previously-deferred foreign key needs upgrading here: nothing
+Layered on the  schema. No previously-deferred foreign key needs upgrading here: nothing
 built earlier held a reference to an approval or an exception waiting for a table to exist.
 
 One existing table is altered, and only in one way: `trade_transactions.status` gains `approved`
 as a permitted value. The check constraint is rebuilt through `batch_alter_table` with an
 explicit `copy_from`, so the SQLite fallback the test suite can run on rebuilds the table from a
 complete definition rather than from partial reflection, and PostgreSQL takes the plain ALTER
-path - exactly as the Step 3 migration handled its own constrained columns.
+path - exactly as the  migration handled its own constrained columns.
 """
 
 from __future__ import annotations

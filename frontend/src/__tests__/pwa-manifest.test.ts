@@ -59,7 +59,7 @@ describe("the web app manifest", () => {
     expect(manifest.scope).toBe("/");
   });
 
-  it("carries the ink-navy the design system has used since Step 1", () => {
+  it("carries the ink-navy the design system has used since ", () => {
     expect(manifest.theme_color).toBe("#182338");
     expect(manifest.background_color).toBe("#182338");
   });

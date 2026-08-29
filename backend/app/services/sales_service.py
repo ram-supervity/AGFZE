@@ -4,7 +4,7 @@ Three concerns live here, and one deliberate absence.
 
 **Attachment.** A sales-triggering document - an original bill of lading, a shipping
 confirmation, or an approved draft B/L - is matched to the transaction the purchase side already
-opened, using the very same scoring Step 3 built. Nothing here re-implements matching: it reads
+opened, using the very same scoring  built. Nothing here re-implements matching: it reads
 `matching_service`'s thresholds, its candidate scorer and its bands, and differs from the
 purchase path in exactly one respect, described below.
 
@@ -166,7 +166,7 @@ def classify_sales_candidate(score: float, thresholds: dict[str, Decimal]) -> st
 
 
 class Outcome(matching_service.Outcome):
-    """Step 3's bands, plus the one the sales side needs and the purchase side does not.
+    """'s bands, plus the one the sales side needs and the purchase side does not.
 
     On the purchase path, nothing matching means a new batch is opened, and that is correct: a
     purchase is where a batch begins. On the sales path it is not. A sale is almost always of
@@ -182,7 +182,7 @@ class Outcome(matching_service.Outcome):
 async def evaluate_attachment(session: AsyncSession, document: Document) -> SalesMatch:
     """Work out which transaction this sales document belongs to. Changes nothing.
 
-    The batch number first, then Step 3's contract / counterparty / commodity scoring, against
+    The batch number first, then 's contract / counterparty / commodity scoring, against
     the same configured thresholds. Only the bottom band differs.
     """
     if not is_sales_document(document):
@@ -579,7 +579,7 @@ async def record_fixation_audit(
 ) -> None:
     """The audit entry behind a fixation.
 
-    The fixation itself is written through `PATCH /transactions/{id}/fields`, which is Step 3's
+    The fixation itself is written through `PATCH /transactions/{id}/fields`, which is 's
     correction-and-revalidation path - the same reason gate, the same provenance record, the same
     synchronous re-run. This adds the governance event that names the act for what it is, because
     "customer fixed the price" is not the same fact as "three fields changed".

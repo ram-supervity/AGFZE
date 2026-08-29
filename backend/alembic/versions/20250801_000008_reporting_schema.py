@@ -4,15 +4,15 @@ Revision ID: 20250801_000008
 Revises: 20250701_000007
 Create Date: 2025-08-01 00:00:08.000000+00:00
 
-Additive only, and genuinely so: one new table and not one alteration to anything built in Steps
+Additive only, and genuinely so: one new table and not one alteration to anything built in 
 1-7. No previously-deferred foreign key needs upgrading here either - nothing built earlier held
 a reference to a report waiting for a table to exist - and no seed data is needed, because the
 report templates are shipped in code as a configuration structure rather than as rows, exactly as
 the sales document templates already are.
 
-That is the whole shape of this step at the database layer, and it is the point: the dashboard,
+That is the whole shape of this  at the database layer, and it is the point: the dashboard,
 the analytics page and every figure in a generated report are computed from the tables the
-previous seven steps already write. Nothing here stores a metric, a rollup, a daily total or any
+previous already write. Nothing here stores a metric, a rollup, a daily total or any
 other copy of a figure that lives somewhere else, because a stored aggregate is a figure that can
 disagree with the transaction of record.
 """

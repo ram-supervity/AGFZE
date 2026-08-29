@@ -2,7 +2,7 @@
 
 Not one tolerance, threshold or limit is written in application code. Every evaluator asks this
 table for the value it compares against, resolved for the transaction in front of it, so the
-business can change a limit through the Step 9 admin screen without a redeploy - and so the value
+business can change a limit through the  admin screen without a redeploy - and so the value
 that was applied to a past decision is recoverable from the row that was live at the time.
 """
 
@@ -58,7 +58,7 @@ class RuleConfiguration(Base):
     check_key: Mapped[str] = mapped_column(String(48), index=True)
     # The scope, as typed columns rather than opaque JSON so it can be indexed and so a
     # half-spelled scope cannot be stored. NULL on a column means "applies to anything".
-    # `scope_stream` is what Step 6 leans on: the FA stream's own defaults are rows scoped to it,
+    # `scope_stream` is what  leans on: the FA stream's own defaults are rows scoped to it,
     # sitting beside the unscoped rows the scrap stream still resolves to, so the two are
     # distinguishable without either one being edited out from under the other.
     scope_commodity_code: Mapped[str | None] = mapped_column(

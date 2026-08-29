@@ -2,7 +2,7 @@
 
 `RuleExceptionMapping` is the piece that keeps this module reusable. Nothing in the orchestration
 knows that BR-04 means a missing document or that BR-05 means a quantity breach; it looks the
-rule up in this table and uses whatever it finds. Steps 5 and 6 bring their own rules to life by
+rule up in this table and uses whatever it finds.  5 and 6 bring their own rules to life by
 inserting rows here, not by adding a branch anywhere.
 """
 

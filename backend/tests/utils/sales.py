@@ -1,4 +1,4 @@
-"""Builders for the sales fixtures the Step 5 suite works against.
+"""Builders for the sales fixtures the  suite works against.
 
 Everything goes in through the real services or straight into the database exactly as they would
 leave it, so the tests exercise the actual attachment, the actual evaluators and the actual
@@ -35,7 +35,7 @@ from tests.utils.transactions import (
 # The rate every fixture prices at, so the invoice's amount, the transaction's quantity and the
 # contract's terms agree exactly and BR-05 and BR-06 pass on their own merits. A fixture whose
 # purchase side is failing would hide SL-01's own case behind it, because two rules that map to
-# the same exception category share one case per transaction by Step 4's design.
+# the same exception category share one case per transaction by 's design.
 FIXTURE_RATE = Decimal("8125.00")
 
 CUSTOMER = "Hindalco Industries Limited"
@@ -151,7 +151,7 @@ async def sales_transaction(
     """A transaction carrying both legs, with a purchase pack that satisfies every purchase rule.
 
     The buy side is made clean on purpose. Two rules that route to the same exception category
-    share one case per transaction - Step 4's idempotency, and correct - so a fixture whose BR-05
+    share one case per transaction - 's idempotency, and correct - so a fixture whose BR-05
     was failing would hide SL-01's own case behind it and prove nothing.
     """
     request = await make_request(session)

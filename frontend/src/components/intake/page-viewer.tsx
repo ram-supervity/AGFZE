@@ -19,7 +19,7 @@ export interface PageViewerProps {
   contentType: string;
 }
 
-const ZOOM_STEPS = [0.75, 1, 1.25, 1.5, 2] as const;
+const ZOOM_ = [0.75, 1, 1.25, 1.5, 2] as const;
 
 /**
  * Shows the page images the extraction pass already produced. Nothing is rendered from the
@@ -28,7 +28,7 @@ const ZOOM_STEPS = [0.75, 1, 1.25, 1.5, 2] as const;
  */
 export function PageViewer({ filename, pageUrls, sourceUrl, contentType }: PageViewerProps) {
   const [zoomIndex, setZoomIndex] = useState(1);
-  const zoom = ZOOM_STEPS[zoomIndex];
+  const zoom = ZOOM_[zoomIndex];
 
   if (pageUrls.length === 0) {
     return (
@@ -76,8 +76,8 @@ export function PageViewer({ filename, pageUrls, sourceUrl, contentType }: PageV
             variant="ghost"
             size="icon"
             aria-label="Zoom in"
-            disabled={zoomIndex === ZOOM_STEPS.length - 1}
-            onClick={() => setZoomIndex((index) => Math.min(ZOOM_STEPS.length - 1, index + 1))}
+            disabled={zoomIndex === ZOOM_.length - 1}
+            onClick={() => setZoomIndex((index) => Math.min(ZOOM_.length - 1, index + 1))}
           >
             <ZoomIn aria-hidden="true" />
           </Button>

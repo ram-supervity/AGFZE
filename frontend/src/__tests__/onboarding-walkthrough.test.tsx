@@ -29,7 +29,7 @@ describe("the first-login walkthrough", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
-  it("skips the approval step for somebody with no approval rights", async () => {
+  it("skips the approval  for somebody with no approval rights", async () => {
     // A walkthrough that describes a screen the reader cannot open teaches them that this
     // platform's guidance is approximate.
     const user = userEvent.setup();
@@ -41,32 +41,32 @@ describe("the first-login walkthrough", () => {
     expect(screen.queryByText(/Nothing is committed without a decision/)).toBeNull();
   });
 
-  it("shows the approval step to an approver", async () => {
+  it("shows the approval  to an approver", async () => {
     const user = userEvent.setup();
     render(<OnboardingWalkthrough roles={["approver_hod"]} completed={false} />);
 
     expect(screen.getByText(/1 of 3/)).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Next" }));
     await user.click(screen.getByRole("button", { name: "Next" }));
-    // Awaited: the step text cross-fades, so the incoming copy mounts after the outgoing one
+    // Awaited: the  text cross-fades, so the incoming copy mounts after the outgoing one
     // has finished leaving.
     expect(
       await screen.findByText("Nothing is committed without a decision"),
     ).toBeInTheDocument();
   });
 
-  it("steps backwards as well as forwards", async () => {
+  it(" backwards as well as forwards", async () => {
     const user = userEvent.setup();
     render(<OnboardingWalkthrough roles={["approver_hod"]} completed={false} />);
 
-    // No Back on the first step - there is nowhere to go.
+    // No Back on the first  - there is nowhere to go.
     expect(screen.queryByRole("button", { name: "Back" })).toBeNull();
     await user.click(screen.getByRole("button", { name: "Next" }));
     await user.click(screen.getByRole("button", { name: "Back" }));
     expect(screen.getByText(/1 of 3/)).toBeInTheDocument();
   });
 
-  it("records completion once the last step is acknowledged", async () => {
+  it("records completion once the last  is acknowledged", async () => {
     const user = userEvent.setup();
     render(<OnboardingWalkthrough roles={["purchase_user"]} completed={false} />);
 

@@ -4,14 +4,14 @@ Two separate things live here, and the difference matters.
 
 The catalog is a description: ten categories, who owns each, and - stated honestly - whether the
 platform can produce one yet. It is what the queue renders its ten tabs from, so the structure was
-complete from the start and needed no restructuring when Step 6 gave two of the dormant three
-their producing code, and the integration hub in Step 7 gave the last one - the integration
+complete from the start and needed no restructuring when  gave two of the dormant three
+their producing code, and the integration hub in  gave the last one - the integration
 failure - its own. Every category the queue renders now has code behind it that can genuinely
 raise it.
 
 The mapping is behaviour, expressed as rows. It is what actually decides which category a failing
 rule opens. The engine never asks "is this BR-04?"; it asks the table what this rule means. A
-later step brings its own rules to life by inserting rows, and touches no orchestration code.
+later  brings its own rules to life by inserting rows, and touches no orchestration code.
 """
 
 from __future__ import annotations
@@ -43,9 +43,9 @@ CATEGORY_CATALOG: tuple[CategoryDefinition, ...] = (
         ExceptionCategory.MISSING_MANDATORY_DOCUMENT.value,
         "Missing mandatory document",
         PlatformRole.PURCHASE_USER.value,
-        # The selling desk joins from Step 5: BR-07's missing final bill of lading is a missing
+        # The selling desk joins from : BR-07's missing final bill of lading is a missing
         # mandatory document, and it is Sales who chases the carrier for it. The FA desk joins
-        # from Step 6 for the plainest reason: an FA transaction can fail BR-04 too, and a case
+        # from  for the plainest reason: an FA transaction can fail BR-04 too, and a case
         # owned by a desk that cannot open it is a case nobody works.
         (
             PlatformRole.FINANCE_USER.value,
@@ -86,7 +86,7 @@ CATEGORY_CATALOG: tuple[CategoryDefinition, ...] = (
         ExceptionCategory.QUANTITY_VARIATION_OUTSIDE_TOLERANCE.value,
         "Quantity variation outside tolerance",
         PlatformRole.PURCHASE_USER.value,
-        # Shared with the selling desk and the approver from Step 5: SL-01 can put a
+        # Shared with the selling desk and the approver from : SL-01 can put a
         # quantity breach in here that the buying desk cannot settle on its own, because it is
         # the customer's contract that has been over-invoiced.
         (
@@ -194,7 +194,7 @@ def _mapping(
 
 
 def default_rule_exception_mappings() -> list[dict[str, Any]]:
-    """One row per check this step's engine can genuinely hard-fail on.
+    """One row per check this 's engine can genuinely hard-fail on.
 
     BR-06 carries three rows because it carries three genuinely different checks: an amount
     problem is Finance's, a quantity problem is the buying desk's, and the two must not land in
@@ -270,11 +270,11 @@ def sales_rule_exception_mappings() -> list[dict[str, Any]]:
     """The rows the sales module adds, and the whole of what it had to do to route its failures.
 
     Two rows. No branch, no list of rule identifiers, no change to the hook that reads this table
-    and no change to the orchestrator that calls it. That is what Step 4's mapping table was
+    and no change to the orchestrator that calls it. That is what 's mapping table was
     built for, and adding these two is the proof it works.
 
     Kept apart from `default_rule_exception_mappings` for the same reason the sales rule
-    configurations are: that function is what the Step 4 migration writes, and it has to keep
+    configurations are: that function is what the  migration writes, and it has to keep
     writing exactly what it wrote.
     """
     return [
@@ -330,7 +330,7 @@ def obl_weight_rule_exception_mappings() -> list[dict[str, Any]]:
     """LG-01's single routing row, and the whole of what routing its failures required.
 
     One row. No branch in the hook that reads this table, and none in the orchestrator that calls
-    it - the third rule added since Step 4 to need nothing but a row here.
+    it - the third rule added since  to need nothing but a row here.
 
     The logistics desk owns it rather than the buying desk, because resolving a weight difference
     starts with the shipping documents and the carrier, not with the supplier's invoice.

@@ -57,7 +57,7 @@ class TrackingResult:
     # fixed milestone vocabulary is the orchestrator's job, not the adapter's.
     milestone_description: str | None = None
     # A milestone the adapter is confident enough to state directly, where it has a structured
-    # feed rather than prose. Skips the parsing step entirely when present.
+    # feed rather than prose. Skips the parsing  entirely when present.
     milestone: str | None = None
     status: str | None = None
     eta: date | None = None
@@ -95,7 +95,7 @@ _ADAPTERS: dict[str, CarrierAdapter] = {}
 
 
 def register_adapter(adapter: CarrierAdapter) -> None:
-    """Make one carrier's adapter live. The only integration step there is."""
+    """Make one carrier's adapter live. The only integration  there is."""
     _ADAPTERS[adapter.name] = adapter
     logger.info("carrier_adapter_registered", extra={"adapter": adapter.name})
 

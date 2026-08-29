@@ -6,7 +6,7 @@ import { hasAnyRole } from "@/lib/roles";
  *
  * All ten are listed, including the three nothing can raise yet. The server is what decides
  * whether a category is live - it sends `triggerable` and, where it is false, the reason - so
- * this list never has to be edited when a later step brings one of them to life.
+ * this list never has to be edited when a later  brings one of them to life.
  */
 export const EXCEPTION_CATEGORIES = [
   "missing_mandatory_document",

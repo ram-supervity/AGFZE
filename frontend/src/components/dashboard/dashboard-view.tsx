@@ -29,7 +29,7 @@ export interface DashboardViewProps {
 }
 
 /**
- * The dashboard's real content, built for the first time in Step 8.
+ * The dashboard's real content, built for the first time in .
  *
  * Every tile, every arc and every bar is a link into the queue it counts. Nothing on this screen
  * is a number with no way through to its rows, and nothing is computed here: the browser receives

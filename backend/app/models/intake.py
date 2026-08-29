@@ -1,4 +1,4 @@
-"""Email and document intake tables introduced in Step 2."""
+"""Email and document intake tables introduced in ."""
 
 from __future__ import annotations
 
@@ -154,7 +154,7 @@ class Document(Base):
     )
 
     id: Mapped[uuid.UUID] = mapped_column(GUID, primary_key=True, default=uuid.uuid4)
-    # Nullable from Step 5 onwards. A generated draft is the first document in the platform that
+    # Nullable from  onwards. A generated draft is the first document in the platform that
     # originates from no intake event at all: nothing received it, so there is no request to
     # point at, and inventing a synthetic one would put a fiction in the intake queue.
     request_id: Mapped[uuid.UUID | None] = mapped_column(
@@ -165,7 +165,7 @@ class Document(Base):
     source: Mapped[str] = mapped_column(
         String(16), index=True, default=DocumentSource.RECEIVED.value
     )
-    # Constrained from Step 3 onwards. Set by the matching service once the document has been
+    # Constrained from  onwards. Set by the matching service once the document has been
     # tied to a batch; a document survives the deletion of the transaction it was linked to.
     transaction_id: Mapped[uuid.UUID | None] = mapped_column(
         GUID, ForeignKey("trade_transactions.id", ondelete="SET NULL"), index=True

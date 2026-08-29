@@ -1,7 +1,7 @@
 /**
  * The Content-Security-Policy this application serves, built in one pure function.
  *
- * No prior step shipped a CSP at all, so this is the whole of it and it is deliberately narrow.
+ * No prior  shipped a CSP at all, so this is the whole of it and it is deliberately narrow.
  * The rule it follows is that a source only appears here if the browser genuinely has to reach it:
  *
  * - **this origin**, for the application's own pages, chunks, styles and icons;

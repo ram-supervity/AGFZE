@@ -2,7 +2,7 @@
 
 Every test here works against the real services and the real rule engine. Nothing about matching,
 validation or exception routing is mocked, because what these tests are for is proving that the
-sales module rides on the machinery Steps 3 and 4 built rather than on a copy of it.
+sales module rides on the machinery  3 and 4 built rather than on a copy of it.
 """
 
 from __future__ import annotations
@@ -55,7 +55,7 @@ def _result(evaluations: list[RuleEvaluation], rule_id: str, check_key: str) -> 
 async def test_a_bill_of_lading_quoting_the_batch_matches_the_purchase_transaction(
     db_session: AsyncSession,
 ) -> None:
-    """The batch-number-first branch Step 3 established, reused unchanged on the sales side."""
+    """The batch-number-first branch  established, reused unchanged on the sales side."""
     transaction = await make_transaction(db_session, batch_number="I2626-1")
     document = await make_bl_document(db_session, values=bl_values(batch_number="I2626-1"))
     await db_session.commit()
@@ -198,7 +198,7 @@ async def test_a_genuine_commodity_code_disagreement_is_flagged(
 async def test_a_differing_description_for_the_same_code_is_never_flagged(
     db_session: AsyncSession, sales_side_wording: str
 ) -> None:
-    """The single most important behaviour in this step, verified precisely.
+    """The single most important behaviour in this , verified precisely.
 
     A China-bound shipment legitimately needs different customs wording for the same underlying
     commodity code than the purchase-side description used. Comparing the free-text descriptions
@@ -292,7 +292,7 @@ async def test_invoicing_past_the_contracted_total_is_a_hard_failure_with_a_real
         select(ExceptionCase).where(ExceptionCase.rule_id == RuleId.SL_01)
     )
     assert case is not None
-    # Routed through Step 4's existing generic hook, into the existing quantity category, owned
+    # Routed through 's existing generic hook, into the existing quantity category, owned
     # by the selling desk.
     assert case.exception_type == ExceptionCategory.QUANTITY_VARIATION_OUTSIDE_TOLERANCE.value
     assert case.owner_role == "sales_user"
@@ -510,7 +510,7 @@ async def test_br_07_is_not_evaluated_on_a_purchase_only_transaction(
 async def test_the_new_rule_reached_the_registry_without_a_new_registry(
     db_session: AsyncSession,
 ) -> None:
-    """SL-01 is in Step 3's registry, registered by the same decorator as every other rule."""
+    """SL-01 is in 's registry, registered by the same decorator as every other rule."""
     registry = registered_rules()
 
     assert RuleId.SL_01 in registry
@@ -520,7 +520,7 @@ async def test_the_new_rule_reached_the_registry_without_a_new_registry(
     assert registry[RuleId.BR_07].implemented is True
 
 
-async def test_the_new_rule_reached_step_fours_mapping_as_a_row(
+async def test_the_new_rule_reached__fours_mapping_as_a_row(
     db_session: AsyncSession,
 ) -> None:
     """Routing SL-01's failures was two rows in a table, not a branch in the hook."""
@@ -536,12 +536,12 @@ async def test_the_new_rule_reached_step_fours_mapping_as_a_row(
 
 
 def test_neither_engine_grew_a_branch_for_the_sales_or_shipment_rules() -> None:
-    """Read the two files and check that neither names a rule a later step introduced.
+    """Read the two files and check that neither names a rule a later  introduced.
 
-    A blunt test, and the right one: the whole architectural claim of Steps 3 and 4 is that the
+    A blunt test, and the right one: the whole architectural claim of  3 and 4 is that the
     orchestrator and the exception hook never learn about an individual rule. If either of them
     had to be taught about SL-01, BR-07 or BR-03, that claim was false, and this is what would
-    say so. The token list grows with every step that adds a rule, and this one adds three.
+    say so. The token list grows with every  that adds a rule, and this one adds three.
     """
     from pathlib import Path
 
@@ -568,7 +568,7 @@ def test_neither_engine_grew_a_branch_for_the_sales_or_shipment_rules() -> None:
 async def test_the_sales_leg_attached_with_no_change_to_the_parent_table(
     db_session: AsyncSession,
 ) -> None:
-    """Step 3's design, checked directly: the attachment is the child's own foreign key."""
+    """'s design, checked directly: the attachment is the child's own foreign key."""
     from app.models.transactions import TradeTransaction
 
     transaction = await sales_transaction(db_session, batch_number="I2626-80")

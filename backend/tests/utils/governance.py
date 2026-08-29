@@ -1,4 +1,4 @@
-"""Builders for the exception and approval fixtures the Step 4 suite works against.
+"""Builders for the exception and approval fixtures the  suite works against.
 
 Everything is written through the real services - the rule engine opens the cases, the submit
 endpoint raises the approval tasks - so the tests exercise the actual hooks rather than a
@@ -75,7 +75,7 @@ async def add_mapping(
     owner_role: str,
     priority: str = "medium",
 ) -> RuleExceptionMapping:
-    """Register a category for a rule the way a later step would: by adding a row."""
+    """Register a category for a rule the way a later  would: by adding a row."""
     row = RuleExceptionMapping(
         id=uuid.uuid4(),
         rule_id=rule_id,
@@ -102,7 +102,7 @@ async def synthetic_hard_failing_rule(
 ) -> AsyncIterator[str]:
     """A rule that did not exist when the exception hook was written.
 
-    Registering it and giving it a mapping row is the whole of what Steps 5 and 6 will have to do.
+    Registering it and giving it a mapping row is the whole of what  5 and 6 will have to do.
     If the hook needed anything else - a branch, a list, an `if` - this context manager could not
     make a case appear, and the test that uses it would fail.
     """

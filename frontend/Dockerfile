@@ -17,7 +17,7 @@ ENV NEXT_TELEMETRY_DISABLED=1 \
     NEXT_PUBLIC_VAPID_PUBLIC_KEY=$NEXT_PUBLIC_VAPID_PUBLIC_KEY
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-# `npm run build` also runs the postbuild step that writes public/sw.js - the service worker is
+# `npm run build` also runs the postbuild  that writes public/sw.js - the service worker is
 # produced by a production build and by nothing else, which is the same rule that keeps it out of
 # `npm run dev`.
 RUN mkdir -p public && npm run build

@@ -4,9 +4,9 @@ Revision ID: 20250201_000002
 Revises: 20250101_000001
 Create Date: 2025-02-01 00:00:02.000000+00:00
 
-Layered on top of the Step 1 schema: nothing here alters `users`, `audit_events` or
+Layered on top of the  schema: nothing here alters `users`, `audit_events` or
 `background_jobs`. `documents.transaction_id` deliberately carries no foreign key, exactly like
-`background_jobs.transaction_id`, because the transactions table does not exist until Step 3.
+`background_jobs.transaction_id`, because the transactions table does not exist until .
 """
 
 from __future__ import annotations

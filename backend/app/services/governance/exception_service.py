@@ -2,7 +2,7 @@
 
 Two things are never stored and always computed: how old a case is, and whether it has passed its
 ageing threshold. Both are derived from `opened_at` and the configured number of hours at the
-moment of the read, exactly as Step 3 derives a rule result from the values in front of it. There
+moment of the read, exactly as  derives a rule result from the values in front of it. There
 is no sweep, no cached flag and nothing that can go stale because a job did not run.
 """
 

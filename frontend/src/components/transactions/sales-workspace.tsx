@@ -97,7 +97,7 @@ export function SalesWorkspace({
   const token = session?.accessToken;
   // Locked from the moment it leaves the desk: waiting on a decision, decided, or being posted
   // downstream. A figure corrected after the approver saw it, or after SAP was told about it,
-  // would put this platform and the systems it feeds out of step with each other.
+  // would put this platform and the systems it feeds out of  with each other.
   const locked = LOCKED_TRANSACTION_STATUSES.includes(detail.status as TransactionStatus);
   const editable = canEdit && detail.can_edit && !locked;
   const blocker = useMemo(() => submitBlocker(detail.rule_evaluations), [detail.rule_evaluations]);
@@ -345,7 +345,7 @@ export function SalesWorkspace({
         ) : null}
       </div>
 
-      {/* New to this screen in Step 6. It matters most here: BR-07 blocks a sales submission on
+      {/* New to this screen in . It matters most here: BR-07 blocks a sales submission on
           whether the original bill of lading has physically arrived, and this is where that fact
           now lives. */}
       {detail.linked_shipments.length > 0 ? (
@@ -353,7 +353,7 @@ export function SalesWorkspace({
       ) : null}
 
       {/* Where this batch stands with the tracker, SAP and the document store. New to this
-          screen in Step 7 and the second retrofit to it, so it is built to stand on its own: it
+          screen in  and the second retrofit to it, so it is built to stand on its own: it
           renders nothing at all until an approval has actually raised the three jobs. */}
       <IntegrationPanel
         jobs={detail.integration_jobs}

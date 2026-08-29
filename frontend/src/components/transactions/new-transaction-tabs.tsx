@@ -50,7 +50,7 @@ const PATHS: { key: Path; title: string; hint: string }[] = [
  * exactly the distinctions that keep this platform free of a merge.
  *
  * The strip carries the same roving tabindex the exception queue's categories do. Without it each
- * path sits in the page's tab order, so somebody reaching the form itself by keyboard steps
+ * path sits in the page's tab order, so somebody reaching the form itself by keyboard 
  * through all three first, and the arrow keys - which is what a tablist is expected to answer to -
  * do nothing at all.
  */

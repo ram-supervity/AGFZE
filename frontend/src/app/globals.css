@@ -35,14 +35,14 @@
     --signal-blocked: 5 53% 42%; /* #A23B32 */
     --radius: 0.375rem; /* 6px */
 
-    /* Chart palette, added with the dashboard in Step 8.
+    /* Chart palette, added with the dashboard in .
        Two ramps, and they do different jobs. The categorical slots carry identity - two or three
        series that are not ordered, assigned in this fixed order and never cycled. The ordinal
        ramp carries a sequence: the lifecycle phases a transaction moves through, light for the
        earliest and dark for the last.
        Both were validated for colour-vision deficiency separation and for contrast against the
        surface they are drawn on, in this mode and in dark mode separately - the dark values below
-       are their own steps, not an automatic flip. Do not substitute a value here without
+       are their own , not an automatic flip. Do not substitute a value here without
        re-validating the set. The signal triad above stays reserved for confidence and validation
        state and is never used as a series colour. */
     --chart-1: 213 68% 50%; /* #2a78d6 */

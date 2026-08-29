@@ -15,7 +15,7 @@ The rules this module exists to enforce, in the order they matter:
    confirmed makes no difference to reaching it; the distinction stays visible on every job
    forever.
 
-The exception on final failure is opened by calling Step 4's standalone case-creation function
+The exception on final failure is opened by calling 's standalone case-creation function
 directly - the same function the shipment sweep calls - rather than by synthesising a rule
 evaluation. An integration failure is not a check on extracted data, and dressing it up as one to
 reuse the hard-fail hook would put a fabricated evaluation in a table auditors read as a record
@@ -404,7 +404,7 @@ async def open_failure_case(
 
     Admin, because on this platform Admin is the IT and integration-support function: a rejected
     SAP posting is not the buying desk's to fix. The category has been registered and dormant
-    since Step 4 for exactly this moment, and this is the first code in the platform that can
+    since  for exactly this moment, and this is the first code in the platform that can
     produce one.
     """
     label = TARGET_LABELS.get(job.target_system, job.target_system)
@@ -710,7 +710,7 @@ async def maybe_commit(session: AsyncSession, transaction: TradeTransaction) -> 
     where it is. How a job reached `succeeded` - automatically or by an administrator's
     confirmation - makes no difference here and every difference on the job itself.
 
-    Nothing in this function, or anywhere else in this step, sets `Closed`.
+    Nothing in this function, or anywhere else in this , sets `Closed`.
     """
     jobs = await jobs_for(session, transaction.id)
     if len(jobs) < len(TARGET_SYSTEMS):

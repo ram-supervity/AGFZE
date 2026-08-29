@@ -149,7 +149,7 @@ SEEDED_TABLES = frozenset(
 )
 
 
-# The seeded tables are preserved between tests, but they are no longer read-only: Step 9 makes
+# The seeded tables are preserved between tests, but they are no longer read-only:  makes
 # `rule_configurations` and `document_type_schemas` genuinely editable, so a test that exercises
 # an admin edit changes reference data every later test reads. These are the columns such an edit
 # can move, per table; everything else on those rows is identity and is never written.

@@ -14,7 +14,7 @@ import {
 
 describe("NOTIFICATION_CHANNELS", () => {
   it("describes three channels that are governed three different ways", () => {
-    // The distinction this step turns on: in-app is not a preference at all, email is the one
+    // The distinction this  turns on: in-app is not a preference at all, email is the one
     // thing `notification_channel` governs, and push is a browser permission no stored value can
     // grant. Three radio buttons would have been three lies.
     expect(NOTIFICATION_CHANNELS.map((channel) => channel.value)).toEqual([
@@ -41,7 +41,7 @@ describe("the email preference", () => {
   it("reads the stored channel as an email toggle and nothing more", () => {
     expect(emailIsEnabled("email")).toBe(true);
     expect(emailIsEnabled("in_app")).toBe(false);
-    // A value stored before Step 10. It grants nothing: push is gated on the subscription.
+    // A value stored before . It grants nothing: push is gated on the subscription.
     expect(emailIsEnabled("push")).toBe(false);
   });
 
@@ -69,7 +69,7 @@ describe("notification labels", () => {
     }
   });
 
-  it("renders a type a later step adds without throwing", () => {
+  it("renders a type a later  adds without throwing", () => {
     expect(notificationLabel("shipment.delayed")).toBe("shipment delayed");
     expect(notificationChip("shipment.delayed")).toContain("border-border");
   });

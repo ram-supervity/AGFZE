@@ -19,7 +19,7 @@ export interface CategoryTabsProps {
  *
  * The three that nothing can raise yet are rendered exactly like the seven that can, because
  * that is the truth of them: they are real categories with real owners that simply have nothing
- * in them. Marking them as "coming soon" would be wrong the moment a later step starts filling
+ * in them. Marking them as "coming soon" would be wrong the moment a later  starts filling
  * them, and hiding them would make this screen need restructuring when it does.
  */
 export function CategoryTabs({ categories, active, total }: CategoryTabsProps) {

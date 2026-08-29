@@ -35,10 +35,10 @@ export interface RulesTableProps {
 }
 
 /**
- * Every configured threshold in one table, with no special-casing by which step seeded a row.
+ * Every configured threshold in one table, with no special-casing by which  seeded a row.
  *
- * The purchase tolerances from Step 3, the sales contract-coverage rule from Step 5 and the
- * FA-scoped defaults from Step 6 all render through the same cells and edit through the same
+ * The purchase tolerances from , the sales contract-coverage rule from  and the
+ * FA-scoped defaults from  all render through the same cells and edit through the same
  * dialog. That this component contains no branch on the rule identifier is the point: it is what
  * proves `rule_configurations` was genuinely built as a generic store rather than as three
  * shapes that happen to share a table.

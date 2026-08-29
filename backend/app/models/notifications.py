@@ -5,7 +5,7 @@ in the platform goes through it. Nothing else constructs this model, for the sam
 else constructs an `AuditEvent`: a second writer is a second set of rules about who gets told
 what, and there is no way to keep two of those in agreement.
 
-`email_sent_at` and `push_sent_at` arrive here in Step 10, with the code that sends them - Step 9
+`email_sent_at` and `push_sent_at` arrive here in , with the code that sends them - 
 withheld them deliberately, because a nullable timestamp for a delivery that could not happen
 would have read as a channel that was merely switched off. Both stay nullable and both mean one
 narrow thing: the moment a delivery on that channel was accepted by the relay or the push

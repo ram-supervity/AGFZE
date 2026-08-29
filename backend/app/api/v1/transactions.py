@@ -89,7 +89,7 @@ logger = get_logger(__name__)
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
 
-# The purchase desk owns its own deals; the approver signs them off in Step 4 rather than
+# The purchase desk owns its own deals; the approver signs them off in  rather than
 # preparing them, and the auditor observes. Reads below are open to every signed-in account.
 PurchaseUser = Annotated[
     User,
@@ -259,7 +259,7 @@ def _list_item(
     item.has_fa_leg = transaction.fa_leg is not None
     item.is_b2b = bool(leg.is_b2b) if leg else False
     item.b2b_partner_name = leg.b2b_partner_name if leg else None
-    # Real data from Step 6. Null still means "no shipment record exists", which is a different
+    # Real data from . Null still means "no shipment record exists", which is a different
     # and more honest thing than reporting a transaction nobody has shipped as on schedule.
     rows = shipments or []
     item.shipment_count = len(rows)
@@ -551,7 +551,7 @@ async def _detail(
     detail.has_sales_leg = sales is not None
     detail.has_fa_leg = transaction.fa_leg is not None
     detail.purchase_leg = PurchaseLegRead.model_validate(leg) if leg else None
-    # Populates with no change to the response shape: the field was declared in Step 3 and has
+    # Populates with no change to the response shape: the field was declared in  and has
     # simply been empty until now.
     detail.sales_leg = SalesLegRead.model_validate(sales) if sales else None
     detail.fa_leg = FaLegRead.model_validate(transaction.fa_leg) if transaction.fa_leg else None
@@ -577,7 +577,7 @@ async def _detail(
     detail.documents = summaries
 
     # Where this transaction stands with the three downstream systems. New to all three
-    # workspaces in Step 7, and the second retrofit to them after Step 6's shipment status - so
+    # workspaces in , and the second retrofit to them after 's shipment status - so
     # it is built as a genuine extension: it says nothing at all before an approval has raised
     # any job, which is where most transactions on this screen are.
     detail.integration_jobs = [
@@ -741,7 +741,7 @@ async def _linked_purchase(
     that matters more than it looks. What the sales leg stores is the grade the document actually
     stated, verbatim - "Copper Millberry 99.9%", or whatever wording the destination's customs
     regime needs. Comparing that string against the batch's `CU` would report a mismatch on
-    nearly every export the desk makes, which is exactly the false positive this step forbids.
+    nearly every export the desk makes, which is exactly the false positive this  forbids.
     The shared function resolves the stated grade to a code first, and compares codes.
     """
     leg = transaction.purchase_leg
@@ -948,7 +948,7 @@ async def create_fa_transaction(
     Beyond deciding which leg to create, nothing here is FA-specific. The same batch numbering,
     the same synthetic portal request that keeps BR-01 honest, the same commodity resolution, the
     same validation run, the same exception routing and the same approval queue. That is the
-    whole claim this step makes about the engine, and this endpoint is where it is collected on.
+    whole claim this  makes about the engine, and this endpoint is where it is collected on.
 
     `extra_fields` is validated against the configured FA schema before a single value is
     persisted. A key the schema does not carry is refused outright - `fa_legs.extra_fields` is a
@@ -1198,7 +1198,7 @@ async def correct_fields(
 ) -> ResponseEnvelope[TransactionDetail]:
     """Correct transaction, purchase-leg or sales-leg fields through one path.
 
-    The accepted schema widened in Step 5 to carry the sell side, including the fixation rate and
+    The accepted schema widened in  to carry the sell side, including the fixation rate and
     date that move a customer from `unfixed` to `fixed`. Recording a fixation is deliberately not
     a second endpoint: it is a correction, and it earns the same reason gate, the same provenance
     record and the same synchronous re-validation every other correction gets.
@@ -1546,7 +1546,7 @@ async def read_transaction_graph(
         data=neo4j_service.to_graph_read(transaction, raw),
         message=(
             f"Everything connected to {transaction.batch_number} within {depth} "
-            f"step{'s' if depth != 1 else ''}. Read from a projection that may lag by a few "
+            f"{'s' if depth != 1 else ''}. Read from a projection that may lag by a few "
             "minutes; the transaction record itself is authoritative."
         ),
     )

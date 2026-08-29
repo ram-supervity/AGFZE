@@ -33,7 +33,7 @@ export interface DocumentTypesTableProps {
 }
 
 /**
- * Every document type's schema, whichever step first seeded it.
+ * Every document type's schema, whichever  first seeded it.
  *
  * The invoice and contract schemas shipped with intake, the bill of lading came with the sales
  * module and `fa_document` with the FA module. All three render and edit identically here, with

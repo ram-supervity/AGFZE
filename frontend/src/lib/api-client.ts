@@ -423,7 +423,7 @@ export interface TransactionListItem {
   is_b2b: boolean;
   b2b_partner_name: string | null;
   /**
-   * Real from Step 6. Null still means something specific: no shipment record exists for this
+   * Real from . Null still means something specific: no shipment record exists for this
    * transaction, which is not the same claim as "on schedule".
    */
   shipment_status: string | null;
@@ -449,9 +449,9 @@ export interface TransactionDetail extends TransactionListItem {
   created_by_name: string | null;
   closed_at: string | null;
   purchase_leg: PurchaseLeg | null;
-  /** Populated from Step 5. The field was always declared; it was simply always empty. */
+  /** Populated from . The field was always declared; it was simply always empty. */
   sales_leg: SalesLeg | null;
-  /** Populated from Step 6, the third leg to arrive without the response shape changing. */
+  /** Populated from , the third leg to arrive without the response shape changing. */
   fa_leg: FaLeg | null;
   /** The schema-driven extras, ready to render. Empty for every non-FA transaction. */
   fa_extra_fields: TransactionField[];
@@ -1543,7 +1543,7 @@ export async function createFaTransaction(
   );
 }
 
-// --- integrations (Step 7) -----------------------------------------------------------------------
+// --- integrations () -----------------------------------------------------------------------
 
 /** Mirrors the backend `IntegrationJobRead` schema. */
 export interface IntegrationJob {
@@ -1640,7 +1640,7 @@ export async function completeIntegrationJobManually(
   );
 }
 
-// --- dashboard, analytics and reports (Step 8) ----------------------------------------------------
+// --- dashboard, analytics and reports () ----------------------------------------------------
 
 /** One number, and the query that reproduces it. Mirrors the backend `FigureRead` schema. */
 export interface Figure {
@@ -1937,7 +1937,7 @@ export async function requestReport(
   );
 }
 
-// --- administration, audit, settings and notifications (Step 9) -----------------------------------
+// --- administration, audit, settings and notifications () -----------------------------------
 
 /** Mirrors the backend `RuleConfigurationRead` schema. */
 export interface RuleConfigurationRow {
@@ -1960,7 +1960,7 @@ export interface RuleConfigurationRow {
 
 export interface RuleConfigurationList {
   items: RuleConfigurationRow[];
-  /** Read from the data, so a rule a later step seeds appears in the filter without a change. */
+  /** Read from the data, so a rule a later  seeds appears in the filter without a change. */
   rule_ids: string[];
   streams: string[];
 }
@@ -2410,7 +2410,7 @@ export async function markAllNotificationsRead(
 }
 
 
-// --- push subscriptions (Step 10) -----------------------------------------------------------
+// --- push subscriptions () -----------------------------------------------------------
 
 export interface VapidPublicKey {
   public_key: string;
