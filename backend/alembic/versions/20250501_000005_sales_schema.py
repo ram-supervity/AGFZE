@@ -61,6 +61,7 @@ TYPE_CONSTRAINT = "ck_documents_document_type_valid"
 STATUS_CONSTRAINT = "ck_documents_document_extraction_status_valid"
 SOURCE_CONSTRAINT = "ck_documents_document_source_valid"
 ORIGIN_CONSTRAINT = "ck_documents_document_request_or_generated"
+SCHEMA_TYPE_CONSTRAINT = "ck_document_type_schemas_document_type_schema_type_valid"
 
 # The vocabularies as they stood before this migration, so the downgrade can put them back.
 PREVIOUS_DOCUMENT_TYPES = tuple(
@@ -312,6 +313,79 @@ def _alter_documents_downgrade() -> None:
     )
 
 
+def _document_type_schemas_table(*, document_types: tuple[str, ...]) -> sa.Table:
+    metadata = sa.MetaData()
+    table = sa.Table(
+        "document_type_schemas",
+        metadata,
+        sa.Column("id", GUID, nullable=False),
+        sa.Column("document_type", sa.String(length=32), nullable=False),
+        sa.Column("territory", sa.String(length=16), nullable=True),
+        sa.Column("field_schema", JSONB_TYPE, nullable=False),
+        sa.Column("mandatory_documents", JSONB_TYPE, nullable=False),
+        sa.Column("change_reason", sa.Text(), nullable=False),
+        sa.Column("changed_by_id", GUID, nullable=True),
+        sa.Column("changed_at", sa.DateTime(timezone=True), nullable=False),
+        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+        sa.CheckConstraint(
+            f"document_type IN ({sql_in_list(document_types)})",
+            name=SCHEMA_TYPE_CONSTRAINT,
+        ),
+        sa.CheckConstraint(
+            f"territory IS NULL OR territory IN ({sql_in_list(TERRITORIES)})",
+            name="ck_document_type_schemas_document_type_schema_territory_valid",
+        ),
+        sa.ForeignKeyConstraint(
+            ["changed_by_id"],
+            ["users.id"],
+            name="fk_document_type_schemas_changed_by_id_users",
+            ondelete="SET NULL",
+        ),
+        sa.PrimaryKeyConstraint("id", name="pk_document_type_schemas"),
+        sa.UniqueConstraint(
+            "document_type", "territory", name="uq_document_type_schemas_document_type"
+        ),
+    )
+    sa.Index("ix_document_type_schemas_document_type", table.c.document_type)
+    sa.Index("ix_document_type_schemas_territory", table.c.territory)
+    sa.Index("ix_document_type_schemas_changed_by_id", table.c.changed_by_id)
+    return table
+
+
+def _alter_document_type_schemas_upgrade() -> None:
+    if op.get_bind().dialect.name == "sqlite":
+        with op.batch_alter_table(
+            "document_type_schemas",
+            copy_from=_document_type_schemas_table(document_types=DOCUMENT_TYPES),
+            recreate="always",
+        ):
+            pass
+        return
+
+    op.execute(f'ALTER TABLE document_type_schemas DROP CONSTRAINT "{SCHEMA_TYPE_CONSTRAINT}"')
+    op.execute(
+        f'ALTER TABLE document_type_schemas ADD CONSTRAINT "{SCHEMA_TYPE_CONSTRAINT}" '
+        f"CHECK (document_type IN ({sql_in_list(DOCUMENT_TYPES)}))"
+    )
+
+
+def _alter_document_type_schemas_downgrade() -> None:
+    if op.get_bind().dialect.name == "sqlite":
+        with op.batch_alter_table(
+            "document_type_schemas",
+            copy_from=_document_type_schemas_table(document_types=PREVIOUS_DOCUMENT_TYPES),
+            recreate="always",
+        ):
+            pass
+        return
+
+    op.execute(f'ALTER TABLE document_type_schemas DROP CONSTRAINT "{SCHEMA_TYPE_CONSTRAINT}"')
+    op.execute(
+        f'ALTER TABLE document_type_schemas ADD CONSTRAINT "{SCHEMA_TYPE_CONSTRAINT}" '
+        f"CHECK (document_type IN ({sql_in_list(PREVIOUS_DOCUMENT_TYPES)}))"
+    )
+
+
 def upgrade() -> None:
     op.create_table(
         "sales_legs",
@@ -377,6 +451,7 @@ def upgrade() -> None:
     )
 
     _alter_documents_upgrade()
+    _alter_document_type_schemas_upgrade()
 
     now = datetime.now(timezone.utc)
 
@@ -515,6 +590,7 @@ def downgrade() -> None:
     )
 
     _alter_documents_downgrade()
+    _alter_document_type_schemas_downgrade()
 
     op.drop_index("ix_sales_legs_contract_customer", table_name="sales_legs")
     op.drop_index(op.f("ix_sales_legs_customer_fixation_status"), table_name="sales_legs")

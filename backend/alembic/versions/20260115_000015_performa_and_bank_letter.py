@@ -31,6 +31,8 @@ depends_on: str | Sequence[str] | None = None
 
 TYPE_CONSTRAINT = "ck_documents_document_type_valid"
 
+SCHEMA_TYPE_CONSTRAINT = "ck_document_type_schemas_document_type_schema_type_valid"
+
 NEW_TYPES = (
     DocumentType.DRAFT_PERFORMA_INVOICE.value,
     DocumentType.DRAFT_BANK_COVER_LETTER.value,
@@ -41,17 +43,32 @@ PREVIOUS_DOCUMENT_TYPES = tuple(value for value in DOCUMENT_TYPES if value not i
 
 
 def upgrade() -> None:
+    if op.get_bind().dialect.name != "postgresql":
+        return
     op.execute(f'ALTER TABLE documents DROP CONSTRAINT "{TYPE_CONSTRAINT}"')
     op.execute(
         f'ALTER TABLE documents ADD CONSTRAINT "{TYPE_CONSTRAINT}" '
         f"CHECK (document_type IS NULL OR document_type IN ({sql_in_list(DOCUMENT_TYPES)}))"
     )
+    op.execute(f'ALTER TABLE document_type_schemas DROP CONSTRAINT "{SCHEMA_TYPE_CONSTRAINT}"')
+    op.execute(
+        f'ALTER TABLE document_type_schemas ADD CONSTRAINT "{SCHEMA_TYPE_CONSTRAINT}" '
+        f"CHECK (document_type IN ({sql_in_list(DOCUMENT_TYPES)}))"
+    )
 
 
 def downgrade() -> None:
+    if op.get_bind().dialect.name != "postgresql":
+        return
     op.execute(f'ALTER TABLE documents DROP CONSTRAINT "{TYPE_CONSTRAINT}"')
     op.execute(
         f'ALTER TABLE documents ADD CONSTRAINT "{TYPE_CONSTRAINT}" '
         "CHECK (document_type IS NULL OR document_type IN "
+        f"({sql_in_list(PREVIOUS_DOCUMENT_TYPES)}))"
+    )
+    op.execute(f'ALTER TABLE document_type_schemas DROP CONSTRAINT "{SCHEMA_TYPE_CONSTRAINT}"')
+    op.execute(
+        f'ALTER TABLE document_type_schemas ADD CONSTRAINT "{SCHEMA_TYPE_CONSTRAINT}" '
+        "CHECK (document_type IN "
         f"({sql_in_list(PREVIOUS_DOCUMENT_TYPES)}))"
     )
