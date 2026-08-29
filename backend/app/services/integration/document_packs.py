@@ -1,13 +1,13 @@
 """Merging a transaction's documents into the one file that goes to the DMS.
 
-This is the whole of what `DocumentPack` adds over what already exists.  generates draft
+This is the whole of what `DocumentPack` adds over what already exists. Step 5 generates draft
 contracts and invoices as `Document` rows and this module does not generate anything: it gathers
 documents already on the transaction - received ones and the drafts the platform wrote itself -
 and merges them into one PDF under the naming convention the desk already uses.
 
 Two decisions in here are worth stating plainly.
 
-**A  draft is an input, never a duplicate.** The sales pack's contract is whatever
+**A Step 5 draft is an input, never a duplicate.** The sales pack's contract is whatever
 `draft_contract` document the sales module produced. It is read, listed and merged where its
 format allows; nothing re-generates it and no second copy of it is created under a new name.
 
@@ -48,7 +48,7 @@ PDF_CONTENT_TYPE = "application/pdf"
 #
 # The purchase file is the buying side's evidence pack; the sales pack is what goes to the bank
 # under a CAD or LC settlement, so it leads with the sales invoice and the finalised contract -
-# which, on a transaction that went through , are the generated drafts.
+# which, on a transaction that went through Step 5, are the generated drafts.
 PACK_DOCUMENT_TYPES: dict[str, tuple[str, ...]] = {
     DocumentPackType.PURCHASE_FILE.value: (
         DocumentType.INVOICE.value,
@@ -126,7 +126,7 @@ def pack_filename(transaction: TradeTransaction, pack_type: str) -> str:
     """The existing naming convention, unchanged.
 
     `ADV-{contract}-{qty}-{status}` for the purchase file and `SO-{batch}-{qty}-{Final|Prov}` for
-    the sales pack - the same convention  gives its generated drafts, because a person
+    the sales pack - the same convention Step 5 gives its generated drafts, because a person
     sorting a folder should not have to learn a second one.
     """
     quantity = format_decimal(transaction.quantity_mt) or "0"

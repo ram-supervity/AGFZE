@@ -628,8 +628,8 @@ async def confirm_extraction(
         )
 
     # Recorded on the confirmation event so the trail shows what the person signed off over.
-    # Whether an incomplete pack may be confirmed at all is 's completeness rule, not this
-    # 's, so nothing here blocks on it.
+    # Whether an incomplete pack may be confirmed at all is Step 3's completeness rule, not this
+    # step's, so nothing here blocks on it.
     unresolved = [row.field_name for row in document.fields if row.has_conflict]
 
     document.confirmed_at = utcnow()
@@ -658,7 +658,7 @@ async def confirm_extraction(
     )
     await session.commit()
 
-    # The seam  left open. A confirmed extraction is the event matching subscribes to, and
+    # The seam Step 2 left open. A confirmed extraction is the event matching subscribes to, and
     # it is the only trigger on this path: nothing here decides which batch a document belongs
     # to, it hands the confirmed document to the service whose job that is.
     #

@@ -101,7 +101,7 @@ export function UsersTable({ data, search }: UsersTableProps) {
         >
           This deployment has no Keycloak Admin API credential configured, so role assignment
           cannot be changed from here. Roles still arrive from the identity provider on every
-          sign-in — the override is what is unavailable, not the roles themselves.
+          sign-in - the override is what is unavailable, not the roles themselves.
         </p>
       )}
 

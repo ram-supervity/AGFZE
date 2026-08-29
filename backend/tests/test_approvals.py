@@ -2,7 +2,7 @@
 
 Two things are proved repeatedly here because they are the two that would matter most if they
 were wrong: the identity on a decision comes from the token and nothing else, and an approval
-does exactly as much as it is entitled to do - it records the decision and, from , raises
+does exactly as much as it is entitled to do - it records the decision and, from Step 7, raises
 the three integration jobs it authorises. It never marks anything as posted itself.
 """
 
@@ -341,7 +341,7 @@ async def test_approving_records_the_decision_and_raises_its_integration_jobs(
 ) -> None:
     """What an approval does, and the exact limit of it.
 
-    Until  this test asserted that nothing downstream happened, because there was nothing
+    Until Step 7 this test asserted that nothing downstream happened, because there was nothing
     downstream. There is now: an approval raises exactly three integration jobs. What has not
     changed is the discipline behind the original assertion - nothing is marked as posted. With
     no tracker, SAP or DMS configured, all three jobs land in `awaiting_manual_action`, and the

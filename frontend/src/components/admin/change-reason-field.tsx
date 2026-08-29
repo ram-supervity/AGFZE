@@ -51,7 +51,7 @@ export function ChangeReasonField({
       </p>
       {short ? (
         <p role="alert" className="text-xs text-signal-blocked">
-          A little more detail — at least {MIN_CHANGE_REASON} characters.
+          A little more detail - at least {MIN_CHANGE_REASON} characters.
         </p>
       ) : null}
     </div>

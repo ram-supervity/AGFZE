@@ -5,7 +5,7 @@ Revises: 20260101_000014
 Create Date: 2026-01-15 00:00:15.000000+00:00
 
 A check-constraint widening and nothing else. `documents.document_type` is a plain string guarded
-by a membership check rather than a PostgreSQL enum - exactly so a later  could add a value
+by a membership check rather than a PostgreSQL enum - exactly so a later step could add a value
 without a type-altering migration - and this is the second time that decision has paid for itself.
 
 Both new types are documents the platform *generates*, never receives. Nothing classifies a

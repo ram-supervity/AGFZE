@@ -1,7 +1,7 @@
 """The retry sweep, on its own timer.
 
-The first genuinely periodic background job in this build, and the first  where one is
-justified.  built the background-job service and deliberately stopped there;  was
+The first genuinely periodic background job in this build, and the first step where one is
+justified. Step 1 built the background-job service and deliberately stopped there; Step 4 was
 asked for a sweep and declined, because an exception's age is computed from its own timestamp at
 read time and no job was needed to keep it true. Here there is a real, time-based consequence for
 a timer to drive: an attempt that failed for a transient reason has a next attempt genuinely due
@@ -13,12 +13,12 @@ work with the same fallback that produced it. And it never re-opens a job that h
 attempts: that job is `failed`, its exception is open, and an administrator's explicit retry is
 what starts it again.
 
-From  this loop also carries the scheduled reports. It is not a second scheduler and the
+From Step 8 this loop also carries the scheduled reports. It is not a second scheduler and the
 loop below did not change shape to take them: the tick already runs every sixty seconds, so the
 daily and monthly tasks are asked whether they are due on the way past. Adding a cron daemon or a
 scheduling library for two questions a minute would have been a third mechanism this application
 does not need. Neither task can hold up the other - each runs in its own session and its own try,
-and a failure in one is logged and ped over.
+and a failure in one is logged and stepped over.
 """
 
 from __future__ import annotations

@@ -253,7 +253,7 @@ async def generate_structured(
         raise AIServiceError(reason="schema_invalid") from exc
 
 
-# --- approval summaries () --------------------------------------------------------------
+# --- approval summaries (Step 4) --------------------------------------------------------------
 #
 # The one AI capability the approvals module needs, added to the module that already owns every
 # model call rather than to a second service beside it. It summarises; it never decides. Nothing
@@ -338,7 +338,7 @@ async def summarize_for_approval(facts: dict[str, Any]) -> ApprovalSummary:
     )
 
 
-# --- draft content planning () ------------------------------------------------------------
+# --- draft content planning (Step 5) ------------------------------------------------------------
 #
 # The sales module's one AI capability, added to the module that already owns every model call
 # rather than to a second service beside it.
@@ -477,7 +477,7 @@ async def generate_draft_content(
     )
 
 
-# --- shipment milestone parsing () --------------------------------------------------------
+# --- shipment milestone parsing (Step 6) --------------------------------------------------------
 #
 # The shipment module's one AI capability, added to the module that already owns every model call
 # rather than to a second service beside it. Its scope is as narrow as the draft planner's and for
@@ -573,7 +573,7 @@ async def parse_shipment_milestone(
     )
 
 
-# --- monthly report executive summary () --------------------------------------------------
+# --- monthly report executive summary (Step 8) --------------------------------------------------
 #
 # The reporting module's one AI capability, added to the module that already owns every model call
 # rather than to a second service beside it. Its scope is the narrowest of the four.

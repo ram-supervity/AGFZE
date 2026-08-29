@@ -99,7 +99,7 @@ def test_only_the_evaluable_rules_are_marked_implemented() -> None:
     LG-01.
 
     Nothing else moved. The six that remain unimplemented are still registered, still walked by
-    the orchestrator, and still write nothing - which is what they should do until the  that
+    the orchestrator, and still write nothing - which is what they should do until the step that
     brings their data replaces the body.
     """
     implemented = {rule_id for rule_id, rule in registered_rules().items() if rule.implemented}
@@ -162,7 +162,7 @@ async def test_a_rule_scoped_to_a_leg_the_transaction_lacks_is_skipped(
 
     assert context.leg("purchase") is not None
     # The orchestrator reads the leg map rather than asking what kind of transaction this is,
-    # which is exactly what lets  add BR-07's real evaluator without touching dispatch.
+    # which is exactly what lets Step 5 add BR-07's real evaluator without touching dispatch.
     assert registered_rules()[RuleId.BR_07].requires_legs == frozenset({"sales"})
 
 

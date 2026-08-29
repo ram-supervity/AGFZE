@@ -105,8 +105,8 @@ describe("trackingModeNote", () => {
 
 describe("formatDate", () => {
   it("renders an em dash for an absent date rather than a misleading today", () => {
-    expect(formatDate(null)).toBe("—");
-    expect(formatDate(undefined)).toBe("—");
+    expect(formatDate(null)).toBe("-");
+    expect(formatDate(undefined)).toBe("-");
   });
 });
 

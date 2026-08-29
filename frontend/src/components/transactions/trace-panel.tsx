@@ -88,7 +88,7 @@ export function TracePanel({ transactionId }: { transactionId: string }) {
       <EmptyState
         icon={Share2}
         title="No trace is available"
-        description="This deployment keeps no traceability projection, so there is nothing to draw. Everything it would show — the documents, containers, approvals and postings on this transaction — is on this page already."
+        description="This deployment keeps no traceability projection, so there is nothing to draw. Everything it would show - the documents, containers, approvals and postings on this transaction - is on this page already."
       />
     );
   }

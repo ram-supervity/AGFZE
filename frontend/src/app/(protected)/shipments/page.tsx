@@ -53,7 +53,7 @@ export default async function ShipmentsPage({
     <div className="space-y-6">
       <PageHeader
         title="Shipments"
-        description="Where each batch's cargo physically is, and when anybody last established that — whether a carrier reported it or somebody typed it in."
+        description="Where each batch's cargo physically is, and when anybody last established that - whether a carrier reported it or somebody typed it in."
       />
 
       {failure || !list ? (

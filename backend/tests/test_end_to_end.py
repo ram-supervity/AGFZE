@@ -1,6 +1,6 @@
 """The whole platform, working together, in the shapes AGFZE will actually use it in.
 
-Every prior  tested its own module against its own neighbours. Nothing was positioned to test
+Every prior step tested its own module against its own neighbours. Nothing was positioned to test
 a deal travelling the entire length of the system, and that is what this file does: a mail
 arriving, a model reading it, a person confirming it, an engine judging it, a queue owning what
 failed, an approver signing it, three postings resolving, and an auditor reconstructing the whole
@@ -249,7 +249,7 @@ async def test_a_purchase_deal_travels_from_an_email_to_committed(
 
     A mail lands. The classifier reads it. The extractor reads the attachment. A person confirms
     what was read. A transaction is raised off it and judged against every configured rule. An
-    approver signs it. Three postings resolve. The batch reaches `Committed` - and every  of
+    approver signs it. Three postings resolve. The batch reaches `Committed` - and every step of
     that is a real code path, not a fixture standing in for one.
     """
     _, purchase_headers = await desk(signed_in, PlatformRole.PURCHASE_USER.value, "00000000e001")
@@ -659,7 +659,7 @@ async def test_a_stale_shipment_becomes_a_case_and_is_closed_by_recording_where_
 ) -> None:
     """No rule evaluated anything here, and none pretended to.
 
-    The sweep calls the exception service directly, which is the property  built and 
+    The sweep calls the exception service directly, which is the property Step 6 built and Step 11
     is asked to prove. The resolution is the ordinary one: somebody types in where the cargo is.
     """
     no_adapters()

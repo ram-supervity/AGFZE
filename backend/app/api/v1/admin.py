@@ -110,7 +110,7 @@ def _rule_read(row: RuleConfiguration) -> RuleConfigurationRead:
 @router.get(
     "/rules",
     response_model=ResponseEnvelope[RuleConfigurationList],
-    summary="Every configured threshold, whichever  first seeded it",
+    summary="Every configured threshold, whichever step first seeded it",
 )
 async def list_rules(
     user: PlatformAdmin,
@@ -118,10 +118,10 @@ async def list_rules(
     rule_id: str | None = Query(None),
     stream: str | None = Query(None),
 ) -> ResponseEnvelope[RuleConfigurationList]:
-    """One query over one table, with no special-casing by which  created a row.
+    """One query over one table, with no special-casing by which step created a row.
 
-    The purchase tolerances seeded in , the sales rule added in  and the FA-scoped
-    defaults added in  are all rows in `rule_configurations` and all reach this screen the
+    The purchase tolerances seeded in Step 3, the sales rule added in Step 5 and the FA-scoped
+    defaults added in Step 6 are all rows in `rule_configurations` and all reach this screen the
     same way. That they need no branch here is the concrete proof the table was built generically.
     """
     statement = select(RuleConfiguration).options(selectinload(RuleConfiguration.changed_by))
@@ -267,7 +267,7 @@ async def list_document_types(
     session: DbSession,
     document_type: str | None = Query(None),
 ) -> ResponseEnvelope[DocumentTypeSchemaList]:
-    """The  invoice and contract schemas, the  bill of lading and the 
+    """The Step 2 invoice and contract schemas, the Step 5 bill of lading and the Step 6
     `fa_document` schema, in one list with no branch distinguishing them."""
     statement = select(DocumentTypeSchema).options(selectinload(DocumentTypeSchema.changed_by))
     if document_type:
@@ -388,7 +388,7 @@ async def list_users(
 @router.patch(
     "/users",
     response_model=ResponseEnvelope[UserRoleUpdateResult],
-    summary="Override an account's roles — Keycloak first, local record only on confirmation",
+    summary="Override an account's roles - Keycloak first, local record only on confirmation",
 )
 async def update_user_roles(
     payload: UserRoleUpdate,

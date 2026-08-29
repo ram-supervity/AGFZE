@@ -4,7 +4,7 @@
  * `src/components/layout/brand-mark.tsx` is an SVG in a 32-unit viewBox: an ink-navy rounded
  * square carrying three stacked copper bars. This script rasterises that exact geometry - the
  * same coordinates, the same palette, the same opacities - so the icon on a home screen is the
- * wordmark the user has been looking at since  rather than a square somebody drew twice.
+ * wordmark the user has been looking at since Step 1 rather than a square somebody drew twice.
  *
  * It encodes PNG by hand (zlib is in Node's standard library) rather than pulling an image
  * library in for four files. Everything is drawn at 4x and box-filtered down, which is what gives
@@ -21,7 +21,7 @@ import { deflateSync } from "node:zlib";
 
 const OUT_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "public", "icons");
 
-// The palette, unchanged since 's design system.
+// The palette, unchanged since Step 1's design system.
 const INK_NAVY = [0x18, 0x23, 0x38];
 const COPPER = [0xa7, 0x5d, 0x35];
 const PAPER = [0xff, 0xff, 0xff];

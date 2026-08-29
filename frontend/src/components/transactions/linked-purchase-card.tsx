@@ -139,7 +139,7 @@ function Item({
         {label}
       </dt>
       <dd className={cn("mt-0.5 text-sm text-foreground", mono && "font-mono")}>
-        {value ?? "—"}
+        {value ?? "-"}
       </dd>
     </div>
   );

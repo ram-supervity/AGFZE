@@ -2,7 +2,7 @@ Single-database Alembic configuration running on an async driver.
 
 env.py resolves the database URL from app.core.config (settings.DATABASE_URL), so alembic.ini
 carries no URL. With ENV=testing a TEST_DATABASE_URL environment variable takes precedence, and a
-caller may instead pass an open connection through config.attributes["connection"] — that is the
+caller may instead pass an open connection through config.attributes["connection"] - that is the
 path the pytest fixtures use.
 
 Apply everything:      alembic upgrade head

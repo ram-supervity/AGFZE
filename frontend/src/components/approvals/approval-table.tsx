@@ -261,7 +261,7 @@ export function ApprovalTable({ queue, canDecide }: ApprovalTableProps) {
           <DialogTitle>Approve {chosen.length} transactions</DialogTitle>
           <DialogDescription>
             Each of these is approved on its own, checked on its own and recorded on the audit
-            trail on its own — exactly as if you had opened them one at a time. Approving moves
+            trail on its own - exactly as if you had opened them one at a time. Approving moves
             them to Approved and does nothing else.
           </DialogDescription>
           <ul className="max-h-72 space-y-1.5 overflow-y-auto rounded-md border border-border bg-surface p-3">

@@ -183,7 +183,7 @@ export function strategyFor(request, origins) {
     return STRATEGY.NETWORK_FIRST;
   }
 
-  // 6. Everything else - signed downloads, job polling, anything a later  adds - goes to the
+  // 6. Everything else - signed downloads, job polling, anything a later step adds - goes to the
   //    network and is not stored. Caching by default is how a platform starts serving somebody
   //    a figure that is no longer true.
   return STRATEGY.NETWORK_ONLY;

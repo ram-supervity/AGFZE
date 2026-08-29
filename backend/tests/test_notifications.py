@@ -536,7 +536,7 @@ async def test_the_unread_filter_narrows_to_unread(
 
 
 def test_the_notification_table_records_delivery_per_channel():
-    """The two columns  withheld, arriving in  with the code that writes them.
+    """The two columns Step 9 withheld, arriving in Step 10 with the code that writes them.
 
     They are recorded per channel and never inferred from one another, because the channels are
     genuinely independent: email follows a preference, push follows a browser subscription, and a

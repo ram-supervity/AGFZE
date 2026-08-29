@@ -118,7 +118,7 @@ def comparable_text(values: dict[str, str | None]) -> str:
 
 
 def is_purchase_document(document: Document) -> bool:
-    """Whether this document belongs to the purchase pipeline this  matches.
+    """Whether this document belongs to the purchase pipeline this step matches.
 
     Category is the primary signal. A scrap-stream invoice or contract whose request was never
     given a category still counts: the desk classified the stream by hand at upload time, and
@@ -619,7 +619,7 @@ async def ensure_containers(
 
     Deliberately a side effect of matching rather than a mechanism of its own. The moment a
     document is tied to a batch is the moment the platform learns which boxes that batch is in,
-    and a separate container-capture  would be a second thing to remember to run.
+    and a separate container-capture step would be a second thing to remember to run.
 
     Idempotent, and quiet about it: a number this transaction already has produces nothing. A
     number some *other* transaction already has still produces a row here - the container really
@@ -990,7 +990,7 @@ async def apply_match(
 async def on_extraction_confirmed(
     session: AsyncSession, document: Document, *, actor_id: UUID | None = None
 ) -> MatchResult:
-    """The seam  left open, wired up.
+    """The seam Step 2 left open, wired up.
 
     Confirming an extraction is the event matching subscribes to. A document confirmed straight
     onto a known transaction takes the same path - the search simply finds the link that is

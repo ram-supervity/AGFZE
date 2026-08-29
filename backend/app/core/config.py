@@ -37,7 +37,7 @@ class Settings(BaseSettings):
     JWT_ALGORITHMS: Annotated[list[str], NoDecode] = ["RS256"]
     JWT_LEEWAY_SECONDS: int = 30
 
-    # --- Keycloak Admin REST API () -------------------------------------------------------
+    # --- Keycloak Admin REST API (Step 9) -------------------------------------------------------
     # A third machine credential, and deliberately a third one. The OIDC client above is what
     # staff sign in through and holds no administrative grant; the Graph app registration reads
     # one mailbox and writes one workbook. This one is a service account on its own confidential
@@ -147,7 +147,7 @@ class Settings(BaseSettings):
     # --- Transactions ---------------------------------------------------------------------------
     # The two-digit company-code segment of a batch number. One value, deliberately: routing
     # between SAP company codes (2000 UAE, 3010 Singapore) is only a real decision once there is
-    # an SAP posting to route, which belongs to the integration . Every tolerance and rule
+    # an SAP posting to route, which belongs to the integration step. Every tolerance and rule
     # threshold lives in `rule_configurations` instead, so it stays editable without a redeploy.
     BATCH_COMPANY_CODE: str = "26"
 
@@ -167,7 +167,7 @@ class Settings(BaseSettings):
     # How many shipments one sweep will attempt, so a large backlog cannot monopolise the worker.
     SHIPMENT_TRACKING_BATCH_SIZE: int = 100
 
-    # --- Downstream integration: tracker, SAP, DMS () ---------------------------------
+    # --- Downstream integration: tracker, SAP, DMS (Step 7) ---------------------------------
     # The tracker workbook this platform writes an approved deal into, addressed the way Graph
     # addresses a file: the drive that holds it and the item id of the workbook inside it.
     #
@@ -224,7 +224,7 @@ class Settings(BaseSettings):
 
     # Retry and backoff. The first genuinely time-driven sweep in this build: an attempt that
     # failed for a transient reason has a real next attempt due at a real time, which is what a
-    # periodic job is for. Earlier  declined to add one because nothing consumed it.
+    # periodic job is for. Earlier steps declined to add one because nothing consumed it.
     INTEGRATION_SWEEP_ENABLED: bool = True
     INTEGRATION_SWEEP_INTERVAL_SECONDS: int = 60
     INTEGRATION_SWEEP_BATCH_SIZE: int = 50
@@ -234,7 +234,7 @@ class Settings(BaseSettings):
     INTEGRATION_RETRY_BASE_SECONDS: int = 60
     INTEGRATION_RETRY_MAX_SECONDS: int = 3600
 
-    # --- Dashboard, analytics and reporting () --------------------------------------------
+    # --- Dashboard, analytics and reporting (Step 8) --------------------------------------------
     # Every aggregate is computed from the governed tables on every miss. The cache exists so a
     # room full of people opening the same dashboard at nine in the morning does not run the same
     # eight grouped counts eight hundred times, and it is deliberately short: a figure forty-five
@@ -244,7 +244,7 @@ class Settings(BaseSettings):
     DASHBOARD_CACHE_TTL_SECONDS: int = 45
     DASHBOARD_CACHE_MAX_ENTRIES: int = 512
 
-    # Scheduled report generation. It rides the periodic sweep  introduced rather than a
+    # Scheduled report generation. It rides the periodic sweep Step 7 introduced rather than a
     # scheduler of its own: that loop is already awake every minute, and all this needs from it is
     # to be asked "is anything due?" on the way past.
     REPORT_SCHEDULE_ENABLED: bool = True
@@ -292,7 +292,7 @@ class Settings(BaseSettings):
     # report generates identically without it; the paragraph is simply marked unavailable.
     REPORT_AI_SUMMARY_ENABLED: bool = True
 
-    # --- Delivery channels: email and push () --------------------------------------------
+    # --- Delivery channels: email and push (Step 10) --------------------------------------------
     # Where a notification's call-to-action points. Every link a `Notification` carries is a
     # relative in-app path, so this is the only place an absolute URL is ever assembled - and it
     # is assembled from configuration rather than from a request header, which is what keeps a
@@ -312,7 +312,7 @@ class Settings(BaseSettings):
     # which speaks plain SMTP on 1025 and has no certificate to present.
     SMTP_STARTTLS: bool = True
     SMTP_TIMEOUT_SECONDS: float = 20.0
-    # Three attempts, per this 's specification. 2s, then 4s.
+    # Three attempts, per this step's specification. 2s, then 4s.
     EMAIL_MAX_ATTEMPTS: int = 3
     EMAIL_RETRY_BASE_SECONDS: float = 2.0
 
@@ -328,7 +328,7 @@ class Settings(BaseSettings):
     # waiting longer than that is not news the browser should surface on wake.
     PUSH_TTL_SECONDS: int = 86400
 
-    # The master switch for both channels. Off, `notify` writes the in-app row exactly as 
+    # The master switch for both channels. Off, `notify` writes the in-app row exactly as Step 9
     # did and dispatches nothing - which is what the test suite runs with unless a test opts in.
     NOTIFICATION_DELIVERY_ENABLED: bool = True
 
@@ -531,8 +531,8 @@ class ProductionSettings(Settings):
             problems.append("AI_PROVIDER is required")
         if not 0.0 < self.CONFIDENCE_THRESHOLD_DEFAULT <= 1.0:
             problems.append("CONFIDENCE_THRESHOLD_DEFAULT must be between 0 and 1")
-        # 's two delivery channels. A production deployment that cannot email an approver
-        # and cannot push to their phone is the exact failure this  exists to remove, so a
+        # Step 10's two delivery channels. A production deployment that cannot email an approver
+        # and cannot push to their phone is the exact failure this step exists to remove, so a
         # missing relay or an ungenerated VAPID pair stops the process here rather than being
         # discovered the first time a deal stalls.
         for name in ("SMTP_HOST", "VAPID_PUBLIC_KEY", "VAPID_PRIVATE_KEY"):

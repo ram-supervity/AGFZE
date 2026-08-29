@@ -1,7 +1,7 @@
 """The shared validation and business-rule engine.
 
-Built generically from the outset because two later  plug into it: Sales in  and FA in
- each register their own evaluators against the same registry, under the same rule
+Built generically from the outset because two later steps plug into it: Sales in Step 5 and FA in
+Step 6 each register their own evaluators against the same registry, under the same rule
 identifiers, and neither has to restructure anything here to do it.
 """
 

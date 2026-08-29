@@ -1,6 +1,6 @@
 """BR-03, real at last.
 
-The rule sat in the registry from  reporting itself unevaluable, because there was no
+The rule sat in the registry from Step 3 reporting itself unevaluable, because there was no
 `Container` table for it to read. There is one now, and this is the body that replaces the
 placeholder. Nothing in the orchestrator, the context or the persistence changed to accept it -
 registering it is the whole of the integration, for the third time.

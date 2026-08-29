@@ -1,4 +1,4 @@
-"""Fakes for the two delivery channels  adds, installed at the modules' own seams.
+"""Fakes for the two delivery channels Step 10 adds, installed at the modules' own seams.
 
 Neither fake reaches a network. `_smtp_send` and `_send_webpush` are the single synchronous calls
 each service makes to the outside world, and replacing exactly those keeps everything above them -

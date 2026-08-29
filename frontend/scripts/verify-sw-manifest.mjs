@@ -35,7 +35,7 @@ function fail(message) {
 
 function readWorker() {
   if (!existsSync(SW)) {
-    fail("public/sw.js does not exist. Run `npm run build`, which writes it as a postbuild .");
+    fail("public/sw.js does not exist. Run `npm run build`, which writes it as a postbuild step.");
     return null;
   }
   return readFileSync(SW, "utf8");

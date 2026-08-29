@@ -71,7 +71,7 @@ export function AppHeader({ roles, userName, userEmail, section, onOpenNav }: Ap
             `beforeinstallprompt`, iOS Safari never does and gets instructions instead, and an
             already-installed app gets nothing. */}
         <InstallButton />
-        {/* Deferred explicitly in  1 and 2 for want of anything real to count. It is
+        {/* Deferred explicitly in Steps 1 and 2 for want of anything real to count. It is
             real now: the badge is the API's own unread figure for this account. */}
         <NotificationBell />
         <UserMenu userName={userName} userEmail={userEmail} />

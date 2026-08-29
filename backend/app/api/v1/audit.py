@@ -4,7 +4,7 @@ Admin and Auditor, enforced server-side. Read-only in the strongest sense - ther
 update or delete route on `audit_events` here or anywhere else, at any role, because the table is
 append-only and a correction to it is a new event, never an edit.
 
-The export streams. This table has been filling since the very first  and has no upper bound,
+The export streams. This table has been filling since the very first step and has no upper bound,
 so the response is produced row by row from a server-side cursor rather than assembled in memory
 and handed to the client in one piece. See `app.services.audit_query.stream_csv`.
 """

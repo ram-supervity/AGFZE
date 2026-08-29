@@ -4,7 +4,7 @@ The `audit_events` table is append-only. No update or delete route may ever be e
 any role, and no service may mutate a row once it is written; a correction is recorded as a new
 event that references the same entity.
 
-`event_metadata` holds metadata only — identifiers, role slugs, decision outcomes, counts. It must
+`event_metadata` holds metadata only - identifiers, role slugs, decision outcomes, counts. It must
 never carry document text and never an AI prompt or response. Anything that needs the payload
 itself belongs in the owning domain table, not here.
 """

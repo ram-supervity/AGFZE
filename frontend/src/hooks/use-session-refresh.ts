@@ -4,7 +4,7 @@ import { signIn, useSession } from "next-auth/react";
 import { useEffect, useRef } from "react";
 
 /**
- * A refresh grant that Keycloak rejects cannot be recovered from in the background — the user has
+ * A refresh grant that Keycloak rejects cannot be recovered from in the background - the user has
  * to go through the identity provider again.
  */
 export function useSessionRefresh(): void {

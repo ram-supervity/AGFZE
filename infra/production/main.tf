@@ -2,7 +2,7 @@
  * The deployed shape of this platform: two containers, one managed database, one secrets store,
  * one WAF, and the schedules that keep the sweeps running.
  *
- * Written as Terraform rather than as a runbook because every claim this  makes about
+ * Written as Terraform rather than as a runbook because every claim this step makes about
  * production - encryption at rest, private-only connectivity, point-in-time recovery, a WAF in
  * front of both services - is a claim about a setting somebody has to have actually set. A
  * document saying "enable backups" is not a backup. `verify-production.sh` beside it reads the same
@@ -252,20 +252,20 @@ resource "google_storage_bucket" "documents" {
 
 locals {
   secret_ids = [
-    "keycloak-oidc-client-secret",   #   human sign-in
-    "database-password",             #   Postgres
-    "nextauth-secret",               #   session signing
-    "storage-signed-url-secret",     #   document link signing
-    "sentry-dsn",                    #   error tracking
-    "azure-ad-client-secret",        #   mailbox intake,  tracker
-    "gemini-api-key",                #   every AI call
-    "sap-api-password",              #   SAP posting, optional
-    "sap-api-key",                   #   SAP posting, optional
-    "dms-api-password",              #   DMS upload, optional
-    "dms-api-key",                   #   DMS upload, optional
-    "keycloak-admin-client-secret",  #   role override
-    "vapid-private-key",             #  push signing
-    "smtp-password",                 #  email delivery
+    "keycloak-oidc-client-secret",   # Step 1  human sign-in
+    "database-password",             # Step 1  Postgres
+    "nextauth-secret",               # Step 1  session signing
+    "storage-signed-url-secret",     # Step 1  document link signing
+    "sentry-dsn",                    # Step 1  error tracking
+    "azure-ad-client-secret",        # Step 2  mailbox intake, Step 7 tracker
+    "gemini-api-key",                # Step 2  every AI call
+    "sap-api-password",              # Step 7  SAP posting, optional
+    "sap-api-key",                   # Step 7  SAP posting, optional
+    "dms-api-password",              # Step 7  DMS upload, optional
+    "dms-api-key",                   # Step 7  DMS upload, optional
+    "keycloak-admin-client-secret",  # Step 9  role override
+    "vapid-private-key",             # Step 10 push signing
+    "smtp-password",                 # Step 10 email delivery
   ]
 }
 

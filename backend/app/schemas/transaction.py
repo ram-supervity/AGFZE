@@ -246,7 +246,7 @@ class TransactionListItem(BaseModel):
     # shared expense or loss allocation is modelled anywhere yet - see PurchaseLeg.is_b2b.
     is_b2b: bool = False
     b2b_partner_name: str | None = None
-    # Real from . Null still means something specific and true: no shipment record exists
+    # Real from Step 6. Null still means something specific and true: no shipment record exists
     # for this transaction, which is not the same as a shipment that is on schedule.
     shipment_status: str | None = None
     # The worst staleness on any of this transaction's shipments, so the list can show at a
@@ -301,10 +301,10 @@ class TransactionDetail(TransactionListItem):
     created_by_name: str | None = None
     closed_at: datetime | None
     purchase_leg: PurchaseLegRead | None = None
-    # Populated from . The field was always declared here; nothing about the response shape
+    # Populated from Step 5. The field was always declared here; nothing about the response shape
     # changed to carry it, which is the point.
     sales_leg: SalesLegRead | None = None
-    # Populated from , and the third leg to arrive without the response shape changing to
+    # Populated from Step 6, and the third leg to arrive without the response shape changing to
     # carry it.
     fa_leg: FaLegRead | None = None
     # The configured FA schema's fields that have no named column, rendered ready for the
@@ -319,7 +319,7 @@ class TransactionDetail(TransactionListItem):
     # validate the wrong shape instead of the presented one the workspace actually needs.
     linked_shipments: list[LinkedShipmentRead] = Field(default_factory=list)
     containers: list[ContainerRead] = Field(default_factory=list)
-    # The three integration jobs this transaction owes the outside world, from . A small,
+    # The three integration jobs this transaction owes the outside world, from Step 7. A small,
     # additive field on an existing response rather than an endpoint of its own: a preparing desk
     # asking "did this reach SAP?" is asking about their transaction, not about a queue.
     integration_jobs: list[IntegrationJobRead] = Field(default_factory=list)

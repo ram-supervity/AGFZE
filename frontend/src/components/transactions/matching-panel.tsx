@@ -67,7 +67,7 @@ export function MatchingPanel({ detail }: { detail: TransactionDetail }) {
         <p className="rounded-md border border-signal-review/35 bg-signal-review/10 px-3 py-2 text-sm text-foreground">
           The grade read from the document
           {detail.extracted_commodity_value
-            ? ` — "${detail.extracted_commodity_value}" — `
+            ? ` - "${detail.extracted_commodity_value}" - `
             : " "}
           matches no active commodity code. Set it in the Extraction panel before submitting.
         </p>
@@ -80,7 +80,7 @@ export function MatchingPanel({ detail }: { detail: TransactionDetail }) {
         {detail.documents.length === 0 ? (
           <p className="rounded-md border border-dashed border-border bg-surface px-3 py-6 text-center text-sm text-muted-foreground">
             No documents attached yet. That is a normal state for a transaction registered by
-            hand — attach them from the inbox upload screen, or as the supplier sends them.
+            hand - attach them from the inbox upload screen, or as the supplier sends them.
           </p>
         ) : (
           <ul className="space-y-2">

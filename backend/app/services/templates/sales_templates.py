@@ -7,7 +7,7 @@ file does not name is caught before anything is written - the model cannot inven
 a document, and it cannot delete one the declaration marks as required.
 
 Territory selects field content and the territory-specific reference line, not a separate
-template file. **Stated assumption:** the governing material for this  describes what each
+template file. **Stated assumption:** the governing material for this step describes what each
 territory's paperwork must reference, not four structurally different legal layouts, so building
 four separate documents would be inventing three sets of contract structure nobody specified.
 One template per document type, with territory-driven content inside it, is what the available
@@ -320,7 +320,7 @@ CONTRACT_CLAUSES: tuple[TemplateClause, ...] = (
 SALES_CONTRACT_TEMPLATE = DocumentTemplate(
     document_type=DocumentType.DRAFT_CONTRACT.value,
     title="SALES CONTRACT",
-    subtitle="Draft for internal review — not issued, not signed",
+    subtitle="Draft for internal review - not issued, not signed",
     filename="sales_contract_template.docx",
     fields=CONTRACT_FIELDS,
     clauses=CONTRACT_CLAUSES,
@@ -471,7 +471,7 @@ INVOICE_CLAUSES: tuple[TemplateClause, ...] = (
 SALES_INVOICE_TEMPLATE = DocumentTemplate(
     document_type=DocumentType.DRAFT_INVOICE.value,
     title="COMMERCIAL INVOICE",
-    subtitle="Draft for internal review — not issued, not signed",
+    subtitle="Draft for internal review - not issued, not signed",
     filename="sales_invoice_template.docx",
     fields=INVOICE_FIELDS,
     clauses=INVOICE_CLAUSES,
@@ -495,7 +495,7 @@ SALES_INVOICE_TEMPLATE = DocumentTemplate(
 # it invoices against. Every clause below that would have asserted something about the shipment
 # has been left out rather than softened.
 #
-# **Approval tier — an open question, stated here rather than decided.** Discovery says a Performa
+# **Approval tier - an open question, stated here rather than decided.** Discovery says a Performa
 # invoice "requires CEO approval". This platform has no `ceo` role: its approving tier is
 # `approver_hod`, with `admin` alongside. Inventing a role would change who can sign off what on
 # the day the platform goes live, which is not a decision a template file should make. So a
@@ -607,7 +607,7 @@ PERFORMA_CLAUSES: tuple[TemplateClause, ...] = (
 PERFORMA_INVOICE_TEMPLATE = DocumentTemplate(
     document_type=DocumentType.DRAFT_PERFORMA_INVOICE.value,
     title="PERFORMA INVOICE",
-    subtitle="Draft for internal review — not issued, not signed",
+    subtitle="Draft for internal review - not issued, not signed",
     filename="performa_invoice_template.docx",
     fields=PERFORMA_FIELDS,
     clauses=PERFORMA_CLAUSES,
@@ -703,7 +703,7 @@ BANK_LETTER_CLAUSES: tuple[TemplateClause, ...] = (
 BANK_COVER_LETTER_TEMPLATE = DocumentTemplate(
     document_type=DocumentType.DRAFT_BANK_COVER_LETTER.value,
     title="BANK COVER LETTER",
-    subtitle="Draft for internal review — not issued, not signed",
+    subtitle="Draft for internal review - not issued, not signed",
     filename="bank_cover_letter_template.docx",
     fields=BANK_LETTER_FIELDS,
     clauses=BANK_LETTER_CLAUSES,

@@ -14,8 +14,8 @@ export const metadata: Metadata = { title: "Settings" };
 /**
  * Your own settings, and structurally only your own.
  *
- * The profile is read from `GET /users/me` and written through `PATCH /users/me/preferences` —
- * the endpoint declared in  and deliberately left unbuilt until there was a page to pair it
+ * The profile is read from `GET /users/me` and written through `PATCH /users/me/preferences` -
+ * the endpoint declared in Step 1 and deliberately left unbuilt until there was a page to pair it
  * with. Neither takes an account identifier, so there is nothing here that could address another
  * user even if a request tried to.
  */

@@ -1,10 +1,10 @@
 """The audit explorer: filtering, the streamed export, and the metadata discipline.
 
 The last of those is the one worth stating plainly. `audit_events.metadata` has been documented
-since  as holding metadata only - identifiers, counts, decisions, state transitions - and
+since Step 1 as holding metadata only - identifiers, counts, decisions, state transitions - and
 never document text, never an AI prompt or completion, never a credential. This module checks
 that the discipline actually held across a representative sample of call sites from every prior
-, rather than assuming it did.
+step, rather than assuming it did.
 """
 
 from __future__ import annotations
@@ -117,7 +117,7 @@ async def test_the_event_type_filter_is_populated_from_the_data(
 ):
     """Not from a list written by hand.
 
-    Ten  have contributed to this vocabulary, so the filter is a SELECT DISTINCT over what
+    Ten steps have contributed to this vocabulary, so the filter is a SELECT DISTINCT over what
     the table actually holds. Adding a new kind of event makes it appear with no code change.
     """
     _, headers = await admin_user(signed_in)
@@ -237,7 +237,7 @@ async def test_the_export_endpoint_returns_a_csv_and_records_that_it_was_taken(
 async def test_audit_metadata_never_carries_document_or_prompt_text(
     client: AsyncClient, db_session: AsyncSession, signed_in
 ):
-    """Checked across a representative sample of call sites from every prior ."""
+    """Checked across a representative sample of call sites from every prior step."""
     _, headers = await admin_user(signed_in)
     await seed_sample(db_session)
 

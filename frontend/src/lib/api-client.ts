@@ -208,14 +208,14 @@ export interface MatchCandidate {
 /** Mirrors the backend `MatchOutcomeRead`. */
 export interface MatchOutcome {
   outcome:
-    | "auto_linked"
-    | "suggested"
-    | "new_transaction"
-    | "duplicate_linked"
-    | "superseded"
-    | "already_linked"
-    | "no_reference"
-    | "not_applicable";
+  | "auto_linked"
+  | "suggested"
+  | "new_transaction"
+  | "duplicate_linked"
+  | "superseded"
+  | "already_linked"
+  | "no_reference"
+  | "not_applicable";
   message: string;
   transaction_id: string | null;
   batch_number: string | null;
@@ -241,7 +241,7 @@ export interface PurchaseLeg {
   rate: string | null;
   advance_payment_percent: string | null;
   hedge_date: string | null;
-  /** The hedging day's range. `hedge_low_price` is discovery's "LLME" — the low end of it. */
+  /** The hedging day's range. `hedge_low_price` is discovery's "LLME" - the low end of it. */
   hedge_low_price: string | null;
   hedge_high_price: string | null;
   port_of_loading: string | null;
@@ -417,13 +417,13 @@ export interface TransactionListItem {
   has_sales_leg: boolean;
   has_fa_leg: boolean;
   /**
-   * A joint B2B purchase, and the partner it is shared with. The tag only — no profit split,
+   * A joint B2B purchase, and the partner it is shared with. The tag only - no profit split,
    * shared expense or loss allocation is modelled anywhere yet.
    */
   is_b2b: boolean;
   b2b_partner_name: string | null;
   /**
-   * Real from . Null still means something specific: no shipment record exists for this
+   * Real from Step 6. Null still means something specific: no shipment record exists for this
    * transaction, which is not the same claim as "on schedule".
    */
   shipment_status: string | null;
@@ -449,9 +449,9 @@ export interface TransactionDetail extends TransactionListItem {
   created_by_name: string | null;
   closed_at: string | null;
   purchase_leg: PurchaseLeg | null;
-  /** Populated from . The field was always declared; it was simply always empty. */
+  /** Populated from Step 5. The field was always declared; it was simply always empty. */
   sales_leg: SalesLeg | null;
-  /** Populated from , the third leg to arrive without the response shape changing. */
+  /** Populated from Step 6, the third leg to arrive without the response shape changing. */
   fa_leg: FaLeg | null;
   /** The schema-driven extras, ready to render. Empty for every non-FA transaction. */
   fa_extra_fields: TransactionField[];
@@ -711,7 +711,7 @@ export async function apiFetch<T>(
     throw new ApiError(
       0,
       "offline",
-      "This action needs a connection. Nothing has been sent, and nothing has been saved — reconnect and try again.",
+      "This action needs a connection. Nothing has been sent, and nothing has been saved - reconnect and try again.",
     );
   }
 
@@ -1543,7 +1543,7 @@ export async function createFaTransaction(
   );
 }
 
-// --- integrations () -----------------------------------------------------------------------
+// --- integrations (Step 7) -----------------------------------------------------------------------
 
 /** Mirrors the backend `IntegrationJobRead` schema. */
 export interface IntegrationJob {
@@ -1640,7 +1640,7 @@ export async function completeIntegrationJobManually(
   );
 }
 
-// --- dashboard, analytics and reports () ----------------------------------------------------
+// --- dashboard, analytics and reports (Step 8) ----------------------------------------------------
 
 /** One number, and the query that reproduces it. Mirrors the backend `FigureRead` schema. */
 export interface Figure {
@@ -1937,7 +1937,7 @@ export async function requestReport(
   );
 }
 
-// --- administration, audit, settings and notifications () -----------------------------------
+// --- administration, audit, settings and notifications (Step 9) -----------------------------------
 
 /** Mirrors the backend `RuleConfigurationRead` schema. */
 export interface RuleConfigurationRow {
@@ -1960,7 +1960,7 @@ export interface RuleConfigurationRow {
 
 export interface RuleConfigurationList {
   items: RuleConfigurationRow[];
-  /** Read from the data, so a rule a later  seeds appears in the filter without a change. */
+  /** Read from the data, so a rule a later step seeds appears in the filter without a change. */
   rule_ids: string[];
   streams: string[];
 }
@@ -2195,7 +2195,7 @@ export interface GraphEdgeRead {
 export interface TransactionGraph {
   transaction_id: string;
   batch_number: string;
-  /** False when no projection is configured or it could not be reached — which is not the same
+  /** False when no projection is configured or it could not be reached - which is not the same
    *  claim as "this transaction is connected to nothing". */
   available: boolean;
   nodes: GraphNodeRead[];
@@ -2319,7 +2319,7 @@ export async function fetchAdminUsers(
  * Override an account's roles.
  *
  * The API calls Keycloak first and commits nothing locally until Keycloak confirms, so a
- * rejection from this call means nothing changed anywhere — which is exactly what the screen
+ * rejection from this call means nothing changed anywhere - which is exactly what the screen
  * tells the administrator when it catches the error.
  */
 export async function updateUserRoles(
@@ -2410,7 +2410,7 @@ export async function markAllNotificationsRead(
 }
 
 
-// --- push subscriptions () -----------------------------------------------------------
+// --- push subscriptions (Step 10) -----------------------------------------------------------
 
 export interface VapidPublicKey {
   public_key: string;

@@ -138,7 +138,7 @@ async def test_the_seeded_invoice_and_contract_schemas_round_trip(
         "incoterm",
         "payment_terms",
     }
-    # The tolerance the contract states on its quantity survives the round trip for .
+    # The tolerance the contract states on its quantity survives the round trip for Step 3.
     assert contract.field("quantity").tolerance == pytest.approx(0.10)
 
     # The response schema handed to the model is built from the row, never written in code.

@@ -53,7 +53,7 @@ export default async function NotificationsPage({
     <div className="space-y-6">
       <PageHeader
         title="Notifications"
-        description="What the platform needs to tell you, and only you. Delivered in-app — nothing here was emailed or pushed, because neither channel exists yet."
+        description="What the platform needs to tell you, and only you. Delivered in-app - nothing here was emailed or pushed, because neither channel exists yet."
       />
 
       {failure || !data ? (

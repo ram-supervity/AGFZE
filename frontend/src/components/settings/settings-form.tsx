@@ -38,7 +38,7 @@ const STREAM_OPTIONS = [
  *   in-app  always on, for everybody. It is stated and not offered, because it is the platform's
  *           record of having told somebody something rather than a choice.
  *   email   a simple toggle, and the only thing `notification_channel` actually governs.
- *   push    a browser permission for this device, with its own control — a different kind of
+ *   push    a browser permission for this device, with its own control - a different kind of
  *           thing entirely from a database preference, and presented as one.
  */
 export function SettingsForm({ profile }: SettingsFormProps) {
@@ -84,7 +84,7 @@ export function SettingsForm({ profile }: SettingsFormProps) {
           <h2 className="text-sm font-semibold text-foreground">Profile</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Mirrored from the identity provider and refreshed on every sign-in. It is read-only
-            here because Entra ID owns it — a change made on this page would be overwritten by
+            here because Entra ID owns it - a change made on this page would be overwritten by
             your next token.
           </p>
         </div>
@@ -137,7 +137,7 @@ export function SettingsForm({ profile }: SettingsFormProps) {
           <p className="mt-1 text-sm text-muted-foreground">
             How the platform reaches you when an exception lands on your desk, a decision is
             waiting on you, or something you submitted comes back. The three channels below are
-            independent — you can be on all of them at once.
+            independent - you can be on all of them at once.
           </p>
         </div>
 
@@ -194,7 +194,7 @@ export function SettingsForm({ profile }: SettingsFormProps) {
           </Select>
           <p className="text-xs text-muted-foreground">
             Recorded against your account. No screen reads it yet, so setting it changes nothing
-            you see today — it is said here rather than left to be discovered. Whatever it is set
+            you see today - it is said here rather than left to be discovered. Whatever it is set
             to, your queues and dashboard stay scoped by your roles and never by this.
           </p>
         </div>

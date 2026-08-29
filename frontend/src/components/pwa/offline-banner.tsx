@@ -56,7 +56,7 @@ export function OfflineBanner() {
       <CloudOff aria-hidden="true" className="h-4 w-4 shrink-0 text-muted-foreground" />
       {online ? (
         <span>
-          You&rsquo;re viewing cached data{age ? ` from ${age}` : ""} — reconnect to update.
+          You&rsquo;re viewing cached data{age ? ` from ${age}` : ""} - reconnect to update.
         </span>
       ) : (
         <span>

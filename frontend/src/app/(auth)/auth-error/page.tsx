@@ -71,7 +71,7 @@ const AUTH_ERROR_COPY: Record<string, AuthErrorCopy> = {
   },
   Callback: {
     title: "The sign-in couldn’t be finished",
-    description: "The final  of the sign-in did not complete.",
+    description: "The final step of the sign-in did not complete.",
     detail: "Please start again from the sign-in page.",
   },
   SessionRequired: {

@@ -115,9 +115,9 @@ export function DistributionTable({ data }: DistributionTableProps) {
                 <TableCell className="text-sm text-muted-foreground">
                   {row.recipient_roles.length > 0
                     ? row.recipient_roles
-                        .map((role) => ROLE_LABELS[role as PlatformRole] ?? role)
-                        .join(", ")
-                    : "—"}
+                      .map((role) => ROLE_LABELS[role as PlatformRole] ?? role)
+                      .join(", ")
+                    : "-"}
                   {row.recipient_user_ids.length > 0
                     ? ` · ${row.recipient_user_ids.length} named ${row.recipient_user_ids.length === 1 ? "person" : "people"}`
                     : ""}

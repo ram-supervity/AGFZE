@@ -24,13 +24,13 @@ const SIZE = 168;
 const RADIUS = 68;
 const STROKE = 22;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
-// A 2px gap of surface between adjacent arcs, so two neighbouring  of one ramp stay
-// separable at a glance and for a reader who cannot tell the two  apart by colour.
+// A 2px gap of surface between adjacent arcs, so two neighbouring steps of one ramp stay
+// separable at a glance and for a reader who cannot tell the two steps apart by colour.
 const GAP = 2;
 
 // The ordinal ramp, in order. These are lifecycle phases, not unrelated categories: earliest is
-// lightest and the last is darkest, and the sequence is the encoding. Five  because five is
-// how many  of one hue stay distinguishable against this surface - the table underneath
+// lightest and the last is darkest, and the sequence is the encoding. Five steps because five is
+// how many steps of one hue stay distinguishable against this surface - the table underneath
 // carries every individual status.
 const PHASE_TOKENS = [
   "hsl(var(--chart-phase-1))",
@@ -110,7 +110,7 @@ export function DonutChart({ slices, totalLabel, className }: DonutChartProps) {
       </div>
 
       {/* The legend is also the table view: every phase is named and numbered in text, so identity
-          never depends on telling two  of one ramp apart. Width-capped so the label and its
+          never depends on telling two steps of one ramp apart. Width-capped so the label and its
           count stay near each other - a name on the far left and a number on the far right of a
           wide card is two columns nobody can read across. */}
       <ul className="w-full min-w-0 max-w-sm space-y-1.5">

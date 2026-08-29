@@ -1,12 +1,12 @@
 """Default `DocumentTypeSchema` rows shipped with the platform.
 
-These are the seed values the  migration writes. They are data, not behaviour: the
-extraction service reads whatever the table holds at call time, so editing a row ( adds
+These are the seed values the Step 2 migration writes. They are data, not behaviour: the
+extraction service reads whatever the table holds at call time, so editing a row (Step 9 adds
 the screen) changes what is extracted with no code change at all.
 
 `tolerance` is recorded against the field it belongs to. It is documentation of what the field
 type will bear; the tolerance a transaction is actually judged against is the configured one in
-`rule_configurations`, which the  rule engine reads per rule and per commodity.
+`rule_configurations`, which the Step 3 rule engine reads per rule and per commodity.
 """
 
 from __future__ import annotations
@@ -232,7 +232,7 @@ CONTRACT_FIELDS: list[dict[str, Any]] = [
     },
 ]
 
-# The shipping-document schema, added with the sales module.  seeded only the invoice and
+# The shipping-document schema, added with the sales module. Step 2 seeded only the invoice and
 # the contract, because those were the two documents the purchase pipeline read; the sales
 # workflow triggers off a bill of lading, and a document type with no schema behind it cannot be
 # extracted at all.
@@ -351,14 +351,14 @@ BILL_OF_LADING_FIELDS: list[dict[str, Any]] = [
     },
 ]
 
-# The FA document schema, seeded in .
+# The FA document schema, seeded in Step 6.
 #
 # Exactly seven fields, and every one of them is named in AGFZE's own material: a counterparty, a
 # reference, a quantity, a rate, an amount, a currency and the document's own type. Nothing has
 # been added to "round it out" - AGFZE's material states that FA's fields and document types are
 # not finalised and explicitly instructs against inventing them, so this is the whole list until
 # the business confirms more. When it does, the extra fields are rows added here or through the
-#  admin screen; they land in `fa_legs.extra_fields` and render on the workspace with no
+# Step 9 admin screen; they land in `fa_legs.extra_fields` and render on the workspace with no
 # code change on either side of the wire.
 #
 # `required` is False on every field for the same reason. A required field is an assertion about
@@ -430,7 +430,7 @@ FA_DOCUMENT_FIELDS: list[dict[str, Any]] = [
 ]
 
 # Completeness checklists for the territory document packs. Stored against the invoice, which is
-# the anchor document every pack is assembled around.  is the  that enforces them.
+# the anchor document every pack is assembled around. Step 3 is the step that enforces them.
 INDIA_MANDATORY_DOCUMENTS: list[str] = [
     "invoice",
     "packing_list",
@@ -452,7 +452,7 @@ CHINA_MANDATORY_DOCUMENTS: list[str] = [
 
 
 def fa_schema_rows() -> list[dict[str, Any]]:
-    """The one row the FA module seeds, kept apart from the earlier ' lists for the reason
+    """The one row the FA module seeds, kept apart from the earlier steps' lists for the reason
     they are kept apart from each other: each migration has to keep writing exactly what it
     wrote, and the unique constraint on (document_type, territory) would reject a second insert.
 
@@ -472,7 +472,7 @@ def fa_schema_rows() -> list[dict[str, Any]]:
 def sales_schema_rows() -> list[dict[str, Any]]:
     """The rows the sales module seeds. Separate from `default_schema_rows` on purpose.
 
-    That function is what the  migration writes and has to keep writing unchanged; the
+    That function is what the Step 2 migration writes and has to keep writing unchanged; the
     unique constraint on (document_type, territory) would reject a second insert of the same row.
     """
     return [

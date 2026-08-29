@@ -1,8 +1,8 @@
 """The tracker synchronisation: a real client, against a target nobody has named yet.
 
 This adapter is not built like the SAP and DMS ones, and the difference is the point of the whole
-. Microsoft Graph's Excel API is documented, this platform has authenticated against Graph
-since , and the write itself is completely specified - so the client is real, complete
+step. Microsoft Graph's Excel API is documented, this platform has authenticated against Graph
+since Step 2, and the write itself is completely specified - so the client is real, complete
 working code that extends the existing Graph service rather than a second one built beside it.
 
 What is genuinely unknown is only *which* workbook, sheet, table and columns AGFZE wants written

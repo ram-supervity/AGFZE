@@ -121,11 +121,11 @@ const DESCRIPTION: Record<Status, string> = {
   checking: "Asking your browser what it currently allows…",
   unsupported: "This browser does not support web push. Nothing else about your account changes.",
   blocked:
-    "Your browser has blocked notifications for this site. Only its own site settings can undo that — no page can ask again once it has been refused.",
+    "Your browser has blocked notifications for this site. Only its own site settings can undo that - no page can ask again once it has been refused.",
   off: "Not enabled on this browser. Turning it on asks your browser for permission and registers this device; it does not change your email setting.",
   on: "This browser is subscribed and will be notified when an approval or exception reaches you, even with the tab closed.",
   "no-worker":
-    "Push needs the installed service worker, which is only registered in a production build — not under `npm run dev`. Your other browsers are unaffected.",
+    "Push needs the installed service worker, which is only registered in a production build - not under `npm run dev`. Your other browsers are unaffected.",
 };
 
 function StatusBadge({ status }: { status: Status }) {

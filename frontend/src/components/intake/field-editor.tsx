@@ -95,7 +95,7 @@ export function FieldEditor({ field, editable, saving, onSave }: FieldEditorProp
                 htmlFor={`reason-${field.id}`}
                 className="text-xs font-medium text-foreground"
               >
-                Reason for the correction (required — this field was extracted below the
+                Reason for the correction (required - this field was extracted below the
                 confidence threshold)
               </label>
               <Textarea
@@ -139,7 +139,7 @@ export function FieldEditor({ field, editable, saving, onSave }: FieldEditorProp
             aria-expanded={showHistory}
           >
             <History className="h-3 w-3" aria-hidden="true" />
-            {showHistory ? "Hide override history" : "Corrected by a person — show history"}
+            {showHistory ? "Hide override history" : "Corrected by a person - show history"}
           </button>
           {showHistory ? (
             <dl className="mt-2 space-y-1 rounded-md bg-surface p-2.5 text-xs">

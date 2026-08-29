@@ -6,7 +6,7 @@ clause rather than in which tile the browser chose to render. An account holding
 role reaches an honest set of zeros rather than an unfiltered count.
 
 Both endpoints are read-only in the strongest sense: nothing in this module, or anything it calls,
-writes to a transaction, an exception, an approval or an integration job. The only rows this 
+writes to a transaction, an exception, an approval or an integration job. The only rows this step
 creates anywhere are its own reports and the audit and job rows behind them.
 
 Results are cached in-process for a short, configurable TTL, keyed on the scope as well as the

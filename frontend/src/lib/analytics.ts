@@ -43,7 +43,7 @@ export function drillThroughHref(figure: DrillThrough): string | null {
  *
  * The API counts every status separately, and the table beside the chart shows all of them. The
  * donut groups them because ten ordered segments cannot be told apart by colour at any size - the
- * ordinal ramp behind it only carries five distinguishable . Nothing is hidden by the
+ * ordinal ramp behind it only carries five distinguishable steps. Nothing is hidden by the
  * grouping: each arc names the statuses inside it and drills through to them.
  */
 export const LIFECYCLE_PHASES = [
@@ -182,14 +182,14 @@ const NUMBER = new Intl.NumberFormat("en-GB");
 const DECIMAL = new Intl.NumberFormat("en-GB", { maximumFractionDigits: 1 });
 
 export function formatFigure(value: number | null | undefined, unit = "count"): string {
-  if (value === null || value === undefined) return "—";
+  if (value === null || value === undefined) return "-";
   if (unit === "percent") return `${DECIMAL.format(value)}%`;
   if (unit === "hours") return `${DECIMAL.format(value)}h`;
   return NUMBER.format(value);
 }
 
 export function formatHours(value: number | null | undefined): string {
-  if (value === null || value === undefined) return "—";
+  if (value === null || value === undefined) return "-";
   if (value < 48) return `${DECIMAL.format(value)}h`;
   return `${DECIMAL.format(value / 24)}d`;
 }
@@ -203,15 +203,15 @@ const DATE_TIME = new Intl.DateTimeFormat("en-GB", {
 const DATE_ONLY = new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeZone: "UTC" });
 
 export function formatMoment(value: string | null | undefined): string {
-  if (!value) return "—";
+  if (!value) return "-";
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? "—" : `${DATE_TIME.format(parsed)} UTC`;
+  return Number.isNaN(parsed.getTime()) ? "-" : `${DATE_TIME.format(parsed)} UTC`;
 }
 
 export function formatDay(value: string | null | undefined): string {
-  if (!value) return "—";
+  if (!value) return "-";
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? "—" : DATE_ONLY.format(parsed);
+  return Number.isNaN(parsed.getTime()) ? "-" : DATE_ONLY.format(parsed);
 }
 
 /** `2026-08-28`, the form both the date inputs and the API query parameters use. */

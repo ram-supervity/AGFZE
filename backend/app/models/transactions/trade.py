@@ -2,9 +2,9 @@
 
 `TradeTransaction` is the shared parent record for one physical batch of material. It carries
 nothing that belongs to a single desk: the commercial terms of the buy live on `PurchaseLeg`,
-and the sales and FA legs  5 and 6 introduced hang off this same row through their own
+and the sales and FA legs Steps 5 and 6 introduced hang off this same row through their own
 one-to-one foreign keys. Adding those legs never altered this table, and neither did adding the
-containers and shipments  attaches to it.
+containers and shipments Step 6 attaches to it.
 """
 
 from __future__ import annotations
@@ -155,7 +155,7 @@ class TradeTransaction(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utcnow, onupdate=utcnow
     )
-    # Unused until the closure  much later in the roadmap; declared now so the column does
+    # Unused until the closure step much later in the roadmap; declared now so the column does
     # not have to be added under a live table.
     closed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
@@ -165,8 +165,8 @@ class TradeTransaction(Base):
         uselist=False,
         cascade="all, delete-orphan",
     )
-    # Added in . A relationship, not a column: the foreign key that performs the attachment
-    # lives on `sales_legs`, so this table's own definition is unchanged - exactly what 
+    # Added in Step 5. A relationship, not a column: the foreign key that performs the attachment
+    # lives on `sales_legs`, so this table's own definition is unchanged - exactly what Step 3
     # said would happen when the sales leg arrived.
     sales_leg: Mapped[SalesLeg | None] = relationship(
         back_populates="transaction",
@@ -174,7 +174,7 @@ class TradeTransaction(Base):
         uselist=False,
         cascade="all, delete-orphan",
     )
-    # Added in , and added the same way for the third time: the foreign key that performs
+    # Added in Step 6, and added the same way for the third time: the foreign key that performs
     # the attachment lives on `fa_legs`, so this table's definition is again unchanged.
     fa_leg: Mapped[FaLeg | None] = relationship(
         back_populates="transaction",

@@ -19,7 +19,7 @@ sentry-sdk
 python-dotenv
 python-multipart
 
-# deterministic fuzzy matching for transaction matching Not an AI call, and
+# deterministic fuzzy matching for transaction matching (Step 3). Not an AI call, and
 # deliberately independent of the Gemini services.
 rapidfuzz
 
@@ -31,7 +31,7 @@ neo4j
 # local-filesystem deployment carries the dependency without ever constructing a client.
 google-cloud-storage
 
-# document intake and extraction 
+# document intake and extraction (Step 2)
 google-genai
 pymupdf
 python-docx
@@ -39,7 +39,7 @@ pandas
 openpyxl
 python-magic
 
-# outbound delivery channels 
+# outbound delivery channels (Step 10)
 # pywebpush signs and delivers a VAPID Web Push payload; Jinja2 renders the HTML and plaintext
 # parts of a notification email. Jinja2 arrives transitively through other packages already, and
 # is declared here anyway because this platform now imports it directly.

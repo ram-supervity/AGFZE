@@ -299,7 +299,7 @@ def render_pdf(content: dict[str, Any]) -> bytes:
 
     canvas.gap(6)
     canvas.line(
-        f"Generation reference {content.get('generation_reference')} — quote it to resolve this "
+        f"Generation reference {content.get('generation_reference')} - quote it to resolve this "
         "document back to the exact query, parameters and audit record behind it.",
         size=8.5,
         colour=ACCENT,

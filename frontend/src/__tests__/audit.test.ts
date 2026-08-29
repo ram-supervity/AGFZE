@@ -19,20 +19,20 @@ describe("canReadAuditTrail", () => {
 });
 
 describe("eventTypeLabel", () => {
-  it("renders an event type from any  without a lookup table", () => {
-    // Deliberately derived rather than enumerated: ten  have contributed to this vocabulary
+  it("renders an event type from any step without a lookup table", () => {
+    // Deliberately derived rather than enumerated: ten steps have contributed to this vocabulary
     // and an eleventh will contribute more, so a hardcoded map would go stale on the day a new
     // event is first recorded.
     expect(eventTypeLabel("document.extraction_confirmed")).toBe(
-      "Document — extraction confirmed",
+      "Document - extraction confirmed",
     );
     expect(eventTypeLabel("integration.job.awaiting_manual_action")).toBe(
-      "Integration — job awaiting manual action",
+      "Integration - job awaiting manual action",
     );
     expect(eventTypeLabel("admin.rule_configuration.updated")).toBe(
-      "Admin — rule configuration updated",
+      "Admin - rule configuration updated",
     );
-    expect(eventTypeLabel("report.generated")).toBe("Report — generated");
+    expect(eventTypeLabel("report.generated")).toBe("Report - generated");
   });
 
   it("handles a bare event type with no namespace", () => {
@@ -41,7 +41,7 @@ describe("eventTypeLabel", () => {
 });
 
 describe("entityTypeLabel", () => {
-  it("reads back the entity kinds every  writes against", () => {
+  it("reads back the entity kinds every step writes against", () => {
     expect(entityTypeLabel("trade_transaction")).toBe("Trade transaction");
     expect(entityTypeLabel("exception_case")).toBe("Exception case");
     expect(entityTypeLabel("integration_job")).toBe("Integration job");

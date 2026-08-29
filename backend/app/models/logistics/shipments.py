@@ -164,7 +164,7 @@ class BillOfLading(Base):
 
     A draft bill and an original carry the same fields and say the same things; what separates
     them is what they prove, and that is `bl_type` together with `is_original_received`. Reading
-    it off `documents.document_type` was always the looser signal, and from this  it is the
+    it off `documents.document_type` was always the looser signal, and from this step it is the
     supporting one rather than the authority.
     """
 

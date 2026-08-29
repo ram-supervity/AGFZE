@@ -27,7 +27,7 @@ export interface DistributionEditDialogProps {
  * Configure who receives a scheduled report.
  *
  * Two things this dialog will not let somebody do, both because the server will not either. An
- * active rule that names nobody cannot be saved — it would read on the table as distribution that
+ * active rule that names nobody cannot be saved - it would read on the table as distribution that
  * works while reaching no one, and stopping a report is what deactivating is for. And an ad-hoc
  * report cannot be chosen at all: its requester is already watching it generate.
  *

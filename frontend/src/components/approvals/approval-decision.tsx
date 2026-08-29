@@ -93,7 +93,7 @@ export function ApprovalDecisionScreen({
       setReason("");
       toast.success(
         decision === "approved"
-          ? `${detail.batch_number} is approved. Nothing has been posted to any other system — that connection does not exist yet.`
+          ? `${detail.batch_number} is approved. Nothing has been posted to any other system - that connection does not exist yet.`
           : `${detail.batch_number} has gone back to the desk that raised it, editable, with your reason on it.`,
       );
       router.refresh();
@@ -189,7 +189,7 @@ export function ApprovalDecisionScreen({
             <CardContent className="pt-0">
               <dl className="grid gap-3 sm:grid-cols-2">
                 <Fact label="Batch">{detail.batch_number}</Fact>
-                <Fact label="Request">{detail.request_code ?? "—"}</Fact>
+                <Fact label="Request">{detail.request_code ?? "-"}</Fact>
                 <Fact label="Supplier">{detail.counterparty ?? "Not recorded"}</Fact>
                 <Fact label="Contract">{detail.contract_number ?? "Not recorded"}</Fact>
                 <Fact label="Supplier invoice">
@@ -208,7 +208,7 @@ export function ApprovalDecisionScreen({
                 </Fact>
                 <Fact label="Port of loading">{detail.port_of_loading ?? "Not recorded"}</Fact>
                 <Fact label="Submitted by">
-                  {detail.submitted_by_name ?? detail.requested_by_name ?? "—"}
+                  {detail.submitted_by_name ?? detail.requested_by_name ?? "-"}
                   {detail.submitted_at ? ` · ${formatDateTime(detail.submitted_at)}` : ""}
                 </Fact>
                 <Fact label="Hedge date">{detail.hedge_date ?? "Not fixed"}</Fact>
@@ -298,7 +298,7 @@ export function ApprovalDecisionScreen({
                 {needsReason ? (
                   <div className="space-y-1.5">
                     <Label htmlFor="decision-reason">
-                      Why (required — the desk has to know what to change)
+                      Why (required - the desk has to know what to change)
                     </Label>
                     <Textarea
                       id="decision-reason"
@@ -331,7 +331,7 @@ export function ApprovalDecisionScreen({
                   </Button>
                   <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
                     Approving moves this transaction to Approved and stops there. Nothing is posted
-                    to SAP, a tracker or a document store — none of those connections exist yet.
+                    to SAP, a tracker or a document store - none of those connections exist yet.
                     Rejecting or requesting changes returns it to the desk, editable, with your
                     reason attached; neither is a dead end.
                   </p>

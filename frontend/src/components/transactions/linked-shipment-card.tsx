@@ -83,7 +83,7 @@ export function LinkedShipmentCard({ shipments }: LinkedShipmentCardProps) {
                   variant="outline"
                   className={cn(
                     SHIPMENT_STATUS_CHIP[shipment.status as ShipmentStatus] ??
-                      "border-border bg-muted text-muted-foreground",
+                    "border-border bg-muted text-muted-foreground",
                   )}
                 >
                   {labelFor(SHIPMENT_STATUS_LABELS, shipment.status)}
@@ -156,7 +156,7 @@ function Item({ label, value }: { label: string; value: string | null }) {
       <dt className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
         {label}
       </dt>
-      <dd className="mt-0.5 truncate text-foreground">{value ?? "—"}</dd>
+      <dd className="mt-0.5 truncate text-foreground">{value ?? "-"}</dd>
     </div>
   );
 }

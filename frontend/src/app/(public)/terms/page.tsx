@@ -27,7 +27,7 @@ export default function TermsPage() {
           <p>
             The platform is for authorised AGFZE staff and supervised contractors only. Your account
             is personal to you. Do not share your credentials, do not let another person work under
-            your session, and do not sign in on behalf of a colleague — including where doing so
+            your session, and do not sign in on behalf of a colleague - including where doing so
             would be quicker or a colleague is absent. If you believe your credentials have been
             exposed, report it to the IT service desk immediately. Access ends when your engagement
             with AGFZE ends.
@@ -94,7 +94,7 @@ export default function TermsPage() {
             Counterparty identities, negotiated prices, premiums, contract terms, volumes, and
             shipment details are confidential business information. Do not disclose them outside
             AGFZE, or inside AGFZE to colleagues who have no business need to know. Take particular
-            care with screenshots, forwarded email, and exports — the platform’s access controls do
+            care with screenshots, forwarded email, and exports - the platform’s access controls do
             not follow a file once it leaves the platform. Confidentiality obligations continue after
             your access ends.
           </p>
@@ -114,8 +114,8 @@ export default function TermsPage() {
           <h2>10. Consequences of misuse</h2>
           <p>
             Breach of these terms may lead to suspension or withdrawal of access, disciplinary action
-            under AGFZE’s employment policies, termination of a contractor engagement, and — where
-            the conduct warrants it — referral to the relevant authorities and recovery of loss.
+            under AGFZE’s employment policies, termination of a contractor engagement, and - where
+            the conduct warrants it - referral to the relevant authorities and recovery of loss.
             Suspected breaches are investigated by the platform team together with the responsible
             business owner.
           </p>

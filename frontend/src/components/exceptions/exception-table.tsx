@@ -106,7 +106,7 @@ export function ExceptionTable({ queue }: { queue: ExceptionQueue }) {
                   </Badge>
                 </TableCell>
                 <TableCell className="whitespace-nowrap text-right tabular-nums">
-                  {row.value ? formatMoney(row.value, row.currency ?? "USD") : "—"}
+                  {row.value ? formatMoney(row.value, row.currency ?? "USD") : "-"}
                 </TableCell>
                 <TableCell className="whitespace-nowrap">
                   {/* The colour ramp is computed from the configured threshold the API sends

@@ -14,9 +14,8 @@ function detailFor(event: StatusEvent): string | null {
     return names.length > 0 ? `Fields: ${names.join(", ")}` : null;
   }
   if (typeof metadata.rule_id === "string") {
-    return `${metadata.rule_id}${
-      typeof metadata.reason === "string" ? ` — ${metadata.reason}` : ""
-    }`;
+    return `${metadata.rule_id}${typeof metadata.reason === "string" ? ` - ${metadata.reason}` : ""
+      }`;
   }
   if (Array.isArray(metadata.blocking_rules)) {
     const ids = metadata.blocking_rules
@@ -50,9 +49,8 @@ export function HistoryPanel({ detail }: { detail: TransactionDetail }) {
           {labelFor(TRANSACTION_STATUS_LABELS, detail.status as TransactionStatus)}
         </span>
         {detail.submitted_at
-          ? ` since ${formatDateTime(detail.submitted_at)}, submitted by ${
-              detail.submitted_by_name ?? "a platform user"
-            }.`
+          ? ` since ${formatDateTime(detail.submitted_at)}, submitted by ${detail.submitted_by_name ?? "a platform user"
+          }.`
           : "."}
       </p>
 

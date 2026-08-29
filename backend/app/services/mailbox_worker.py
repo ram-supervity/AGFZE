@@ -7,8 +7,8 @@ Two jobs on one timer:
 * run a delta-query poll every `GRAPH_POLL_INTERVAL_SECONDS`, so a webhook delivery that never
   arrives costs at most one interval of latency rather than the message itself.
 
-The delta link is persisted through the  storage service rather than in a new table: it is
-an opaque provider token, and this  is not permitted a sixth table for it.
+The delta link is persisted through the Step 1 storage service rather than in a new table: it is
+an opaque provider token, and this step is not permitted a sixth table for it.
 """
 
 from __future__ import annotations

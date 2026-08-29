@@ -1,8 +1,8 @@
-# Keycloak realm — `agfze`
+# Keycloak realm - `agfze`
 
 `realm-agfze.json` is imported by the local Keycloak container on first start (`make setup`, or
 `make realm-import` to force a fresh import). It carries the realm's roles, its two clients, the
-seeded local development logins, and — since this revision — the **Microsoft Entra ID identity
+seeded local development logins, and - since this revision - the **Microsoft Entra ID identity
 provider**, imported disabled and populated entirely with placeholders.
 
 ## Why the broker exists
@@ -10,7 +10,7 @@ provider**, imported disabled and populated entirely with placeholders.
 The governing material requires Keycloak to broker Entra ID rather than to hold a second password
 store: staff sign in with the Microsoft 365 credentials and the MFA policy they already have, and
 Keycloak maps their Entra ID group membership onto this platform's eight roles. Everything on the
-application side of that arrangement is already built and tested — the NextAuth OIDC flow, the
+application side of that arrangement is already built and tested - the NextAuth OIDC flow, the
 backend's JWKS signature verification, and the role-claim mapping that turns a token into what a
 user may do. What was missing, and what this file now scaffolds, is the realm-side configuration.
 
@@ -53,7 +53,7 @@ nothing, so these are copied verbatim from `backend/app/core/roles.py`:
 
 Each mapper uses `syncMode: FORCE`, so group membership is re-evaluated on **every** sign-in: a
 person removed from a group in Entra ID loses the role on their next token, with nobody editing
-anything here. The `/admin/users` screen's manual override stays what it always was — the
+anything here. The `/admin/users` screen's manual override stays what it always was - the
 documented exception to group-driven mapping, written to Keycloak first and mirrored locally only
 once Keycloak confirms it.
 
@@ -61,5 +61,5 @@ once Keycloak confirms it.
 
 The seeded local logins in this file are development-only and are irrelevant in a deployment that
 brokers Entra ID; they exist so `make setup` produces a usable stack on a laptop with no tenant.
-Leaving the identity provider disabled — which is how it imports — keeps that behaviour exactly
+Leaving the identity provider disabled - which is how it imports - keeps that behaviour exactly
 as it is today.

@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
  * says plainly that those actions are unavailable rather than letting somebody try one.
  */
 const STILL_AVAILABLE = [
-  "Screens you have already opened in this session — queues, transactions, exceptions, shipments",
+  "Screens you have already opened in this session - queues, transactions, exceptions, shipments",
   "The detail of any record whose page you have visited recently",
   "Your notification list as it stood when the connection dropped",
 ];
@@ -59,7 +59,7 @@ export function OfflineView() {
           <div>
             <h1 className="text-lg font-semibold text-foreground">You&rsquo;re offline</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              This device has no connection to the Command Centre. Nothing has been lost — the
+              This device has no connection to the Command Centre. Nothing has been lost - the
               platform&rsquo;s record is on the server, and this browser has not changed any of it.
             </p>
           </div>
@@ -121,7 +121,7 @@ export function OfflineView() {
               />
               <span className="text-sm text-muted-foreground">
                 Watching for the connection to come back. This page will say so the moment it
-                does — there is nothing to refresh.
+                does - there is nothing to refresh.
               </span>
             </>
           )}

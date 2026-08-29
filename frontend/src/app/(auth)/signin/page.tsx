@@ -91,7 +91,7 @@ export default function SignInPage() {
             AGFZE Command Centre is an internal AGFZE system that brings trade correspondence,
             documents, and approvals together, so everyone handling a transaction works from the same
             picture. It is being built to read incoming email and attachments and propose structured
-            records — proposals only, which a named user verifies before anything is approved.
+            records - proposals only, which a named user verifies before anything is approved.
             Access is restricted to AGFZE staff and is governed by the role assigned to your account.
           </p>
         </div>

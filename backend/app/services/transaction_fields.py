@@ -231,7 +231,7 @@ PURCHASE_FIELDS: tuple[EditableField, ...] = (
     ),
 )
 
-# The sell side's editable surface, added in . Everything about how a correction behaves -
+# The sell side's editable surface, added in Step 5. Everything about how a correction behaves -
 # the reason gate, the provenance record, the synchronous re-validation - is inherited from the
 # machinery above rather than reimplemented, which is why recording a price fixation is a field
 # correction through the existing endpoint and not a second endpoint that resembles one.

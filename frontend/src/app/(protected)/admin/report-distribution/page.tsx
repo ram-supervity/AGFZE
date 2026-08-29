@@ -42,7 +42,7 @@ export default async function ReportDistributionPage() {
     <div className="space-y-6">
       <PageHeader
         title="Report distribution"
-        description="Which roles receive the daily and monthly reports, and on which channel. Recipients are notified with a link to the report in the platform — the file itself is never attached to an email."
+        description="Which roles receive the daily and monthly reports, and on which channel. Recipients are notified with a link to the report in the platform - the file itself is never attached to an email."
       />
 
       {failure || !data ? (

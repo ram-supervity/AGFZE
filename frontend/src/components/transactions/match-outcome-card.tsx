@@ -161,7 +161,7 @@ export function MatchOutcomeCard({
               disabled={busy !== null}
               onClick={() => resolve("reject")}
             >
-              {busy === "reject" ? "Opening…" : "None of these — open a new batch"}
+              {busy === "reject" ? "Opening…" : "None of these - open a new batch"}
             </Button>
           </div>
         ) : (

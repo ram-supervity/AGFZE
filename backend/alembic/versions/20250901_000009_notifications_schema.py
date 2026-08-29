@@ -4,15 +4,15 @@ Revision ID: 20250901_000009
 Revises: 20250801_000008
 Create Date: 2025-09-01 00:00:09.000000+00:00
 
-One new table and nothing else. The administration module this  ships edits
-`rule_configurations` and `document_type_schemas` exactly as they were created in  2 and 3 -
+One new table and nothing else. The administration module this step ships edits
+`rule_configurations` and `document_type_schemas` exactly as they were created in Steps 2 and 3 -
 both have carried a mandatory `change_reason` since the migration that created them, so making
 them editable needs no schema change at all, only the endpoint and the screen that finally
 enforce what the column has always demanded. The audit explorer reads `audit_events` as it
 stands, and the settings page writes `users.notification_channel`, which has existed since
-.
+Step 1.
 
-No previously-deferred foreign key needs upgrading here either: nothing built in  1-8 held
+No previously-deferred foreign key needs upgrading here either: nothing built in Steps 1-8 held
 a reference to a notification waiting for a table to exist.
 
 `notifications` carries no `email_sent_at` and no `push_sent_at`. Those channels do not exist on

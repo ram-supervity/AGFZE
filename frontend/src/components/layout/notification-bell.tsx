@@ -32,7 +32,7 @@ const POLL_INTERVAL_MS = 60_000;
 const PREVIEW_LIMIT = 6;
 
 /**
- * The header bell, deferred explicitly since  and built now that there is real data.
+ * The header bell, deferred explicitly since Step 1 and built now that there is real data.
  *
  * It polls rather than holding a socket open, deliberately: this platform has no realtime
  * transport, the notifications it counts are minutes-relevant rather than seconds-relevant, and a

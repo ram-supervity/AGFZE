@@ -102,7 +102,7 @@ INTEGRATION_DISCLOSURE = (
 
 # Printed on every generated report, in the document itself, so a page that has been forwarded by
 # hand still says what it is. The wording is deliberately about *this file* rather than about the
-# platform's capability: since 2 a scheduled report can be distributed, but what is
+# platform's capability: since Step 12 a scheduled report can be distributed, but what is
 # distributed is a notification linking to the report in the platform, never the file itself. A
 # document that has reached a reader some other way was put there by a person, not by the platform.
 DISTRIBUTION_DISCLOSURE = (

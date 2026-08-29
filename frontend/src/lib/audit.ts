@@ -11,7 +11,7 @@ export function canReadAuditTrail(roles: PlatformRole[]): boolean {
 /**
  * Prose for an event type, derived rather than enumerated.
  *
- * There is deliberately no map of every event type here. Ten  have contributed to this
+ * There is deliberately no map of every event type here. Ten steps have contributed to this
  * vocabulary and an eleventh will contribute more, so the explorer's filter is populated from the
  * data the API actually holds and each value is rendered by splitting it on its own separators.
  * A hardcoded list would be wrong the day a new event is first recorded.
@@ -19,7 +19,7 @@ export function canReadAuditTrail(roles: PlatformRole[]): boolean {
 export function eventTypeLabel(value: string): string {
   const [domain, ...rest] = value.split(".");
   const action = rest.join(" ").replace(/[._]/g, " ");
-  const readable = action ? `${domain} — ${action}` : domain.replace(/_/g, " ");
+  const readable = action ? `${domain} - ${action}` : domain.replace(/_/g, " ");
   return readable.charAt(0).toUpperCase() + readable.slice(1);
 }
 
@@ -49,7 +49,7 @@ export function actorLabel(
  *
  * The API has already redacted by key and bounded by length; this only decides what fits on a
  * table row. Nothing here renders document text or a model prompt, because nothing in the payload
- * it is handed contains any — the metadata discipline is upheld at every call site that writes
+ * it is handed contains any - the metadata discipline is upheld at every call site that writes
  * one, and the read layer redacts anything that ever slipped.
  */
 export function metadataSummary(metadata: Record<string, unknown>, limit = 4): string {

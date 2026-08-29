@@ -9,7 +9,7 @@ import { beforeAll, describe, expect, it, vi } from "vitest";
  *
  * These assertions are made against `public/sw.js` itself - the file a browser would actually
  * run, built by the same script `npm run build` runs - rather than against the source modules it
- * was assembled from. The rule that matters most in this  is a negative one ("a mutating
+ * was assembled from. The rule that matters most in this step is a negative one ("a mutating
  * request is never written to or served from cache"), and a negative is only worth proving
  * against the artefact that ships.
  */

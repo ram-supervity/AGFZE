@@ -24,7 +24,7 @@ interface SearchParams {
 /**
  * Every governance event recorded since the platform's first day, finally readable.
  *
- * The trail has been written to at dozens of points across every module since  and has
+ * The trail has been written to at dozens of points across every module since Step 1 and has
  * never had a screen. It is read-only here and read-only everywhere: the table is append-only,
  * and a correction to it is a new event referencing the same entity, never an edit.
  */
@@ -63,7 +63,7 @@ export default async function AuditPage({
     <div className="space-y-6">
       <PageHeader
         title="Audit explorer"
-        description="Who did what, when, and to which record — every governance-relevant action across intake, matching, validation, exceptions, approvals, sales drafting, FA, shipments, integration and reporting."
+        description="Who did what, when, and to which record - every governance-relevant action across intake, matching, validation, exceptions, approvals, sales drafting, FA, shipments, integration and reporting."
       />
 
       {failure || !data ? (

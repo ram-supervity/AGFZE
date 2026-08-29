@@ -42,7 +42,7 @@ const KPI_GRID = "kpi_grid";
  * Everything on this form decides what is *asked for*. Nothing on it decides what the answer is:
  * a section names a data block the reporting service already produces, and the block's figures
  * are computed from the governed tables when the report runs. That is why there is no field here
- * for a value, a threshold or a target anywhere — there could not be one.
+ * for a value, a threshold or a target anywhere - there could not be one.
  *
  * The report type and the template key are shown and are not editable. They are the row's
  * identity: every generated report records which template produced it, so re-pointing one would

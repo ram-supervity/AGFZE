@@ -89,7 +89,7 @@ export function ShipmentDashboard({ list, filters }: ShipmentDashboardProps) {
         toast.success(result.message);
       } else {
         // Not an error. No adapter handles this shipment, which is the ordinary case, and the
-        // right next  is to open it and type in what the carrier said.
+        // right next step is to open it and type in what the carrier said.
         toast(result.message, { icon: "✎" });
       }
       router.refresh();
@@ -105,10 +105,10 @@ export function ShipmentDashboard({ list, filters }: ShipmentDashboardProps) {
   if (list.items.length === 0) {
     const filtered = Boolean(
       filters.search ||
-        filters.status ||
-        filters.carrier ||
-        filters.portOfDischarge ||
-        filters.staleOnly,
+      filters.status ||
+      filters.carrier ||
+      filters.portOfDischarge ||
+      filters.staleOnly,
     );
     return (
       <div className="space-y-4">
@@ -176,7 +176,7 @@ export function ShipmentDashboard({ list, filters }: ShipmentDashboardProps) {
                   </p>
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
-                  {row.port_of_loading ?? "—"} → {row.port_of_discharge ?? "—"}
+                  {row.port_of_loading ?? "-"} → {row.port_of_discharge ?? "-"}
                 </TableCell>
                 <TableCell>
                   <div className="flex flex-wrap items-center gap-1.5">
@@ -184,7 +184,7 @@ export function ShipmentDashboard({ list, filters }: ShipmentDashboardProps) {
                       variant="outline"
                       className={cn(
                         SHIPMENT_STATUS_CHIP[row.status as ShipmentStatus] ??
-                          "border-border bg-muted text-muted-foreground",
+                        "border-border bg-muted text-muted-foreground",
                       )}
                     >
                       {labelFor(SHIPMENT_STATUS_LABELS, row.status)}
@@ -222,7 +222,7 @@ export function ShipmentDashboard({ list, filters }: ShipmentDashboardProps) {
                       <ExternalLink className="h-3 w-3" aria-hidden="true" />
                     </Link>
                   ) : (
-                    <span className="text-sm text-muted-foreground">—</span>
+                    <span className="text-sm text-muted-foreground">-</span>
                   )}
                 </TableCell>
                 <TableCell className="text-right" onClick={(event) => event.stopPropagation()}>
@@ -338,7 +338,7 @@ function ShipmentCard({
           variant="outline"
           className={cn(
             SHIPMENT_STATUS_CHIP[shipment.status as ShipmentStatus] ??
-              "border-border bg-muted text-muted-foreground",
+            "border-border bg-muted text-muted-foreground",
           )}
         >
           {labelFor(SHIPMENT_STATUS_LABELS, shipment.status)}
@@ -347,7 +347,7 @@ function ShipmentCard({
 
       <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
         <Field label="Route">
-          {shipment.port_of_loading ?? "—"} → {shipment.port_of_discharge ?? "—"}
+          {shipment.port_of_loading ?? "-"} → {shipment.port_of_discharge ?? "-"}
         </Field>
         <Field label="Milestone">
           {labelFor(SHIPMENT_MILESTONE_LABELS, shipment.current_milestone ?? "unknown")}

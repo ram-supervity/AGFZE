@@ -106,7 +106,7 @@ export function targetAvailabilityNote(target: string, configured: boolean): str
   if (configured) {
     return `${label} is configured on this deployment, so jobs are posted automatically.`;
   }
-  return `${label} has no endpoint configured on this deployment. Its jobs are prepared in full and completed by a person — that is the expected outcome here, not a failure.`;
+  return `${label} has no endpoint configured on this deployment. Its jobs are prepared in full and completed by a person - that is the expected outcome here, not a failure.`;
 }
 
 /** The reason a manual completion demands, held to the same length the API enforces. */

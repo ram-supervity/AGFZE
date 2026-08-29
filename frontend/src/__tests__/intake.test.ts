@@ -107,6 +107,6 @@ describe("vocabularies", () => {
   it("falls back to the raw value rather than showing nothing for an unknown one", () => {
     expect(labelFor(CATEGORY_LABELS, "purchase")).toBe("Purchase");
     expect(labelFor(CATEGORY_LABELS, "something_new")).toBe("something_new");
-    expect(labelFor(CATEGORY_LABELS, null)).toBe("—");
+    expect(labelFor(CATEGORY_LABELS, null)).toBe("-");
   });
 });

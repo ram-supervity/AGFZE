@@ -220,16 +220,15 @@ export function LineChart({ labels, series, valueLabel, className }: LineChartPr
       <p className="min-h-[1.25rem] text-xs text-muted-foreground" aria-live="polite">
         {hover === null
           ? `${labels.length} point${labels.length === 1 ? "" : "s"} · ${valueLabel}`
-          : `${labels[hover]} — ${series
-              .map(
-                (row) =>
-                  `${row.label}: ${
-                    row.points[hover] === null
-                      ? "no data"
-                      : `${row.points[hover]}${row.unit ?? ""}`
-                  }`,
-              )
-              .join(" · ")}`}
+          : `${labels[hover]} - ${series
+            .map(
+              (row) =>
+                `${row.label}: ${row.points[hover] === null
+                  ? "no data"
+                  : `${row.points[hover]}${row.unit ?? ""}`
+                }`,
+            )
+            .join(" · ")}`}
       </p>
     </div>
   );

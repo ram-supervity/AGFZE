@@ -45,7 +45,7 @@ const ACTOR_TYPE_CHIP: Record<string, string> = {
  * The append-only trail, read.
  *
  * The event-type and entity-type filters are populated from what the API found in the data, not
- * from a list held here. Ten  have contributed event types and an eleventh will contribute
+ * from a list held here. Ten steps have contributed event types and an eleventh will contribute
  * more; a hardcoded list would be wrong the day a new one is first recorded.
  *
  * The metadata column shows a summary and never a document's text or a model prompt. That holds

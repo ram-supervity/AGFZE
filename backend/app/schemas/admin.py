@@ -2,7 +2,7 @@
 
 Every update schema on this page carries a mandatory `change_reason`. That is not a new rule
 introduced here: `rule_configurations.change_reason` and `document_type_schemas.change_reason`
-have both been NOT NULL since the migrations that created them, in  3 and 2. This  is
+have both been NOT NULL since the migrations that created them, in Steps 3 and 2. This step is
 where the requirement finally has a screen and an endpoint that enforce it rather than a seed
 script that satisfies it.
 
@@ -95,7 +95,7 @@ class RuleConfigurationUpdate(ChangeReasoned):
 class RuleConfigurationList(BaseModel):
     items: list[RuleConfigurationRead]
     # Every distinct rule identifier present in the data, for the screen's filter. Read from the
-    # rows themselves, so a rule a later  adds appears without a code change here.
+    # rows themselves, so a rule a later step adds appears without a code change here.
     rule_ids: list[str]
     streams: list[str]
 

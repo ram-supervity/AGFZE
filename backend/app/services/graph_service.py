@@ -4,9 +4,9 @@ A dedicated Azure AD app registration authenticates with the OAuth2 client-crede
 This is a machine identity: it has no interactive login and is entirely separate from the
 Keycloak/Entra broker staff sign in through.
 
-Three capabilities live on this one client, and they are deliberately not three clients. 
+Three capabilities live on this one client, and they are deliberately not three clients. Step 2
 gave it Mail.Read, narrowed by an application access policy to the one approved shared mailbox.
- adds the Excel writes the tracker synchronisation needs, and the grant behind them is
+Step 7 adds the Excel writes the tracker synchronisation needs, and the grant behind them is
 `Files.ReadWrite.Selected` (or `Sites.Selected` on the site holding the workbooks) - the specific
 tracker workbooks and nothing else. A tenant-wide Files.ReadWrite.All would let this process
 rewrite every document in the organisation to update one row of one spreadsheet, and nothing here
@@ -405,7 +405,7 @@ class GraphClient:
 
         return DeltaPage(messages=messages, delta_link=next_delta)
 
-    # --- workbook (the tracker, from ) ------------------------------------------------
+    # --- workbook (the tracker, from Step 7) ------------------------------------------------
 
     def _require_tracker(self) -> None:
         if not settings.tracker_configured:

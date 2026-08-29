@@ -24,7 +24,7 @@ const STEPS: Step[] = [
   },
   {
     title: "The workspace is where a deal is checked",
-    body: "Extracted figures, what they were matched against, and every business rule that has been run — with the machine's own confidence shown beside each value. You can correct anything, and a correction always asks why.",
+    body: "Extracted figures, what they were matched against, and every business rule that has been run - with the machine's own confidence shown beside each value. You can correct anything, and a correction always asks why.",
   },
   {
     title: "Nothing is committed without a decision",

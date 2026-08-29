@@ -37,14 +37,14 @@ const clientSchema = z.object({
 export type ServerEnv = z.infer<typeof serverSchema>;
 export type ClientEnv = z.infer<typeof clientSchema>;
 
-// Names and reasons only — the values are secrets and must never reach a log or a stack trace.
+// Names and reasons only - the values are secrets and must never reach a log or a stack trace.
 function environmentError(scope: string, error: z.ZodError): Error {
   const problems = error.issues
-    .map((issue) => `${issue.path.join(".") || "(root)"} — ${issue.message}`)
+    .map((issue) => `${issue.path.join(".") || "(root)"} - ${issue.message}`)
     .join("; ");
   return new Error(
     `${scope} environment is not configured: ${problems}. ` +
-      "Set these variables before starting the app (see frontend/.env.example).",
+    "Set these variables before starting the app (see frontend/.env.example).",
   );
 }
 

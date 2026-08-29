@@ -1,6 +1,6 @@
-"""The three architectural claims this build has been making since , tested as claims.
+"""The three architectural claims this build has been making since Step 3, tested as claims.
 
-Each of these has been asserted in prose in a README and demonstrated by a  that happened to
+Each of these has been asserted in prose in a README and demonstrated by a step that happened to
 work. That is not the same as a test that would fail if the claim stopped being true, and the claim
 stopping being true is exactly the sort of thing that happens quietly - a helpful `if rule_id ==`
 in the orchestrator, an exception hook that grows a rule list, a notification call site that learns
@@ -86,10 +86,10 @@ def test_the_orchestrator_names_no_individual_rule() -> None:
     assert "LEG_ATTRIBUTES" in engine_source
 
 
-def test_bringing_the_later__rules_to_life_was_a_registration_and_an_import() -> None:
-    """ 5, 6 and 11 each added an evaluator module and one import at the foot of the five.
+def test_bringing_the_later_steps_rules_to_life_was_a_registration_and_an_import() -> None:
+    """Steps 5, 6 and 11 each added an evaluator module and one import at the foot of the five.
 
-    Asserted as the thing that is actually checkable: the rules those  brought are registered
+    Asserted as the thing that is actually checkable: the rules those steps brought are registered
     from modules of their own, and the module the original five live in contains no body for any of
     them.
     """
@@ -172,7 +172,7 @@ def test_the_exception_hook_names_no_rule_and_imports_no_engine() -> None:
 async def test_shipment_staleness_opens_a_case_without_any_rule_evaluation(
     db_session: AsyncSession, monkeypatch
 ) -> None:
-    """'s proof, made an assertion.
+    """Step 6's proof, made an assertion.
 
     A shipment nobody has looked at is not a rule evaluation over extracted data, so it does not
     route through the rule-to-category mapping at all: the sweep calls `open_case` directly. The
@@ -247,7 +247,7 @@ async def test_the_same_function_serves_both_callers(db_session: AsyncSession) -
 
 # --- promise 3: the delivery channels changed no call site -------------------------------------
 
-# The five trigger points  wired, by the names they are called by.
+# The five trigger points Step 9 wired, by the names they are called by.
 TRIGGERS = (
     "notify_exception_opened",
     "notify_approval_requested",
@@ -316,10 +316,10 @@ def test_no_caller_of_the_five_triggers_mentions_a_channel() -> None:
 async def test_an_exception_reaches_all_three_channels_through_the_unchanged_call_site(
     db_session: AsyncSession, signed_in, monkeypatch
 ) -> None:
-    """The behavioural half. `record_hard_failures` is the  code, byte for byte.
+    """The behavioural half. `record_hard_failures` is the Step 4 code, byte for byte.
 
     It calls `open_case`, which calls `notify_exception_opened`, which calls `notify` - and email
-    and push happen inside `notify`. Nothing on that chain above `notify` was touched by ,
+    and push happen inside `notify`. Nothing on that chain above `notify` was touched by Step 10,
     and this is the test that would fail if the extension had been made at a call site instead.
     """
     relay = install_relay(monkeypatch)

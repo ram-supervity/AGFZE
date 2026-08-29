@@ -40,7 +40,7 @@ export default async function UnprovisionedPage() {
             yet, so there is nothing here to show.
           </p>
           <p>
-            A platform administrator assigns roles. Ask yours to add the role your work requires —
+            A platform administrator assigns roles. Ask yours to add the role your work requires -
             they will already know which one that is from your team. Once it is in place, select
             “Check again” below.
           </p>

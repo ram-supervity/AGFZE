@@ -59,7 +59,7 @@ export default async function IntegrationsPage({
     <div className="space-y-6">
       <PageHeader
         title="Integration monitor"
-        description="Every posting an approved transaction owes the tracker, SAP and the document store — what succeeded, what failed, and what is waiting on a person."
+        description="Every posting an approved transaction owes the tracker, SAP and the document store - what succeeded, what failed, and what is waiting on a person."
       />
 
       {failure || !queue ? (

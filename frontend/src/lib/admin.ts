@@ -43,7 +43,7 @@ export const ADMIN_AREAS = [
     label: "Audit explorer",
     href: "/admin/audit",
     summary:
-      "Every governance event recorded since the platform's first day, filterable and exportable. Read-only, always — the trail is append-only.",
+      "Every governance event recorded since the platform's first day, filterable and exportable. Read-only, always - the trail is append-only.",
   },
   {
     key: "report-distribution",
@@ -57,14 +57,14 @@ export const ADMIN_AREAS = [
     label: "Report templates",
     href: "/admin/report-templates",
     summary:
-      "Which sections each report carries, in what order, and which figures go in each. Structure only — every number is still computed from the governed tables when the report is generated.",
+      "Which sections each report carries, in what order, and which figures go in each. Structure only - every number is still computed from the governed tables when the report is generated.",
   },
   {
     key: "integrations",
     label: "Integration monitor",
     href: "/admin/integrations",
     summary:
-      "What each approved transaction owes the tracker, SAP and the document store — what succeeded, what failed, and what is waiting on a person.",
+      "What each approved transaction owes the tracker, SAP and the document store - what succeeded, what failed, and what is waiting on a person.",
   },
 ] as const;
 

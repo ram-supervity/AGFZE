@@ -96,7 +96,7 @@ export function IntegrationMonitor({ queue, filters }: IntegrationMonitorProps) 
         toast.success(`${updated.target_label} accepted the posting: ${updated.external_reference}`);
       } else if (updated.status === "awaiting_manual_action") {
         toast(
-          "Nothing was posted — that target has no endpoint configured here. Everything needed to complete it by hand is on the job.",
+          "Nothing was posted - that target has no endpoint configured here. Everything needed to complete it by hand is on the job.",
           { icon: "✎" },
         );
       } else {
@@ -140,18 +140,18 @@ export function IntegrationMonitor({ queue, filters }: IntegrationMonitorProps) 
     count: number;
     title?: string;
   }[] = [
-    {
-      key: "",
-      label: "All systems",
-      count: Object.values(queue.counts_by_target).reduce((sum, value) => sum + value, 0),
-    },
-    ...INTEGRATION_TARGETS.map((target) => ({
-      key: target,
-      label: INTEGRATION_TARGET_LABELS[target],
-      count: queue.counts_by_target[target] ?? 0,
-      title: targetAvailabilityNote(target, Boolean(queue.configured_targets[target])),
-    })),
-  ];
+      {
+        key: "",
+        label: "All systems",
+        count: Object.values(queue.counts_by_target).reduce((sum, value) => sum + value, 0),
+      },
+      ...INTEGRATION_TARGETS.map((target) => ({
+        key: target,
+        label: INTEGRATION_TARGET_LABELS[target],
+        count: queue.counts_by_target[target] ?? 0,
+        title: targetAvailabilityNote(target, Boolean(queue.configured_targets[target])),
+      })),
+    ];
   const activeIndex = Math.max(
     0,
     tabs.findIndex((tab) => tab.key === active),
@@ -187,7 +187,7 @@ export function IntegrationMonitor({ queue, filters }: IntegrationMonitorProps) 
       ) : (
         <p className="text-sm leading-relaxed text-muted-foreground">
           {INTEGRATION_TARGETS.filter((target) => !queue.configured_targets[target]).length ===
-          INTEGRATION_TARGETS.length
+            INTEGRATION_TARGETS.length
             ? "No target system has an endpoint configured on this deployment, so every posting is prepared here and completed by a person. That is the expected state, not a fault."
             : "Each transaction owes three postings, worked independently. A job waiting on a person is neither a success nor a failure."}
         </p>
@@ -240,7 +240,7 @@ export function IntegrationMonitor({ queue, filters }: IntegrationMonitorProps) 
         <div className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-surface px-4 py-2.5 text-sm">
           <span className="text-muted-foreground">
             Showing one transaction&apos;s jobs
-            {queue.items[0]?.batch_number ? ` — ${queue.items[0].batch_number}` : ""}.
+            {queue.items[0]?.batch_number ? ` - ${queue.items[0].batch_number}` : ""}.
           </span>
           <Button variant="ghost" size="sm" onClick={() => navigate({ transaction_id: null })}>
             Show every job
@@ -259,7 +259,7 @@ export function IntegrationMonitor({ queue, filters }: IntegrationMonitorProps) 
           description={
             filters.target || filters.status || filters.transactionId
               ? "Clear the filters to see every job."
-              : "Three jobs appear here the moment a transaction is approved — one for the tracker, one for SAP and one for the document store."
+              : "Three jobs appear here the moment a transaction is approved - one for the tracker, one for SAP and one for the document store."
           }
         />
       ) : (
@@ -288,7 +288,7 @@ export function IntegrationMonitor({ queue, filters }: IntegrationMonitorProps) 
                       <ExternalLink className="h-3 w-3" aria-hidden="true" />
                     </Link>
                   ) : (
-                    <span className="text-sm text-muted-foreground">—</span>
+                    <span className="text-sm text-muted-foreground">-</span>
                   )}
                   <p className="mt-0.5 text-xs text-muted-foreground">
                     {job.counterparty ?? "No counterparty recorded"}
@@ -347,7 +347,7 @@ export function IntegrationMonitor({ queue, filters }: IntegrationMonitorProps) 
                       ) : null}
                     </>
                   ) : (
-                    <span className="text-sm text-muted-foreground">—</span>
+                    <span className="text-sm text-muted-foreground">-</span>
                   )}
                 </TableCell>
 

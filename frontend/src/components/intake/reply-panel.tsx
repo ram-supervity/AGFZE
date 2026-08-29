@@ -174,7 +174,7 @@ export function ReplyPanel({ requestId, replies, canCompose }: ReplyPanelProps) 
             />
             <p id="reply-message-help" className="text-xs text-muted-foreground">
               At least {MIN_MESSAGE} characters. The request reference and the standing disclaimer
-              are added by the platform, so you will see exactly what goes out before it does —
+              are added by the platform, so you will see exactly what goes out before it does -
               drafting sends nothing.
             </p>
             <Button

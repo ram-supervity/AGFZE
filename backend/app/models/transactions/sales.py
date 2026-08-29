@@ -1,11 +1,11 @@
 """The sell side of one batch: who it was sold to, on what terms, and against which contract.
 
 `SalesLeg` attaches to `TradeTransaction` through its own one-to-one foreign key, exactly as
-`PurchaseLeg` does. That is the whole of the attachment described throughout  - the parent
-table is not altered, gains no column and loses no constraint, which is what 's design
+`PurchaseLeg` does. That is the whole of the attachment described throughout Step 5 - the parent
+table is not altered, gains no column and loses no constraint, which is what Step 3's design
 promised and what this module is the proof of.
 
-There is no separate sales-contract entity, and this  does not invent one. A contract is
+There is no separate sales-contract entity, and this step does not invent one. A contract is
 identified by `sales_contract_no`, and every leg quoting that number is a shipment against it;
 `contracted_quantity_mt` is the total that contract covers, expected to be the same figure on
 every leg that shares the number. That is what makes the cross-transaction coverage check
@@ -61,7 +61,7 @@ class SalesLeg(Base):
     territory: Mapped[str] = mapped_column(String(16), index=True)
     sales_contract_no: Mapped[str] = mapped_column(String(64), index=True)
     # A necessary, well-justified addition beyond the original field list: the invoice-versus-
-    # quantity check this 's scope requires needs somewhere to record the total quantity a
+    # quantity check this step's scope requires needs somewhere to record the total quantity a
     # sales contract actually covers, and there is no separate sales-contract entity to hold it.
     # Expected to be consistent across every leg sharing the contract number.
     contracted_quantity_mt: Mapped[Decimal | None] = mapped_column(QUANTITY)

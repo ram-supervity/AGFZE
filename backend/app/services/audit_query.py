@@ -7,10 +7,10 @@ new event referencing the same entity, exactly as `app.models.audit` says.
 Two things here are deliberate rather than incidental:
 
 * The event-type filter is populated from a `SELECT DISTINCT` over the data, not from a list
-  written here. Ten  have contributed event types - intake, matching, validation,
+  written here. Ten steps have contributed event types - intake, matching, validation,
   exceptions, approvals, sales drafting, FA, shipments, integration jobs, reporting - and a
-  hardcoded list would be wrong on the day the eleventh  adds one.
-* The CSV export streams. This table has been accumulating since the very first  and there is
+  hardcoded list would be wrong on the day the eleventh step adds one.
+* The CSV export streams. This table has been accumulating since the very first step and there is
   no upper bound on it, so the export yields row by row from a server-side cursor and never
   materialises the result set. See :func:`stream_csv`.
 """
@@ -134,7 +134,7 @@ def list_query(
 async def event_types(session: AsyncSession) -> list[str]:
     """Every event type that actually exists in the data, alphabetically.
 
-    Read from the table, deliberately. Every  since the first has contributed its own
+    Read from the table, deliberately. Every step since the first has contributed its own
     vocabulary, and a filter built from a list maintained by hand would quietly stop offering the
     newest one.
     """
@@ -188,7 +188,7 @@ async def stream_csv(
 
     `stream_results` asks the driver for a server-side cursor and `yield_per` bounds how many ORM
     rows are alive at once, so memory here is a function of `chunk_size` and not of how many
-    events the platform has recorded since . The buffer is a single reusable `StringIO`
+    events the platform has recorded since Step 1. The buffer is a single reusable `StringIO`
     that is truncated after every flush; at no point does this function hold a list of rows.
     """
     buffer = io.StringIO()

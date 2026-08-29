@@ -93,7 +93,7 @@ export function ShipmentWorkspace({ initial, documents }: ShipmentWorkspaceProps
       if (updated.review_flagged) {
         toast(
           updated.review_reason ??
-            "That change has been saved and flagged for somebody to confirm.",
+          "That change has been saved and flagged for somebody to confirm.",
           { icon: "⚠" },
         );
       } else {
@@ -163,7 +163,7 @@ export function ShipmentWorkspace({ initial, documents }: ShipmentWorkspaceProps
           variant="outline"
           className={cn(
             SHIPMENT_STATUS_CHIP[shipment.status as ShipmentStatus] ??
-              "border-border bg-muted text-muted-foreground",
+            "border-border bg-muted text-muted-foreground",
           )}
         >
           {labelFor(SHIPMENT_STATUS_LABELS, shipment.status)}
@@ -192,8 +192,8 @@ export function ShipmentWorkspace({ initial, documents }: ShipmentWorkspaceProps
           <span>
             {shipment.review_reason ??
               "The last change to this shipment did not look plausible."}{" "}
-            It was saved regardless — correcting a wrong figure matters more than refusing a
-            surprising one — but somebody should confirm it against the carrier.
+            It was saved regardless - correcting a wrong figure matters more than refusing a
+            surprising one - but somebody should confirm it against the carrier.
           </span>
         </p>
       ) : null}
@@ -344,7 +344,7 @@ export function ShipmentWorkspace({ initial, documents }: ShipmentWorkspaceProps
                   />
                 </dl>
                 <p className="text-xs leading-relaxed text-muted-foreground">
-                  This is the field BR-07 holds a sales submission on — not the document type of
+                  This is the field BR-07 holds a sales submission on - not the document type of
                   whatever file happens to be attached.
                 </p>
               </>
@@ -399,7 +399,7 @@ function Item({
         {label}
       </dt>
       <dd className={cn("text-right text-sm text-foreground", mono && "font-mono")}>
-        {value ?? "—"}
+        {value ?? "-"}
       </dd>
     </div>
   );

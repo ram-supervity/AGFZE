@@ -524,7 +524,7 @@ async def test_the_document_index_searches_names_codes_and_extracted_values(
     listing = await client.get("/api/v1/documents", headers=headers)
     row = listing.json()["data"]["items"][0]
     assert row["id"] == str(document.id)
-    # Forward-compatible column, honestly empty until  creates something to link to.
+    # Forward-compatible column, honestly empty until Step 3 creates something to link to.
     assert row["transaction_id"] is None
 
 

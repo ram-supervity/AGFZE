@@ -80,10 +80,10 @@ export function ExceptionWorkspace({ initial, fields, commodities }: ExceptionWo
         correction:
           !escalate && selected
             ? {
-                name: selected.name,
-                value: fieldValue.trim() || null,
-                reason: fieldReason.trim() || undefined,
-              }
+              name: selected.name,
+              value: fieldValue.trim() || null,
+              reason: fieldReason.trim() || undefined,
+            }
             : null,
         escalate_to_hod: escalate,
       });
@@ -94,7 +94,7 @@ export function ExceptionWorkspace({ initial, fields, commodities }: ExceptionWo
       setFieldReason("");
       toast.success(
         escalate
-          ? "Escalated. The case stays open — nothing about the underlying problem has changed, and no message has been sent to anyone."
+          ? "Escalated. The case stays open - nothing about the underlying problem has changed, and no message has been sent to anyone."
           : "Resolved. The check behind this case now passes.",
       );
     } catch (error) {
@@ -174,7 +174,7 @@ export function ExceptionWorkspace({ initial, fields, commodities }: ExceptionWo
                       {detail.check_key ? ` · ${detail.check_key.replace(/_/g, " ")}` : ""}
                     </span>
                   ) : (
-                    "No business rule — raised by the intake pipeline"
+                    "No business rule - raised by the intake pipeline"
                   )}
                 </Fact>
                 <Fact label="Field">{detail.field_name ?? "Not tied to one field"}</Fact>
@@ -307,7 +307,7 @@ export function ExceptionWorkspace({ initial, fields, commodities }: ExceptionWo
                         {selected.reason_required ? (
                           <div className="space-y-1.5">
                             <Label htmlFor="exc-field-reason">
-                              Reason for the correction (required — this value was extracted below
+                              Reason for the correction (required - this value was extracted below
                               the confidence threshold)
                             </Label>
                             <Textarea
@@ -343,7 +343,7 @@ export function ExceptionWorkspace({ initial, fields, commodities }: ExceptionWo
 
                 <p className="text-xs leading-relaxed text-muted-foreground">
                   Resolving requires the check behind this case to actually pass afterwards; a note
-                  on its own will be refused. Escalating does not claim the problem is fixed — it
+                  on its own will be refused. Escalating does not claim the problem is fixed - it
                   raises the case&apos;s priority and leaves it open. Neither action sends a
                   message to anyone: this platform has no outbound notification yet.
                 </p>
@@ -376,13 +376,13 @@ export function ExceptionWorkspace({ initial, fields, commodities }: ExceptionWo
               {detail.transaction_id ? (
                 <>
                   <dl className="space-y-2">
-                    <Fact label="Batch">{detail.batch_number ?? "—"}</Fact>
+                    <Fact label="Batch">{detail.batch_number ?? "-"}</Fact>
                     <Fact label="Counterparty">{detail.counterparty ?? "Not recorded"}</Fact>
                     <Fact label="Value">
-                      {detail.value ? formatMoney(detail.value, detail.currency ?? "USD") : "—"}
+                      {detail.value ? formatMoney(detail.value, detail.currency ?? "USD") : "-"}
                     </Fact>
                     <Fact label="Status">
-                      {detail.transaction_status?.replace(/_/g, " ") ?? "—"}
+                      {detail.transaction_status?.replace(/_/g, " ") ?? "-"}
                     </Fact>
                   </dl>
                   <Button asChild variant="outline" size="sm">
@@ -440,7 +440,7 @@ export function ExceptionWorkspace({ initial, fields, commodities }: ExceptionWo
                 <p className="text-xs text-muted-foreground">
                   Raised by {detail.escalated_by_name ?? "a platform user"}
                   {detail.escalated_at ? ` · ${formatDateTime(detail.escalated_at)}` : ""}. Visible
-                  here only — no notification was sent.
+                  here only - no notification was sent.
                 </p>
               </CardContent>
             </Card>

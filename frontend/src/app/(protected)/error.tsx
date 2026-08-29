@@ -30,7 +30,7 @@ export default function ProtectedError({
         </CardHeader>
         <CardContent className="space-y-3 text-sm leading-7 text-muted-foreground">
           <p>
-            Nothing you did caused this, and no work has been lost. Try loading the page again — if
+            Nothing you did caused this, and no work has been lost. Try loading the page again - if
             it still fails, go back to the dashboard and let the platform team know.
           </p>
           {error.digest ? (

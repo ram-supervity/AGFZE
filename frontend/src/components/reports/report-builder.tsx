@@ -267,7 +267,7 @@ export function ReportBuilder() {
 
       <p className="rounded-md border border-border bg-surface px-4 py-3 text-xs leading-relaxed text-muted-foreground">
         {note ??
-          "The report is generated from the records themselves and stored in the platform. It is not sent to anybody — this platform has no outbound email or notification yet. Every generation produces a new report; an earlier one is never overwritten."}
+          "The report is generated from the records themselves and stored in the platform. It is not sent to anybody - this platform has no outbound email or notification yet. Every generation produces a new report; an earlier one is never overwritten."}
       </p>
     </div>
   );

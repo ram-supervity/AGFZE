@@ -125,12 +125,12 @@ describe("submitBlocker", () => {
 describe("value formatting", () => {
   it("renders money to the cent with its currency", () => {
     expect(formatMoney("199062.50", "USD")).toBe("199,062.50 USD");
-    expect(formatMoney(null)).toBe("—");
+    expect(formatMoney(null)).toBe("-");
   });
 
   it("renders a quantity to three decimals in metric tons", () => {
     expect(formatQuantity("24.5")).toBe("24.500 MT");
-    expect(formatQuantity(null)).toBe("—");
+    expect(formatQuantity(null)).toBe("-");
   });
 
   it("renders an age in whole days", () => {

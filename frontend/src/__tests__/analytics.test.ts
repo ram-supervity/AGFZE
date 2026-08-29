@@ -107,8 +107,8 @@ describe("formatting", () => {
   it("renders a missing figure as a gap rather than as a zero", () => {
     // "No approval was decided, so there is no turnaround" and "turnaround was zero" are
     // different statements, and only one of them is true.
-    expect(formatFigure(null, "percent")).toBe("—");
-    expect(formatHours(null)).toBe("—");
+    expect(formatFigure(null, "percent")).toBe("-");
+    expect(formatHours(null)).toBe("-");
   });
 
   it("switches to days once an hour count stops being readable", () => {

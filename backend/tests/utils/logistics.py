@@ -1,4 +1,4 @@
-"""Builders for the FA and shipment fixtures the  suite works against.
+"""Builders for the FA and shipment fixtures the Step 6 suite works against.
 
 Everything goes in through the real services or straight into the database exactly as they would
 leave it, so the tests exercise the actual leg population, the actual BR-03 evaluator and the

@@ -4,7 +4,7 @@ The metadata payload holds metadata only - identifiers, counts, decisions, state
 It must never carry document text, an AI prompt or completion, a credential, or any other
 document content.
 
-Every governance event added by a later  is recorded through :func:`record_audit_event`
+Every governance event added by a later step is recorded through :func:`record_audit_event`
 rather than ad hoc logging, so the append-only table stays the one reconstruction of who did
 what. Recurring sign-ins are carried by ``users.last_login_at``; the trail records the first
 provisioning of an account, not a row per request.
@@ -21,7 +21,7 @@ from app.models.audit import AuditEvent
 
 class AuditEventType:
     USER_PROVISIONED = "user.provisioned"
-    # Reserved for explicit session events a later  records; not emitted per request.
+    # Reserved for explicit session events a later step records; not emitted per request.
     USER_LOGIN = "user.login"
 
 

@@ -1,4 +1,4 @@
-"""The integration hub - added in .
+"""The integration hub - added in Step 7.
 
 Split the same way the logistics package is, and for the same reason. `adapters` is the seam and
 carries no implementation; `tracker`, `sap` and `dms` are the three targets, and only one of them

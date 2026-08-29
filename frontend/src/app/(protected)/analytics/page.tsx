@@ -58,7 +58,7 @@ export default async function AnalyticsPage({
     <div className="space-y-6">
       <PageHeader
         title="Analytics"
-        description="Turnaround, automation and extraction quality over a range you choose — computed from the transaction records themselves, scoped to what your roles may see."
+        description="Turnaround, automation and extraction quality over a range you choose - computed from the transaction records themselves, scoped to what your roles may see."
       />
 
       {failure || !trends ? (

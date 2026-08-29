@@ -1,6 +1,6 @@
 """Generating a real report from the governed tables, and never from a copy of them.
 
-The shape of this module follows the one rule the whole  turns on: a report's figures are
+The shape of this module follows the one rule the whole step turns on: a report's figures are
 queried out of `trade_transactions`, `exception_cases`, `approval_tasks`, `extracted_fields`,
 `integration_jobs` and `shipments` at the moment it is generated, assembled with pandas, and
 written into a document. Nothing is read from a rollup, a cached total or a previous report.
@@ -9,7 +9,7 @@ Three things are worth reading before the code.
 
 **Every figure carries the query that reproduces it.** A section's rows and a grid's figures each
 carry the target screen and the filters that reproduce them, and the Report Viewer turns those
-into links. A number on a report with no route back to its rows is the thing this  exists to
+into links. A number on a report with no route back to its rows is the thing this step exists to
 replace, so the route travels with the number rather than being reconstructed by the reader.
 
 **The AI paragraph is optional in the strongest sense.** It is requested last, after every
@@ -985,8 +985,8 @@ async def queue_generation(
 ) -> UUID:
     """Create the tracked job and start the work. Returns the job id the client polls.
 
-    The same `job_service` and the same `GET /jobs/{job_id}/status`  established and every
-     since has reused. There is no second job mechanism here and no second polling endpoint.
+    The same `job_service` and the same `GET /jobs/{job_id}/status` Step 1 established and every
+    step since has reused. There is no second job mechanism here and no second polling endpoint.
     """
     # Refuses a report type nothing is configured for before a job is created, so a request that
     # cannot produce a document fails in front of the person who made it rather than in a worker.

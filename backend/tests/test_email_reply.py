@@ -77,7 +77,7 @@ async def seed_thread(session: AsyncSession, *, from_email: bool = True) -> Requ
             mailbox_address="trade.docs@agfze.test",
             sender_address="desk@broker.example",
             sender_name="Broker desk",
-            subject="Copper 125 MT — deal confirmation",
+            subject="Copper 125 MT - deal confirmation",
             body_text="Please confirm the 125 MT copper booking.",
             received_at=__import__("datetime").datetime.now(__import__("datetime").timezone.utc),
         )

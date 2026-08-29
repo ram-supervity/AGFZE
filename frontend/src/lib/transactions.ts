@@ -115,7 +115,7 @@ export const SEVERITY_LABELS: Record<RuleSeverity, string> = {
 
 /**
  * The desks that may create, correct and submit a purchase transaction. The approver signs off
- * from  onwards rather than preparing, and the auditor observes. This decides only what the
+ * from Step 4 onwards rather than preparing, and the auditor observes. This decides only what the
  * UI offers; the API enforces the same list on every call.
  */
 export const PURCHASE_WRITE_ROLES: readonly PlatformRole[] = ["purchase_user", "admin"];
@@ -274,7 +274,7 @@ export function formatMoney(
   value: string | number | null | undefined,
   currency = "USD",
 ): string {
-  if (value === null || value === undefined || value === "") return "—";
+  if (value === null || value === undefined || value === "") return "-";
   const amount = typeof value === "number" ? value : Number.parseFloat(value);
   if (Number.isNaN(amount)) return String(value);
   return `${amount.toLocaleString("en-GB", {
@@ -284,7 +284,7 @@ export function formatMoney(
 }
 
 export function formatQuantity(value: string | number | null | undefined): string {
-  if (value === null || value === undefined || value === "") return "—";
+  if (value === null || value === undefined || value === "") return "-";
   const amount = typeof value === "number" ? value : Number.parseFloat(value);
   if (Number.isNaN(amount)) return String(value);
   return `${amount.toLocaleString("en-GB", {

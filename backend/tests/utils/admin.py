@@ -1,9 +1,9 @@
-"""Helpers for the  suite: a fake Keycloak Admin API, and signed-in administrators.
+"""Helpers for the Step 9 suite: a fake Keycloak Admin API, and signed-in administrators.
 
 The fake is a real object satisfying the same interface `app.api.v1.admin` calls, installed
 through the module's own swap point rather than by monkeypatching a method onto the live client.
 It records what it was asked to do, so a test can assert on the *ordering* that matters most in
-this : Keycloak first, local record second.
+this step: Keycloak first, local record second.
 """
 
 from __future__ import annotations

@@ -106,7 +106,7 @@ export function ReportViewer({ report }: ReportViewerProps) {
             {report.audit_event_id ? (
               <span className="font-mono text-xs">{report.audit_event_id}</span>
             ) : (
-              "—"
+              "-"
             )}
           </Meta>
         </dl>
@@ -296,7 +296,7 @@ function RowTable({ section }: { section: ReportSection }) {
                         <ArrowUpRight className="h-3 w-3" aria-hidden="true" />
                       </Link>
                     ) : (
-                      <span className="text-xs text-muted-foreground">—</span>
+                      <span className="text-xs text-muted-foreground">-</span>
                     )}
                   </TableCell>
                 </TableRow>
@@ -317,7 +317,7 @@ function RowTable({ section }: { section: ReportSection }) {
 }
 
 function renderCell(value: unknown): string {
-  if (value === null || value === undefined || value === "") return "—";
+  if (value === null || value === undefined || value === "") return "-";
   if (typeof value === "number") return new Intl.NumberFormat("en-GB").format(value);
   if (typeof value === "boolean") return value ? "yes" : "no";
   return String(value);

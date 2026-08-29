@@ -113,7 +113,7 @@ export function stalenessTone(isStale: boolean, lastCheckedAt: string | null): s
 }
 
 export function formatDate(value: string | null | undefined): string {
-  if (!value) return "—";
+  if (!value) return "-";
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return String(value);
   return parsed.toLocaleDateString("en-GB", {
@@ -124,7 +124,7 @@ export function formatDate(value: string | null | undefined): string {
 }
 
 export function formatDateTime(value: string | null | undefined): string {
-  if (!value) return "—";
+  if (!value) return "-";
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return String(value);
   return parsed.toLocaleString("en-GB", {
@@ -145,9 +145,8 @@ export function formatDateTime(value: string | null | undefined): string {
  */
 export function trackingModeNote(adaptersAvailable: number): string {
   if (adaptersAvailable > 0) {
-    return `${adaptersAvailable} carrier tracking source${
-      adaptersAvailable === 1 ? " is" : "s are"
-    } connected. Shipments they do not cover are kept current by hand, on these same fields.`;
+    return `${adaptersAvailable} carrier tracking source${adaptersAvailable === 1 ? " is" : "s are"
+      } connected. Shipments they do not cover are kept current by hand, on these same fields.`;
   }
   return "No carrier tracking source is connected, so every shipment here is kept current by hand. Manual entry writes the same fields, is audited the same way, and reads identically to an automatic update.";
 }

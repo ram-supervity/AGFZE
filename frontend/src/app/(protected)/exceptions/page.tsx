@@ -93,15 +93,15 @@ export default async function ExceptionsPage({
           ) : (
             <EmptyState
               icon={TriangleAlert}
-              title={filtered ? "Nothing matches those filters" : "No exceptions here — nice work"}
+              title={filtered ? "Nothing matches those filters" : "No exceptions here - nice work"}
               description={
                 filtered
                   ? "No case matches the filters you have applied. Clear them to see everything open."
                   : selected
                     ? // The same wording either way, on purpose: a category that is genuinely
-                      // empty and one that nothing can fill yet both mean "there is no work
-                      // here", and dressing either of them up would be a claim about the other.
-                      `Nothing is outstanding under ${selected.label.toLowerCase()}. ${selected.dormant_reason ?? ""}`.trim()
+                    // empty and one that nothing can fill yet both mean "there is no work
+                    // here", and dressing either of them up would be a claim about the other.
+                    `Nothing is outstanding under ${selected.label.toLowerCase()}. ${selected.dormant_reason ?? ""}`.trim()
                     : "Nothing is outstanding across any category. A case appears here the moment a check hard-fails or a document is read below the confidence threshold."
               }
             />

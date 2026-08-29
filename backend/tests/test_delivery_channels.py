@@ -1,7 +1,7 @@
-"""Email and push delivery, proved through 's own five trigger points.
+"""Email and push delivery, proved through Step 9's own five trigger points.
 
 The thing this file guards hardest is stated first, because it is the architectural rule of the
-: **not one of the five trigger points changed**. Email and push reach every one of them
+step: **not one of the five trigger points changed**. Email and push reach every one of them
 through the internals of `notification_service.notify`, which is the seam this platform was built
 around. `test_no_trigger_point_module_knows_anything_about_a_delivery_channel` reads the source of
 all four modules that call a trigger and fails if any of them so much as mentions a channel.
@@ -76,13 +76,13 @@ async def rows_for(session: AsyncSession, user_id) -> list[Notification]:
     )
 
 
-# --- the rule this whole  rests on -----------------------------------------------------------
+# --- the rule this whole step rests on -----------------------------------------------------------
 
 
 def test_no_trigger_point_module_knows_anything_about_a_delivery_channel():
-    """The duplication this  exists to avoid, checked by reading the source.
+    """The duplication this step exists to avoid, checked by reading the source.
 
-    Every one of 's five triggers gained email and push in this . If any of them gained
+    Every one of Step 9's five triggers gained email and push in this step. If any of them gained
     it by having delivery code pasted into the module that raises it, the platform would have five
     answers to "how is this delivered" instead of one - and they would drift the first time one of
     them was edited. These four modules hold all five call sites and must know nothing but
@@ -106,7 +106,7 @@ def test_no_trigger_point_module_knows_anything_about_a_delivery_channel():
 
 
 def test_the_notification_table_records_both_deliveries():
-    """The columns  withheld, arriving with the code that writes them."""
+    """The columns Step 9 withheld, arriving with the code that writes them."""
     columns = set(Notification.__table__.columns.keys())
     assert "email_sent_at" in columns
     assert "push_sent_at" in columns
@@ -409,7 +409,7 @@ async def test_push_is_gated_on_the_subscription_and_never_on_the_preference(
 async def test_a_channel_value_of_push_grants_no_email_and_no_push_by_itself(
     db_session: AsyncSession, signed_in, monkeypatch
 ):
-    """`push` stored in the column is a pre--10 value. It behaves as `in_app`."""
+    """`push` stored in the column is a pre-Step-10 value. It behaves as `in_app`."""
     from app.services import notification_service
 
     user, _ = await purchase_user(signed_in)
@@ -628,7 +628,7 @@ def test_every_notification_type_renders_a_named_template_with_both_parts(monkey
         )
         assert rendered.subject
         assert "AGFZE" in rendered.html and "AGFZE" in rendered.text
-        # The palette the platform has used since , in both the header and the button.
+        # The palette the platform has used since Step 1, in both the header and the button.
         assert "#182338" in rendered.html and "#A75D35" in rendered.html
         assert "https://command-centre.agfze.test/exceptions/1" in rendered.html
         assert "https://command-centre.agfze.test/exceptions/1" in rendered.text

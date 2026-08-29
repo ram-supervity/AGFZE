@@ -1,7 +1,7 @@
 """IV-01: how an invoice is dated, judged against the day it is being looked at.
 
 The requirement is one of the oldest in this platform's material and belonged to none of the ten
-feature , so it lands here. It is registered the way every rule since  has been - a
+feature steps, so it lands here. It is registered the way every rule since Step 3 has been - a
 function under `@register`, keyed by its own identifier, with its threshold read out of
 `rule_configurations` rather than written into this file. The orchestrator, the context and the
 persistence are untouched by it, which is the fourth time that claim has been made and the fourth

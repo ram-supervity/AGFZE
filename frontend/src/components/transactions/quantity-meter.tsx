@@ -99,11 +99,11 @@ export function QuantityMeter({ coverage }: QuantityMeterProps) {
           >
             {coverage.remaining_quantity_mt
               ? formatQuantity(
-                  state === "exceeded"
-                    ? String(Math.abs(Number.parseFloat(coverage.remaining_quantity_mt)))
-                    : coverage.remaining_quantity_mt,
-                )
-              : "—"}
+                state === "exceeded"
+                  ? String(Math.abs(Number.parseFloat(coverage.remaining_quantity_mt)))
+                  : coverage.remaining_quantity_mt,
+              )
+              : "-"}
           </dd>
         </div>
         <div>

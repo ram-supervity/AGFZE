@@ -1,6 +1,6 @@
 """The rule-evaluator registry and the context every evaluator is handed.
 
-This is the piece  5 and 6 build on rather than rebuild. An evaluator is a plain function
+This is the piece Steps 5 and 6 build on rather than rebuild. An evaluator is a plain function
 keyed by rule identifier; the orchestrator looks each one up, decides from the declaration which
 legs it needs, and persists whatever it returns. Bringing a rule to life later means registering
 a function - never touching the dispatch, the context, or the persistence around it.
@@ -20,8 +20,8 @@ from app.models.enums import DocumentType, RuleSeverity
 from app.models.intake import Document
 from app.models.transactions import TradeTransaction
 
-# The leg attribute each stream hangs off `TradeTransaction`.  added "sales": "sales_leg"
-# and  added "fa": "fa_leg"; the orchestrator reads this map rather than naming a leg
+# The leg attribute each stream hangs off `TradeTransaction`. Step 5 added "sales": "sales_leg"
+# and Step 6 added "fa": "fa_leg"; the orchestrator reads this map rather than naming a leg
 # itself, so no leg-type-specific branch is ever written into the dispatch. Bringing each new leg
 # into view for every registered rule was this one line, twice.
 LEG_ATTRIBUTES: dict[str, str] = {
@@ -64,7 +64,7 @@ LEG_FIELD_ALIASES: dict[str, dict[str, str]] = {
 }
 
 # Which document type carries a transaction's own commercial figures, per stream. Scrap's is the
-# supplier invoice; FA's is the single `fa_document` type  anticipated and  gave a
+# supplier invoice; FA's is the single `fa_document` type Step 2 anticipated and Step 6 gave a
 # schema. Structural, not a business rule: it says where to read a number, never what the number
 # must be.
 VALUE_DOCUMENT_TYPES: dict[str, tuple[str, ...]] = {

@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 #
-# Reads the production estate back out of the live project and fails if anything this 
+# Reads the production estate back out of the live project and fails if anything this step
 # promised is not actually configured.
 #
 # Terraform proves what was applied once. This proves what is true now - which is a different
 # question, and the one that matters the morning somebody turns a setting off by hand to debug
-# something and forgets to turn it back on. Section 13 of this 's specification says never to
+# something and forgets to turn it back on. Section 13 of this step's specification says never to
 # treat a managed-service default as assumed, and this script is how that instruction is kept:
 # every check below reads a real value from a real API.
 #
@@ -239,7 +239,7 @@ done
 # --- summary -----------------------------------------------------------------------------------
 echo
 if [ "$failures" -eq 0 ]; then
-  printf '\033[32m%s of %s checks passed.\033[0m This estate matches what  promised.\n\n' \
+  printf '\033[32m%s of %s checks passed.\033[0m This estate matches what Step 11 promised.\n\n' \
     "$checks" "$checks"
   exit 0
 fi

@@ -63,7 +63,7 @@ class AuditEventList(BaseModel):
     items: list[AuditEventListItem]
     page: Page
     # Populated from the data itself rather than a list written by hand, so an event type a later
-    #  introduces appears in the filter the moment it is first recorded.
+    # step introduces appears in the filter the moment it is first recorded.
     event_types: list[str]
     entity_types: list[str]
     actors: list[AuditActorRead]

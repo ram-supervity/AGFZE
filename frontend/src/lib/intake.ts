@@ -34,7 +34,7 @@ export const STREAM_LABELS: Record<BusinessStream, string> = {
   fa: "Finished aluminium",
 };
 
-/** The four states this  owns. The rest of the lifecycle arrives from  onwards. */
+/** The four states this step owns. The rest of the lifecycle arrives from Step 3 onwards. */
 export const REQUEST_STATUSES = [
   "received",
   "classified",
@@ -152,7 +152,7 @@ export function formatConfidence(confidence: number | null | undefined): string 
 export function labelFor<T extends string>(
   labels: Record<T, string>,
   value: string | null | undefined,
-  fallback = "—",
+  fallback = "-",
 ): string {
   if (!value) return fallback;
   return (labels as Record<string, string>)[value] ?? value;

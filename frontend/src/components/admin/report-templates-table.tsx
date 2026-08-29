@@ -33,8 +33,8 @@ export interface ReportTemplatesTableProps {
 /**
  * The three report structures in one table, with no branch on which report a row is.
  *
- * That there is no special case for the monthly report — the only one that carries an AI
- * paragraph and the only one that lists transactions under its summary — is the point. Those are
+ * That there is no special case for the monthly report - the only one that carries an AI
+ * paragraph and the only one that lists transactions under its summary - is the point. Those are
  * columns on the row, not code here, which is what makes a fourth report a configuration change
  * rather than a release.
  */

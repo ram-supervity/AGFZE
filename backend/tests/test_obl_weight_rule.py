@@ -1,8 +1,8 @@
 """LG-01: the weight an invoice bills for against the weight the bill of lading states.
 
 The rule this file covers exists because BR-05 does not cover it. BR-05 compares the invoice
-against the **contract** — what was agreed. LG-01 compares the invoice against the **bill of
-lading** — what actually shipped. A load can sit comfortably inside its contractual tolerance and
+against the **contract** - what was agreed. LG-01 compares the invoice against the **bill of
+lading** - what actually shipped. A load can sit comfortably inside its contractual tolerance and
 still be billed for a weight the vessel did not carry, and that difference is money: it is what a
 debit or a credit note is raised for.
 
@@ -247,7 +247,7 @@ def test_the_platform_never_generates_a_debit_or_credit_note_itself() -> None:
     against a counterparty, in a document format nothing in this platform's material specifies.
     LG-01 flags the discrepancy for a person; it must not quietly grow into a generator. If AGFZE
     confirms the format, generating it goes through the existing reviewed-draft path in
-    `draft_service` — and this test is deleted in the same change, deliberately.
+    `draft_service` - and this test is deleted in the same change, deliberately.
     """
     from app.models.enums import DocumentType as DocTypes
 

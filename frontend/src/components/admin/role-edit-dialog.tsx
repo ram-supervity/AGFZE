@@ -70,7 +70,7 @@ export function RoleEditDialog({
             role="alert"
             className="rounded-md border border-signal-blocked/45 bg-signal-blocked/10 px-3 py-2 text-sm text-signal-blocked"
           >
-            {failure} Nothing was changed — this account still holds{" "}
+            {failure} Nothing was changed - this account still holds{" "}
             {user.roles.map((role) => ROLE_LABELS[role as PlatformRole] ?? role).join(", ")}.
           </p>
         ) : null}

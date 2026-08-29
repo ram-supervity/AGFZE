@@ -22,7 +22,7 @@ env:
 
 jobs:
   backend:
-    name: Backend — lint, format, tests, migrations, image
+    name: Backend - lint, format, tests, migrations, image
     runs-on: ubuntu-latest
     timeout-minutes: 25
 
@@ -134,7 +134,7 @@ jobs:
           echo "$output" | grep -q "Refusing to start with an unsafe production configuration"
 
   frontend:
-    name: Frontend — lint, format, types, tests, worker manifest, image
+    name: Frontend - lint, format, types, tests, worker manifest, image
     runs-on: ubuntu-latest
     timeout-minutes: 25
 

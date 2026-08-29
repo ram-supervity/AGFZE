@@ -44,7 +44,7 @@ export function FaFieldsPanel({
       <p className="text-sm text-muted-foreground">
         No additional FA fields are configured beyond the ones shown above. When the business
         agrees what else an FA transaction records, those fields are added to the FA document
-        schema and appear here — this panel needs no change to show them.
+        schema and appear here - this panel needs no change to show them.
       </p>
     );
   }

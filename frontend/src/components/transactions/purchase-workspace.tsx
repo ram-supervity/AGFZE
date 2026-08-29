@@ -73,7 +73,7 @@ export function PurchaseWorkspace({
   const token = session?.accessToken;
   // Locked from the moment it leaves the desk: waiting on a decision, decided, or being posted
   // downstream. A figure corrected after the approver saw it, or after SAP was told about it,
-  // would put this platform and the systems it feeds out of  with each other.
+  // would put this platform and the systems it feeds out of step with each other.
   const locked = LOCKED_TRANSACTION_STATUSES.includes(detail.status as TransactionStatus);
   const editable = canEdit && detail.can_edit && !locked;
   const blocker = useMemo(() => submitBlocker(detail.rule_evaluations), [detail.rule_evaluations]);
@@ -253,7 +253,7 @@ export function PurchaseWorkspace({
         </p>
       ) : null}
 
-      {/* Where this batch's cargo actually is. New to this screen in , and shown above the
+      {/* Where this batch's cargo actually is. New to this screen in Step 6, and shown above the
           accordion rather than inside it: a preparing user blocked by a missing original bill of
           lading should not have to open a panel to find out why. */}
       {detail.linked_shipments.length > 0 ? (
@@ -261,7 +261,7 @@ export function PurchaseWorkspace({
       ) : null}
 
       {/* Where this batch stands with the tracker, SAP and the document store. New to this
-          screen in  and the second retrofit to it, so it is built to stand on its own: it
+          screen in Step 7 and the second retrofit to it, so it is built to stand on its own: it
           renders nothing at all until an approval has actually raised the three jobs. */}
       <IntegrationPanel
         jobs={detail.integration_jobs}

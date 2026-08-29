@@ -122,7 +122,7 @@ export function DocumentTable({ list }: { list: DocumentList }) {
                   </Link>
                 ) : (
                   // Honestly empty: nothing has been matched to a batch yet.
-                  "—"
+                  "-"
                 )}
               </TableCell>
               <TableCell className="whitespace-nowrap text-sm text-muted-foreground">

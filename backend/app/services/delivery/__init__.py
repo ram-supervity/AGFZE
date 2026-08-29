@@ -1,4 +1,4 @@
-"""The two delivery channels  adds behind `notification_service.notify`.
+"""The two delivery channels Step 10 adds behind `notification_service.notify`.
 
 Nothing in this package decides *who* is told about something - that has one answer and it lives
 in `notify`. These modules only carry a sentence somebody has already been judged to need onto a

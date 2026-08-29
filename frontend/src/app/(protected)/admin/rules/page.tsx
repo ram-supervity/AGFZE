@@ -21,7 +21,7 @@ interface SearchParams {
  *
  * Not one tolerance or limit is written in application code: every evaluator asks
  * `rule_configurations` for the value it compares against. This is the screen that finally makes
- * that promise usable — a tolerance moves here, with a reason on the audit trail, and no release.
+ * that promise usable - a tolerance moves here, with a reason on the audit trail, and no release.
  */
 export default async function RulesPage({
   searchParams,

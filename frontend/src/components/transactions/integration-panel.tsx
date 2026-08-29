@@ -25,7 +25,7 @@ export interface IntegrationPanelProps {
 /**
  * Where this transaction stands with the three systems it has to reach.
  *
- * The second retrofit to the three already-shipped workspaces, after 's shipment card, and
+ * The second retrofit to the three already-shipped workspaces, after Step 6's shipment card, and
  * built the same way: it stands on its own, says nothing at all before an approval has raised any
  * job, and never implies a state the platform does not have.
  *

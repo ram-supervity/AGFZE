@@ -42,18 +42,18 @@ APP_ROOT = BACKEND_ROOT / "app"
 REPO_ROOT = BACKEND_ROOT.parent
 FRONTEND_SRC = REPO_ROOT / "frontend" / "src"
 
-# Every credential in this platform, with the  that introduced it. The list is the audit: a
+# Every credential in this platform, with the step that introduced it. The list is the audit: a
 # credential added later without being written in here is a credential nobody checked.
 SECRET_SETTINGS: tuple[tuple[str, str], ...] = (
-    ("KEYCLOAK_ADMIN_CLIENT_SECRET", " - Keycloak Admin REST API"),
-    ("AZURE_AD_CLIENT_SECRET", " - Graph mailbox intake,  tracker"),
-    ("GEMINI_API_KEY", " - every AI call"),
-    ("SAP_API_PASSWORD", " - SAP posting"),
-    ("SAP_API_KEY", " - SAP posting"),
-    ("DMS_API_PASSWORD", " - DMS upload"),
-    ("DMS_API_KEY", " - DMS upload"),
-    ("VAPID_PRIVATE_KEY", " - push signing"),
-    ("SMTP_PASSWORD", " - email delivery"),
+    ("KEYCLOAK_ADMIN_CLIENT_SECRET", "Step 9 - Keycloak Admin REST API"),
+    ("AZURE_AD_CLIENT_SECRET", "Step 2 - Graph mailbox intake, Step 7 tracker"),
+    ("GEMINI_API_KEY", "Step 2 - every AI call"),
+    ("SAP_API_PASSWORD", "Step 7 - SAP posting"),
+    ("SAP_API_KEY", "Step 7 - SAP posting"),
+    ("DMS_API_PASSWORD", "Step 7 - DMS upload"),
+    ("DMS_API_KEY", "Step 7 - DMS upload"),
+    ("VAPID_PRIVATE_KEY", "Step 10 - push signing"),
+    ("SMTP_PASSWORD", "Step 10 - email delivery"),
     ("NEO4J_PASSWORD", "Graph projection - the traceability read model"),
 )
 
@@ -413,7 +413,7 @@ def module_imports(path: Path) -> set[str]:
 
 
 def test_nothing_can_send_a_generated_sales_document_to_a_counterparty() -> None:
-    """'s hardest promise, checked structurally rather than read for.
+    """Step 5's hardest promise, checked structurally rather than read for.
 
     Two facts together make it true, and both are asserted: the only module in the platform that
     can hand a message to a relay is the notification service, and the module that produces a
@@ -449,7 +449,7 @@ def test_nothing_can_send_a_generated_sales_document_to_a_counterparty() -> None
 
 
 def test_nothing_queues_a_mutating_request_for_later_replay() -> None:
-    """'s hardest promise. Offline support on this platform is read-only, permanently."""
+    """Step 10's hardest promise. Offline support on this platform is read-only, permanently."""
     forbidden = (
         "BackgroundSync",
         "SyncManager",
@@ -539,7 +539,7 @@ def test_no_request_schema_carries_a_server_authoritative_field() -> None:
 
 
 def test_no_admin_screen_exists_for_the_configuration_that_deliberately_has_none() -> None:
-    """Three things  excluded on purpose, checked against the real page tree.
+    """Three things Step 9 excluded on purpose, checked against the real page tree.
 
     The integration *monitor* is a page and is supposed to be: it shows jobs. What must not exist
     is a screen that edits where a posting is sent, which desk owns which failure, or what a

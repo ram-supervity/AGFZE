@@ -2,7 +2,7 @@
 
 This module is deliberately data only. It names every rule the platform recognises and says what
 each one means; whether a rule can actually be evaluated yet, and how, belongs to the evaluator
-registered against it. A later  that brings the data a rule needs registers a real evaluator
+registered against it. A later step that brings the data a rule needs registers a real evaluator
 under the same identifier and changes nothing here.
 
 SL-01 is the one entry that is not one of the thirteen. It is a genuinely new requirement of the

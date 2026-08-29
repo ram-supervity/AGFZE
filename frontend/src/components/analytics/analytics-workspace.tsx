@@ -164,7 +164,7 @@ export function AnalyticsWorkspace({ trends, filters }: AnalyticsWorkspaceProps)
 
       {exported ? (
         <p className="rounded-md border border-border bg-surface px-4 py-2 text-xs text-muted-foreground">
-          The chart data was downloaded as a CSV to this device. Nothing was sent anywhere — an
+          The chart data was downloaded as a CSV to this device. Nothing was sent anywhere - an
           export is a file on your machine, and the platform never mails one out.
         </p>
       ) : null}
@@ -293,7 +293,7 @@ export function AnalyticsWorkspace({ trends, filters }: AnalyticsWorkspaceProps)
                 <TableRow key={row.day}>
                   {EXPORT_COLUMNS.map((column) => (
                     <TableCell key={column.key} className="tabular-nums">
-                      {row[column.key as keyof typeof row] ?? "—"}
+                      {row[column.key as keyof typeof row] ?? "-"}
                     </TableCell>
                   ))}
                 </TableRow>

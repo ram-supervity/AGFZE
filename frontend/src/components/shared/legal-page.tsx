@@ -32,7 +32,7 @@ export function LegalPage({ title, version, effectiveNote, children }: LegalPage
           {title}
         </h1>
         <p className="mt-3 text-sm text-muted-foreground">
-          Version {versionLabel} — {effectiveNote}
+          Version {versionLabel} - {effectiveNote}
         </p>
       </header>
       <div className={PROSE}>{children}</div>

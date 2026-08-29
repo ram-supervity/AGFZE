@@ -6,7 +6,7 @@ to re-validate; putting both directions in one module would be a cycle. This hal
 to read the mapping table and write a case.
 
 Nothing in this file names a rule. It is handed evaluations, asks the mapping what each failing
-one means, and writes whatever it is told. That is the whole reason  5 and 6 added rows
+one means, and writes whatever it is told. That is the whole reason Steps 5 and 6 added rows
 rather than branches.
 
 The one judgement it makes for itself is who a case belongs to, and even that is made by looking
@@ -70,7 +70,7 @@ def owner_role_for(transaction: TradeTransaction, mapped_owner: str) -> str:
     So the mapping's owner is honoured wherever it is a desk this transaction genuinely has, and
     substituted for the desk it does have wherever it is not. Nothing here names a stream: it
     inspects the legs, which is why it worked for the sales leg before FA existed and will work
-    for whatever a later  hangs off the same parent.
+    for whatever a later step hangs off the same parent.
     """
     if mapped_owner not in DESK_OWNER_ROLES:
         return mapped_owner
@@ -199,7 +199,7 @@ async def open_case(
         },
     )
 
-    # 's one addition to this function. The desk that owns the case is told it exists,
+    # Step 9's one addition to this function. The desk that owns the case is told it exists,
     # through the single shared notification service - a case is a role's work, so this is a
     # broadcast to every active holder of that role rather than a message to one person.
     batch_number: str | None = None
@@ -288,7 +288,7 @@ async def record_low_confidence(
     lowest_confidence: float | None,
     field_names: list[str],
 ) -> ExceptionCase | None:
-    """Formalise 's inline confidence flag into an owned, ageing case.
+    """Formalise Step 2's inline confidence flag into an owned, ageing case.
 
     The inline flag stays exactly where it was - it is what makes a doubtful value obvious while
     somebody is looking at the document. The case is what gives that doubt an owner and a clock

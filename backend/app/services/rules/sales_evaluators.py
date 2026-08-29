@@ -1,6 +1,6 @@
 """The sales module's evaluators: BR-07 for real, and SL-01.
 
-Both are registered against 's registry through the same `@register` decorator every other
+Both are registered against Step 3's registry through the same `@register` decorator every other
 evaluator uses. Nothing in the orchestrator, the context or the persistence changed to accept
 them - the dispatch walks the registry, sees two more entries, and calls them. That was the
 promise the registry was built on, and this file is where it is collected on.
@@ -59,7 +59,7 @@ def _bl_documents(context: RuleContext, types: tuple[str, ...]) -> list:
 async def linked_bills_of_lading(context: RuleContext) -> list[BillOfLading]:
     """Every bill-of-lading record on any shipment of this transaction.
 
-     gave BR-07 a purpose-built entity to ask. Before it existed the rule had to infer the
+    Step 6 gave BR-07 a purpose-built entity to ask. Before it existed the rule had to infer the
     answer from a document's classified type, which is a looser thing entirely: it says what a
     file looked like, not whether the original has physically arrived at the desk.
     """
@@ -85,7 +85,7 @@ async def evaluate_sales_document_readiness(context: RuleContext) -> list[RuleOu
     queue is a transaction somebody is about to sign off, and it may not do that on a document
     that is still marked draft.
 
-    The submission check asks the `BillOfLading` record from  onwards, which is a stronger
+    The submission check asks the `BillOfLading` record from Step 6 onwards, which is a stronger
     question than the one it used to ask. "A file classified as a B/L is attached" is not the
     same fact as "the original is in hand", and only the second one is what submission waits for.
     """

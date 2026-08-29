@@ -115,7 +115,7 @@ export function PushPrompt() {
         </p>
         <p className="mt-0.5 text-sm text-muted-foreground">
           Your browser can notify you when an approval reaches your queue or an exception lands on
-          your desk — even when this tab is closed. Only those two things, never marketing, and
+          your desk - even when this tab is closed. Only those two things, never marketing, and
           never the commercial detail itself.
         </p>
         <div className="mt-2.5 flex flex-wrap gap-2">

@@ -52,8 +52,8 @@ def _fake_identity_provider():
 # --- rule configuration --------------------------------------------------------------------------
 
 
-async def test_rules_list_covers_rows_seeded_by_every_(client: AsyncClient, signed_in):
-    """'s purchase tolerances, 's sales rule and 's FA defaults, in one list.
+async def test_rules_list_covers_rows_seeded_by_every_step(client: AsyncClient, signed_in):
+    """Step 3's purchase tolerances, Step 5's sales rule and Step 6's FA defaults, in one list.
 
     The assertion that matters is not that each is present but that none of them needed a branch
     to get here: they are all rows in `rule_configurations` reached by one query.
@@ -65,11 +65,11 @@ async def test_rules_list_covers_rows_seeded_by_every_(client: AsyncClient, sign
     data = response.json()["data"]
 
     by_rule = {(row["rule_id"], row["check_key"]) for row in data["items"]}
-    # : the purchase-side quantity tolerance.
+    # Step 3: the purchase-side quantity tolerance.
     assert (RuleId.BR_05, CheckKey.QUANTITY_TOLERANCE) in by_rule
-    # : the sales module's own rule, in its own namespace.
+    # Step 5: the sales module's own rule, in its own namespace.
     assert (RuleId.SL_01, CheckKey.CONTRACT_QUANTITY_COVERAGE) in by_rule
-    # : FA-scoped defaults are rows scoped to the FA stream, not a separate table.
+    # Step 6: FA-scoped defaults are rows scoped to the FA stream, not a separate table.
     assert BusinessStream.FA.value in data["streams"]
     assert any(row["scope_stream"] == BusinessStream.FA.value for row in data["items"])
 
@@ -181,8 +181,8 @@ async def test_the_rule_screens_are_closed_to_every_other_role(client: AsyncClie
 # --- document type schemas -------------------------------------------------------------------------
 
 
-async def test_schema_list_covers_rows_seeded_by_every_(client: AsyncClient, signed_in):
-    """'s invoice and contract, 's bill of lading, 's FA document."""
+async def test_schema_list_covers_rows_seeded_by_every_step(client: AsyncClient, signed_in):
+    """Step 2's invoice and contract, Step 5's bill of lading, Step 6's FA document."""
     _, headers = await admin_user(signed_in)
 
     response = await client.get(SCHEMAS, headers=headers)

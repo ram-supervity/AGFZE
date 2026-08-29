@@ -4,7 +4,7 @@ There is no create schema for a notification, and there will not be one: notific
 by the platform through `app.services.notification_service.notify` in response to something that
 happened, never by a client asking for one.
 
-The push-subscription schemas added in  are the exception that proves it. They do not
+The push-subscription schemas added in Step 10 are the exception that proves it. They do not
 create a notification either - they register the browser a notification may later be delivered to,
 which is the one thing about notifications a client genuinely owns.
 """

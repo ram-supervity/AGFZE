@@ -20,7 +20,7 @@ resource "google_cloud_run_v2_service" "backend" {
   template {
     service_account = google_service_account.backend.email
 
-    # The scheduled sweeps  7 and 8 established run inside this process on their own timers:
+    # The scheduled sweeps Steps 7 and 8 established run inside this process on their own timers:
     # the integration retry every minute, and the daily and monthly reports riding that same loop.
     # Scaling to zero would mean none of them ever runs, so one instance is always warm. This is
     # the setting that makes "the sweeps genuinely run in the deployed environment" true, and it
@@ -79,14 +79,14 @@ resource "google_cloud_run_v2_service" "backend" {
         name  = "KEYCLOAK_JWKS_URL"
         value = "${var.keycloak_issuer}/protocol/openid-connect/certs"
       }
-      # The platform ships exactly one storage implementation - the local filesystem one 
-      # built behind its storage abstraction - and no  ever added an object-store client. On a
+      # The platform ships exactly one storage implementation - the local filesystem one Step 1
+      # built behind its storage abstraction - and no step ever added an object-store client. On a
       # container with an ephemeral disk that would lose every document on the next revision, so
       # the bucket is *mounted* rather than called: the same code writes to the same paths, and
       # what is behind those paths is durable, versioned and encrypted with AGFZE's own key.
       #
       # This is a deployment technique, not a missing feature, and it is deliberately not a new
-      # storage backend invented at the last . A native GCS client would be faster on large
+      # storage backend invented at the last step. A native GCS client would be faster on large
       # page-image writes; if that ever matters, it is a drop-in behind the same abstraction.
       env {
         name  = "STORAGE_BACKEND"
@@ -166,7 +166,7 @@ resource "google_cloud_run_v2_service" "backend" {
         }
       }
 
-      # 's probes, wired to the platform's own health checking rather than described in a
+      # Step 1's probes, wired to the platform's own health checking rather than described in a
       # README. Liveness never touches the database - it answers whether the process is up, which
       # is what a restart should be decided on. Readiness owns the dependency check, so an
       # instance that cannot reach Postgres is taken out of rotation instead of restarted.

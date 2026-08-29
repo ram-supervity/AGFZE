@@ -132,7 +132,7 @@ export const authOptions: NextAuthOptions = {
     return providers;
   },
   // Default NextAuth cookies: the tokens below never leave the encrypted, HTTP-only, SameSite=Lax
-  // session cookie — nothing in this app writes them to localStorage or sessionStorage.
+  // session cookie - nothing in this app writes them to localStorage or sessionStorage.
   session: { strategy: "jwt" },
   pages: {
     signIn: "/signin",

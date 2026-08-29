@@ -1,4 +1,4 @@
-"""Builders and stand-ins for the  suite.
+"""Builders and stand-ins for the Step 7 suite.
 
 The stub adapters here are the only concrete SAP and DMS clients anywhere near this codebase, and
 that is the whole point: neither system's contract is specified in this platform's material, so

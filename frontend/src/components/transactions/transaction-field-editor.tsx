@@ -130,7 +130,7 @@ export function TransactionFieldEditor({
       {dirty && field.reason_required ? (
         <div className="space-y-1.5 border-t border-border pt-2">
           <label htmlFor={`${inputId}-reason`} className="text-xs font-medium text-foreground">
-            Reason for the correction (required — this value was extracted below the confidence
+            Reason for the correction (required - this value was extracted below the confidence
             threshold)
           </label>
           <Textarea
@@ -157,7 +157,7 @@ export function TransactionFieldEditor({
             className="flex items-center gap-1.5 text-xs text-secondary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <History className="h-3 w-3" aria-hidden="true" />
-            {showHistory ? "Hide correction history" : "Corrected by a person — show history"}
+            {showHistory ? "Hide correction history" : "Corrected by a person - show history"}
           </button>
           {showHistory ? (
             <dl className="mt-2 space-y-1 rounded-md bg-surface p-2.5 text-xs">

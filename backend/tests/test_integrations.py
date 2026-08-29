@@ -9,7 +9,7 @@ merely "not succeeded".
 
 The other claims: the tracker client writes rows and never files; the three jobs are genuinely
 independent; a job waiting on a person is never picked up by the retry sweep; the exception on
-final failure is a real, technical-support-owned case opened through 's own function; and
+final failure is a real, technical-support-owned case opened through Step 4's own function; and
 `Committed` is reachable only when all three are resolved.
 """
 
@@ -662,7 +662,7 @@ async def test_a_transient_failure_is_retried_with_a_growing_delay_then_fails_fo
         await db_session.commit()
 
     # A real, technical-support-owned case, in the category that has been registered and dormant
-    # since  and is real from this  onwards.
+    # since Step 4 and is real from this step onwards.
     case = await db_session.scalar(
         select(ExceptionCase).where(ExceptionCase.transaction_id == transaction.id)
     )
@@ -786,10 +786,10 @@ async def test_the_purchase_pack_merges_the_invoice_and_contract_it_is_meant_to(
     assert "PURCHASE CONTRACT" in text
 
 
-async def test_a__five_draft_is_an_input_to_the_sales_pack_not_a_second_copy_of_it(
+async def test_a_step_five_draft_is_an_input_to_the_sales_pack_not_a_second_copy_of_it(
     db_session: AsyncSession, storage_root
 ) -> None:
-    """`DocumentPack` compiles what  produced; it never re-produces it."""
+    """`DocumentPack` compiles what Step 5 produced; it never re-produces it."""
     transaction = await sales_transaction(db_session, batch_number="I2626-95")
     draft = Document(
         request_id=None,
@@ -1045,7 +1045,7 @@ async def test_a_credential_never_appears_in_a_prepared_payload_or_a_response(
 
 
 async def test_the_transaction_status_vocabulary_has_no_reachable_closed_state() -> None:
-    """`Closed` is declared, and this  contains no path that sets it."""
+    """`Closed` is declared, and this step contains no path that sets it."""
     assert TransactionStatus.CLOSED.value == "closed"
     sources = [
         integration_service.__file__,

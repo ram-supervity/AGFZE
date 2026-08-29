@@ -164,7 +164,7 @@ describe("ReportViewer", () => {
       "/transactions/purchase/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
     );
     // No amount recorded is rendered as no amount, never as zero.
-    expect(within(row).getByText("—")).toBeInTheDocument();
+    expect(within(row).getByText("-")).toBeInTheDocument();
   });
 
   it("labels the AI paragraph as the model's work and nothing else as such", () => {

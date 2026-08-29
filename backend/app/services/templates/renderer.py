@@ -28,7 +28,7 @@ PLACEHOLDER_PATTERN = re.compile(r"\{\{([a-z0-9_]+)\}\}")
 MARKER_PATTERN = re.compile(r"\[\[clause:([a-z0-9_]+)\]\]")
 
 # What a slot with nothing behind it says. Explicit, so a reviewer sees the gap.
-UNPOPULATED = "— not recorded —"
+UNPOPULATED = "- not recorded -"
 
 KEEP = "keep"
 REVISE = "revise"
@@ -249,7 +249,7 @@ def clause_brief(template: DocumentTemplate) -> str:
     lines = []
     for clause in template.clauses:
         flag = "required, may be revised but never removed" if clause.required else "optional"
-        lines.append(f"{clause.key} — {clause.heading} ({flag}). {clause.purpose}")
+        lines.append(f"{clause.key} - {clause.heading} ({flag}). {clause.purpose}")
     return "\n".join(lines)
 
 

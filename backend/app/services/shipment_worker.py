@@ -1,6 +1,6 @@
 """The background loop that keeps the shipment board honest.
 
-One job on one timer, modelled on the mailbox worker  established rather than on a second
+One job on one timer, modelled on the mailbox worker Step 2 established rather than on a second
 scheduling mechanism: every `SHIPMENT_TRACKING_INTERVAL_SECONDS` - six hours by default - run one
 sweep.
 

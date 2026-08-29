@@ -26,8 +26,8 @@ export interface NotificationCentreProps {
 /**
  * The signed-in account's own notifications, in full.
  *
- * Every row carries a deep link to the thing it is about — the exception case, the approval, the
- * integration job's transaction, the report — so a notification is a way into the work rather
+ * Every row carries a deep link to the thing it is about - the exception case, the approval, the
+ * integration job's transaction, the report - so a notification is a way into the work rather
  * than a restatement of it.
  *
  * There is no "mark this one read" control, deliberately: unread here means "you have not opened

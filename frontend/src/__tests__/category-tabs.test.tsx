@@ -40,7 +40,7 @@ beforeEach(() => {
 
 describe("the exception category tabs", () => {
   it("puts exactly one tab in the page's tab order", () => {
-    // Roving tabindex. Without it, reaching anything past the strip by keyboard means ping
+    // Roving tabindex. Without it, reaching anything past the strip by keyboard means stepping
     // through every tab in it - which on the full ten-category queue is ten presses.
     renderTabs();
     const tabs = screen.getAllByRole("tab");

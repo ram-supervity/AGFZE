@@ -23,7 +23,7 @@ that differ from the ones their models declare:
   declared can actually be stored; the constraints themselves are untouched.
 
 Autogenerate therefore proposed dropping and recreating all seven on every run, which made
-`alembic check` a permanently red gate: a  that can never pass gates nothing, and a pipeline
+`alembic check` a permanently red gate: a step that can never pass gates nothing, and a pipeline
 nobody can get green is a pipeline people learn to ignore.
 
 PostgreSQL only. A SQLite database is built from these same migrations every time, from base, so it

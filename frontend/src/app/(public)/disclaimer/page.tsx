@@ -31,7 +31,7 @@ export default function DisclaimerPage() {
             transaction, and extract structured fields such as material grade, quantity, incoterm,
             delivery window, and price basis. That processing is probabilistic. It can misread a
             scanned page, attach a document to the wrong transaction, transpose a figure, or omit a
-            field altogether — most often where the source is handwritten, poorly scanned,
+            field altogether - most often where the source is handwritten, poorly scanned,
             ambiguous, or laid out in a format the platform has not seen before.
           </p>
         </section>

@@ -268,7 +268,7 @@ async def list_replies(
 @router.post(
     "/{request_id}/replies",
     response_model=ResponseEnvelope[ReplyDraftRead],
-    summary="Compose a reply on this thread — stored for review, sent to nobody",
+    summary="Compose a reply on this thread - stored for review, sent to nobody",
 )
 async def compose_reply(
     request_id: UUID,
