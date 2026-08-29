@@ -1,0 +1,182 @@
+name: Release
+
+# A tagged release, deployed as two independent services.
+#
+# The two deploy jobs do not depend on each other and are not gated on each other's success. That
+# is the whole point of the arrangement: a frontend that fails to come up must not hold back a
+# backend that is already serving, and either one can be rolled back on its own. What they *are*
+# both gated on is CI, which runs here in full rather than being trusted from an earlier push.
+#
+# Rollback is a traffic split reverted to the previous revision, per service, and is a single
+# command - `rollback.yml`, or the one printed in each job's summary. Nothing is deleted on
+# deploy: the previous revision stays in place with zero traffic, which is what makes the revert
+# instant and independent.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to deploy
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  REGION: me-central1
+  BACKEND_SERVICE: agfze-backend
+  FRONTEND_SERVICE: agfze-frontend
+
+jobs:
+  ci:
+    # Blocking. A tag whose tests do not pass is never deployed, and the tests are re-run against
+    # the tagged tree rather than assumed from whatever ran on the branch.
+    uses: ./.github/workflows/ci.yml
+
+  backend:
+    name: Deploy backend
+    needs: ci
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_DEPLOY_SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Record the revision currently serving
+        id: previous
+        run: |
+          current=$(gcloud run services describe "$BACKEND_SERVICE" \
+            --region "$REGION" --format 'value(status.traffic[0].revisionName)' || true)
+          echo "revision=$current" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push
+        run: |
+          gcloud auth configure-docker "${REGION}-docker.pkg.dev" --quiet
+          image="${REGION}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/agfze/backend:${GITHUB_SHA}"
+          docker build -t "$image" ./backend
+          docker push "$image"
+          echo "IMAGE=$image" >> "$GITHUB_ENV"
+
+      - name: Apply the migrations before the new revision serves
+        # A Cloud Run job on the same image and the same private connectivity, run to completion
+        # first. Migrating from inside the serving container would race N instances against each
+        # other on start-up.
+        run: |
+          gcloud run jobs update agfze-migrate \
+            --region "$REGION" --image "$IMAGE" --quiet
+          gcloud run jobs execute agfze-migrate --region "$REGION" --wait
+
+      - name: Deploy with no traffic, then verify, then shift
+        # The new revision is started and probed before it is given a single request. A revision
+        # that cannot answer its own readiness probe never serves anybody.
+        run: |
+          gcloud run deploy "$BACKEND_SERVICE" \
+            --region "$REGION" --image "$IMAGE" --no-traffic --tag "next" --quiet
+          url=$(gcloud run services describe "$BACKEND_SERVICE" --region "$REGION" \
+            --format 'value(status.traffic.filter("tag=next").url)' | head -1)
+          for _ in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "$url/health/ready" || true)
+            [ "$code" = "200" ] && break
+            sleep 5
+          done
+          [ "$code" = "200" ] || { echo "::error::the new revision never became ready"; exit 1; }
+          gcloud run services update-traffic "$BACKEND_SERVICE" \
+            --region "$REGION" --to-latest --quiet
+
+      - name: Summarise how to roll this service back on its own
+        if: always()
+        run: |
+          {
+            echo "### Backend"
+            echo ""
+            echo "Previous revision: \`${{ steps.previous.outputs.revision }}\`"
+            echo ""
+            echo '```'
+            echo "gcloud run services update-traffic $BACKEND_SERVICE \\"
+            echo "  --region $REGION --to-revisions ${{ steps.previous.outputs.revision }}=100"
+            echo '```'
+            echo ""
+            echo "The frontend is unaffected by this and does not need to be rolled back with it."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  frontend:
+    name: Deploy frontend
+    needs: ci
+    # Deliberately not `needs: backend`. The two services deploy and roll back independently.
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_DEPLOY_SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Record the revision currently serving
+        id: previous
+        run: |
+          current=$(gcloud run services describe "$FRONTEND_SERVICE" \
+            --region "$REGION" --format 'value(status.traffic[0].revisionName)' || true)
+          echo "revision=$current" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push
+        # NEXT_PUBLIC_* values are inlined into the browser bundle at build time, so the real
+        # deployment values have to be build arguments rather than runtime environment.
+        run: |
+          gcloud auth configure-docker "${REGION}-docker.pkg.dev" --quiet
+          image="${REGION}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/agfze/frontend:${GITHUB_SHA}"
+          docker build \
+            --build-arg NEXT_PUBLIC_API_BASE_URL="${{ vars.NEXT_PUBLIC_API_BASE_URL }}" \
+            --build-arg NEXT_PUBLIC_VAPID_PUBLIC_KEY="${{ vars.NEXT_PUBLIC_VAPID_PUBLIC_KEY }}" \
+            -t "$image" ./frontend
+          docker push "$image"
+          echo "IMAGE=$image" >> "$GITHUB_ENV"
+
+      - name: Deploy with no traffic, then verify, then shift
+        run: |
+          gcloud run deploy "$FRONTEND_SERVICE" \
+            --region "$REGION" --image "$IMAGE" --no-traffic --tag "next" --quiet
+          url=$(gcloud run services describe "$FRONTEND_SERVICE" --region "$REGION" \
+            --format 'value(status.traffic.filter("tag=next").url)' | head -1)
+          for _ in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "$url/signin" || true)
+            [ "$code" = "200" ] && break
+            sleep 5
+          done
+          [ "$code" = "200" ] || { echo "::error::the new revision never became ready"; exit 1; }
+          gcloud run services update-traffic "$FRONTEND_SERVICE" \
+            --region "$REGION" --to-latest --quiet
+
+      - name: Summarise how to roll this service back on its own
+        if: always()
+        run: |
+          {
+            echo "### Frontend"
+            echo ""
+            echo "Previous revision: \`${{ steps.previous.outputs.revision }}\`"
+            echo ""
+            echo '```'
+            echo "gcloud run services update-traffic $FRONTEND_SERVICE \\"
+            echo "  --region $REGION --to-revisions ${{ steps.previous.outputs.revision }}=100"
+            echo '```'
+            echo ""
+            echo "The backend is unaffected by this and does not need to be rolled back with it."
+          } >> "$GITHUB_STEP_SUMMARY"

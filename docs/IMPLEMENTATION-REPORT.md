@@ -619,3 +619,200 @@ not the rejected-fetch branch: vitest attributes a rejected promise to the test 
 after the component has caught it, so that test fails for a reason unrelated to the component. The
 branch is three lines and the states that differ in *meaning* are covered. Recorded here rather than
 worked around with a mock that would have made the suite green while hiding the gap.
+
+---
+
+## 10. Fourth session — the remaining register
+
+Five items were implementable, seven were business questions engineering cannot answer, and one was
+externally blocked. What follows is what each one turned out to be on inspection, which in three
+cases is not what the register expected.
+
+### IMPL-001 — CI/CD pipeline · **VERIFIED PRESENT; one step could never have passed**
+
+`.github/workflows/` already carries `ci.yml`, `release.yml` and `rollback.yml`, and they match
+what was asked for rather than approximating it: a backend job running ruff, the pytest suite
+against a real PostgreSQL service container, a full `upgrade head → downgrade base → upgrade head`
+migration cycle on a database created and dropped inside the step, a multi-stage image build and a
+check that the built image genuinely *refuses* an unsafe production configuration; a frontend job
+running ESLint, a formatting check, `tsc --noEmit`, Vitest, a production build and the
+service-worker precache verification against that build's own output; and a `gate` job that uses
+`if: always()` plus an explicit result test, so a skipped or cancelled dependency fails the required
+check rather than passing silently. Release deploys the two Cloud Run services independently, each
+behind a no-traffic revision that must answer its own health probe before traffic shifts. Rollback
+reverts one named service's traffic split and states, in the run summary, that it did not and will
+not reverse a migration.
+
+Nothing in the workflows was changed. Every command they invoke was confirmed to exist as a
+Makefile target or an installed tool before this was concluded.
+
+**But `alembic check` could never pass**, and that is a second pre-existing defect worth its own
+entry alongside the `TRACKER_COLUMN_MAP` one from the first session. Three earlier migrations wrote
+constraint names their models do not declare, so autogenerate proposed dropping and recreating
+seven constraints on every run:
+
+- `containers` carried `uq_containers_transaction_id` for a constraint over
+  `(transaction_id, container_number)` — a name that also misdescribed it;
+- `reports` carried four doubled `ck_reports_ck_reports_*` names, because migration 8 passed
+  `op.f()` a name that already began with `ck_`;
+- `rule_exception_mappings` carried two names PostgreSQL had truncated and Alembic had hashed,
+  because the model's declared names came to **66 and 64 characters** with the naming convention's
+  prefix in front of them, past PostgreSQL's 63-character identifier limit. What the database held
+  could never have matched what the model asked for.
+
+Migration 21 renames the first five to what the models declare, and the last two model names are
+shortened so that what is declared can actually be stored. **Renames only** — not one predicate,
+column, type or index changes, and no rule, query or validation behaves differently: a check
+constraint's name is not its condition. `alembic check` reports "No new upgrade operations
+detected" for the first time.
+
+This was fixed rather than only reported because the task's own acceptance criterion is that a PR
+with a migration failure cannot merge — which requires the gate to be able to pass a good one. A
+step that can never go green gates nothing, and a pipeline nobody can get green is a pipeline
+people learn to ignore.
+
+### IMPL-002 — Report template configuration · **DONE**
+
+The register described two hardcoded templates. There are three — `daily_operations`,
+`monthly_management` and `adhoc_transactions` — and all three moved.
+
+`report_template_configurations` holds a report's structure: which sections it carries, in what
+order, which figures go in each, its title, its description and its standing disclosures. The
+migration seeds it by serialising the shipped dataclasses rather than by retyping them, so the seed
+cannot drift from what the module declares, and `resolve()` hydrates a row back into the same
+`ReportTemplate` the renderers already take. At cutover nothing about any report changed; the first
+thing that changes is the first thing somebody deliberately changes.
+
+`/admin/report-templates` edits it under the same discipline as every other configuration on this
+platform — a mandatory `change_reason` validated in the schema before any handler runs, an
+attributed editor, an audit row written in the same transaction. `template_key` and `report_type`
+have no field on the update schema at all, because a generated report records which template
+produced it and re-pointing one would leave those records claiming a structure the document was
+never built to.
+
+**Two refusals worth stating.** A section naming a data block the service does not produce is
+rejected at the *edit* rather than at render time — the build does raise on an unknown source,
+correctly and far too late, when the report is already scheduled and the failure lands on a worker
+instead of on the person who caused it. And a figure the platform does not compute is rejected by
+name. Neither is a formatting nicety: they are what stops this screen becoming a way to schedule a
+report that cannot be produced.
+
+**What the screen cannot do, by construction:** change a figure. Every number is still computed from
+the governed transaction, exception, approval, shipment and posting tables at generation time, and
+each still carries the filtered query that reproduces it. 12 backend tests, 7 frontend tests.
+
+### IMPL-003 — Roving tabindex on the remaining two strips · **DONE**
+
+`new-transaction-tabs.tsx` and `integration-monitor.tsx` now use the same `useRovingTabs` hook
+`category-tabs.tsx` has used since the third session, with the same integration pattern: one tab in
+the page's tab order, Left/Right to move, Home/End to jump, selection following focus, horizontal
+only. Both needed their tab element converted to a `forwardRef` component so the hook can hold a
+ref to it — the only structural change, and it leaves the rendered markup identical, which matters
+because what a screen reader announces was already correct. 14 tests across the two, driving real
+key events, mirroring the pattern already proven on the exception queue.
+
+### IMPL-017 — Keycloak ↔ Entra ID scaffolding · **DONE, activation is a data fill**
+
+**Verified against a real Keycloak, not only against the file.** `make realm-import` was run and
+the realm was read back through the Admin API: the provider imports as `entra-id`, `enabled=false`,
+with all eight role mappers present. That run also surfaced a third pre-existing defect — the
+`agfze-admin-api` client's description was **279 characters** against Keycloak's 255-character
+column, so a full import failed outright and the container refused to start. It was shortened to
+249 characters with the same meaning. Anyone who had run `make realm-import` or `make setup`
+against a fresh Keycloak volume would have hit this; nobody had.
+
+The realm export carried **zero** identity providers. It now carries one OIDC provider (`entra-id`)
+and eight `oidc-role-idp-mapper` entries, one per platform role, spelled exactly as
+`app/core/roles.py` spells them — a mapper producing a name the backend does not recognise grants
+nothing and reports nothing, so this is the one place the strings genuinely have to match.
+
+It imports **disabled** and every credential-shaped value is a visible `REPLACE-ME…` placeholder.
+That combination is the point: importing this realm changes nothing about how anybody signs in
+today, and activating it is a data fill rather than a schema or code change. `infra/keycloak/README.md`
+is the step-by-step, including the two things in the app registration itself that a sign-in fails
+without — the broker redirect URI, and the `groups` claim switched on in the token configuration,
+because every mapper reads that claim and with it off each one matches nothing.
+
+The README states, at length and deliberately, that this must be a **separate** registration from
+the machine identity the mailbox poller uses. Conflating them would hand the interactive sign-in
+flow `Mail.Read` on a shared mailbox.
+
+### VERIFY-015 — Replying on the inbound thread · **IMPLEMENTED (it did not exist)**
+
+Searched first, as instructed: no reply capability existed anywhere. `graph_service` held
+`Mail.Read` and the tracker's Excel writes and had no outbound path, dormant or otherwise.
+
+It exists now, and the shape is the requirement rather than a convenience:
+
+- **Composing reaches no mailbox at all**, on any deployment. It writes a row.
+- **Sending is a separate endpoint**, reached only from a request a signed-in person made, with
+  their account on the audit trail against the message. There is no worker, scheduler, background
+  task or event handler with a route to it — which is why `send` is its own function with its own
+  name rather than a flag on `compose`.
+- **The disclaimer is not separable.** `compose_body` appends the request reference, the system
+  footer and the standing disclaimer, and takes no argument that could omit any of them. The exact
+  wording is imported from the notification service rather than retyped, so the three channels
+  cannot drift apart.
+- **Nothing about the body is inferred.** No model is called. A reply is the desk's own words plus
+  facts already on the request.
+- **A refused send is recorded as refused.** The row says `failed`, carries the provider's own
+  reason, and the endpoint raises — on a session rolled back to its pre-attempt state, so the only
+  rows that path commits are the failure and the record of why, in the same ordering the Keycloak
+  role override already uses.
+
+The write schema has exactly one field, `message`. There is no recipient, subject or attachment
+field, so a reply cannot be redirected to an address nobody on this platform received anything
+from: the recipient and the thread come from the captured message, and Graph's `createReply` does
+the threading, so the headers that put it in the right conversation are the provider's work rather
+than this platform's guess at them.
+
+It ships **off** (`GRAPH_REPLY_ENABLED=false`), as its own switch rather than as a consequence of
+the Graph credentials existing — reading a shared mailbox and writing from AGFZE's address are
+different decisions, and the second needs `Mail.ReadWrite` and `Mail.Send` on top of the read
+scope. With it off a reply is still composed and readable, and the screen says exactly that instead
+of offering a button that could only fail. 12 backend tests, 10 frontend tests.
+
+One thing was **not** invented: an approval tier. Discovery asks for "human-approved draft" and does
+not say who approves. The explicit send *is* the human approval, and it is recorded; a separate
+approver role would have been a business rule this platform made up about who may speak to a
+counterparty. Recorded as `KNOWN-GAPS.md` §22 for AGFZE to settle.
+
+### VERIFY-016 — The 3-month LME price basis · **IMPLEMENTED, and deliberately without an average**
+
+`PriceBasis` held `fixed` and `lme_percent` only, so a deal struck against the three-month
+quotation was recorded as whichever of the two it most resembled and the distinction was lost at
+the point of writing. `three_month_lme` is now a basis in its own right, `infer_price_basis`
+recognises it however the phrase is written, and the generated contract states which quotation the
+price is struck against.
+
+**No average is computed, and that is the finding rather than a shortfall.** The register asks for
+"the average of the daily LME price over the 3 months preceding ETD/ETA". Discovery is explicit
+that the exchange has no usable feed and that the three-month price is *entered by hand for the
+day* — so this platform holds no daily series to average, and an average of data it does not have
+would be an invented price. It records the basis and the percentage struck against it; the price
+itself lands in the rate and fixation columns that already exist, entered by the person who read it
+off the source. A test asserts the absence, because the absence is the requirement.
+
+**One regression avoided.** `infer_price_basis` now classifies "3-month LME less 6%" as a
+three-month deal rather than as a plain percentage, which would have dropped it out of BR-06's
+contracted-percentage comparison. Both LME-linked bases are grouped in `LME_LINKED_PRICE_BASES` and
+the evaluator tests membership, so a deal subject to that check before is subject to it after.
+
+### The seven clarifications, and the one blocker
+
+`CLARIFY-004` (quantity tolerance), `CLARIFY-005` (invoice-date severity), `CLARIFY-006` (B2B
+profit-sharing), `CLARIFY-007` (amendments chatbot), `CLARIFY-008` (Performa approval tier),
+`CLARIFY-009` (unmapped SAP fields and company-code routing), `CLARIFY-010` (batch-number field
+order), `CLARIFY-012` (Vertex fallback), `CLARIFY-013` (Azure vs GCS) and `CLARIFY-014` (a
+reachable `Closed`) were investigated and **nothing was changed for any of them**. Each is a
+business decision, each is already recorded in `KNOWN-GAPS.md`, and guessing at one is the failure
+mode this whole document exists to avoid. `BLOCKED-011` (a carrier adapter) stays blocked: no
+source document names a carrier, and writing a client against an interface nobody has published
+would fail on first contact while making the platform look as though it had an integration it does
+not have.
+
+One permitted cleanup was taken. BR-08's placeholder said the exception queue "arrives in Step 4",
+which stopped being true a long time ago. The behaviour is unchanged — it still reports itself
+not-applicable — and the message now says what is actually true: every hard failure is routed to
+the queue generically by the governance hook, whichever rule produced it, so a rule of its own here
+would be a second and narrower implementation of routing that already happens for all of them.

@@ -14,11 +14,10 @@ export const metadata: Metadata = { title: "Admin" };
 /**
  * The administration landing page.
  *
- * It lists exactly the areas that exist. Several other things this platform stores are
- * configuration in the technical sense and deliberately have no screen anywhere: the
- * tracker/SAP/DMS endpoints stay environment-only because changing where an approved deal is
- * posted should require a deployment, the rule-to-exception-category mapping stays seed data, and
- * the report templates were explicitly deferred by the reporting step. None of them appears here.
+ * It lists exactly the areas that exist. Two other things this platform stores are configuration
+ * in the technical sense and deliberately have no screen anywhere: the tracker/SAP/DMS endpoints
+ * stay environment-only because changing where an approved deal is posted should require a
+ * deployment, and the rule-to-exception-category mapping stays seed data. Neither appears here.
  */
 export default async function AdminPage() {
   const session = await getServerAuthSession();

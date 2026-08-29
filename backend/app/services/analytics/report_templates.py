@@ -5,11 +5,18 @@ to be confirmed with AGFZE, and asks that the report engine be built against con
 than hard-coded layouts. That is what this module is: which sections a report carries, in what
 order, and which figures go in each, declared as data that the renderer reads at generation time.
 
-There is no admin screen to edit any of this yet - that arrives with the rest of the configuration
-screens - so for now a template change is a change to the defaults below, in exactly the same
-discipline `RuleConfiguration` and `DocumentTypeSchema` already follow. What matters is that when
-that screen does arrive, it edits these structures; the PDF and XLSX renderers never learn a
-section's name and have no branch anywhere that says "if this is the monthly report".
+The structures below are the *shipped defaults*. They are seeded into
+`report_template_configurations` by the migration that creates it, and from then on the row is
+what a generation reads: `resolve()` hydrates one back into the same dataclasses the renderers
+already take, so a template edited on the admin screen and a template as it shipped are the same
+object by the time anything renders it. The PDF and XLSX renderers still never learn a section's
+name and still have no branch anywhere that says "if this is the monthly report".
+
+The defaults stay in code as well as in the table for one reason worth stating: they are the seed,
+and they are what `resolve()` falls back to if a deployment somehow reaches a generation before
+the row exists. A report that refused to generate because its structure row was missing would be a
+worse failure than one generated to the structure it has always had - and the fallback is logged,
+so it is never silent.
 
 Three defaults ship, and every one of them is real:
 
@@ -22,6 +29,15 @@ Three defaults ship, and every one of them is real:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Any
+
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.logging import get_logger
+from app.models.reporting import ReportTemplateConfiguration
+
+logger = get_logger(__name__)
 
 # What a section renders. The renderers switch on this and on nothing else, which is what keeps a
 # new section a data change rather than a code change.
@@ -312,3 +328,109 @@ def template_for(report_type: str) -> ReportTemplate:
     if template is None:
         raise KeyError(f"No report template is configured for '{report_type}'.")
     return template
+
+
+# --- the configured structure, read at generation time -------------------------------------------
+
+# Every section kind and every named source a stored template may reference. Validated on write by
+# the admin schema and again here on read, because a row naming something the service does not
+# produce would fail the build rather than render an empty page - correct, but far too late.
+SECTION_KINDS: tuple[str, ...] = (
+    KIND_KPI_GRID,
+    KIND_BREAKDOWN,
+    KIND_TABLE,
+    KIND_AI_SUMMARY,
+    KIND_NOTE,
+)
+
+SECTION_SOURCES: tuple[str, ...] = (
+    SOURCE_HEADLINE,
+    SOURCE_TRANSACTIONS_BY_STATUS,
+    SOURCE_EXCEPTIONS_BY_CATEGORY,
+    SOURCE_APPROVALS,
+    SOURCE_INTEGRATIONS,
+    SOURCE_SHIPMENTS,
+    SOURCE_EXTRACTION_BY_TYPE,
+    SOURCE_TURNAROUND_TREND,
+    SOURCE_TRANSACTION_DETAIL,
+)
+
+# The figures the headline block produces, which is the one source a section may narrow to a
+# chosen subset. Read by the admin screen so an editor picks from what exists rather than typing a
+# key that would be silently dropped at render time.
+HEADLINE_FIGURE_KEYS: tuple[str, ...] = (
+    "transactions_opened",
+    "open_transactions",
+    "open_exceptions",
+    "approval_queue",
+    "approvals_decided",
+    "integration_failed",
+    "integration_awaiting_manual",
+    "stale_shipments",
+    "automation_rate",
+    "turnaround_mean",
+    "turnaround_median",
+    "extraction_non_override",
+)
+
+
+def section_from_row(payload: dict[str, Any]) -> SectionSpec:
+    """One stored section back into the spec the renderers already take."""
+    figures = payload.get("figures") or []
+    return SectionSpec(
+        key=str(payload["key"]),
+        title=str(payload["title"]),
+        kind=str(payload["kind"]),
+        source=str(payload["source"]),
+        description=(str(payload["description"]) if payload.get("description") else None),
+        figures=tuple(str(value) for value in figures),
+    )
+
+
+def template_from_row(row: ReportTemplateConfiguration) -> ReportTemplate:
+    return ReportTemplate(
+        key=row.template_key,
+        title=row.title,
+        report_type=row.report_type,
+        description=row.description,
+        sections=tuple(section_from_row(section) for section in (row.sections or [])),
+        wants_ai_summary=bool(row.wants_ai_summary),
+        default_period_days=int(row.default_period_days),
+        include_detail_rows=bool(row.include_detail_rows),
+        disclosures=tuple(str(value) for value in (row.disclosures or [])),
+    )
+
+
+def section_as_row(section: SectionSpec) -> dict[str, Any]:
+    """The inverse, for seeding and for the admin screen's read model."""
+    return {
+        "key": section.key,
+        "title": section.title,
+        "kind": section.kind,
+        "source": section.source,
+        "description": section.description,
+        "figures": list(section.figures),
+    }
+
+
+async def resolve(session: AsyncSession, report_type: str) -> ReportTemplate:
+    """The structure this report type is configured to carry, right now.
+
+    Falls back to the shipped default only where no row exists at all, and says so in the log. A
+    deployment whose migrations have run never takes that path.
+    """
+    row = await session.scalar(
+        select(ReportTemplateConfiguration).where(
+            ReportTemplateConfiguration.report_type == report_type
+        )
+    )
+    if row is None:
+        # `template_for` raises for a report type that is not a report type at all, which is the
+        # right failure and is not what this branch is about.
+        shipped = template_for(report_type)
+        logger.warning(
+            "report_template_row_missing",
+            extra={"report_type": report_type, "template_key": shipped.key},
+        )
+        return shipped
+    return template_from_row(row)

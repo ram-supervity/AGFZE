@@ -252,7 +252,7 @@
     {
       "clientId": "agfze-admin-api",
       "name": "AGFZE Admin API integration",
-      "description": "Service account used by the platform's /admin/users role override, and by nothing else. Separate from the login client above and from the Microsoft Graph app registration: three capabilities, three credentials, three blast radii. Its only grant is realm-management: manage-users.",
+      "description": "Service account for the platform's /admin/users role override, and nothing else. Separate from the login client and from the Graph app registration: three capabilities, three credentials, three blast radii. Sole grant: realm-management manage-users.",
       "enabled": true,
       "protocol": "openid-connect",
       "publicClient": false,
@@ -482,5 +482,135 @@
       "groups": []
     }
   ],
-  "clientScopeMappings": {}
+  "clientScopeMappings": {},
+  "identityProviders": [
+    {
+      "alias": "entra-id",
+      "displayName": "Microsoft Entra ID",
+      "providerId": "oidc",
+      "enabled": false,
+      "trustEmail": true,
+      "storeToken": false,
+      "addReadTokenRoleOnCreate": false,
+      "linkOnly": false,
+      "firstBrokerLoginFlowAlias": "first broker login",
+      "config": {
+        "useJwksUrl": "true",
+        "metadataDescriptorUrl": "https://login.microsoftonline.com/REPLACE-ME-TENANT-ID/v2.0/.well-known/openid-configuration",
+        "issuer": "https://login.microsoftonline.com/REPLACE-ME-TENANT-ID/v2.0",
+        "authorizationUrl": "https://login.microsoftonline.com/REPLACE-ME-TENANT-ID/oauth2/v2.0/authorize",
+        "tokenUrl": "https://login.microsoftonline.com/REPLACE-ME-TENANT-ID/oauth2/v2.0/token",
+        "userInfoUrl": "https://graph.microsoft.com/oidc/userinfo",
+        "jwksUrl": "https://login.microsoftonline.com/REPLACE-ME-TENANT-ID/discovery/v2.0/keys",
+        "logoutUrl": "https://login.microsoftonline.com/REPLACE-ME-TENANT-ID/oauth2/v2.0/logout",
+        "clientId": "REPLACE-ME-BROKER-APP-CLIENT-ID",
+        "clientAuthMethod": "client_secret_post",
+        "clientSecret": "REPLACE-ME-BROKER-APP-CLIENT-SECRET",
+        "defaultScope": "openid profile email",
+        "syncMode": "FORCE",
+        "validateSignature": "true",
+        "backchannelSupported": "false",
+        "pkceEnabled": "true",
+        "pkceMethod": "S256"
+      }
+    }
+  ],
+  "identityProviderMappers": [
+    {
+      "name": "entra-group-to-approver_hod",
+      "identityProviderAlias": "entra-id",
+      "identityProviderMapper": "oidc-role-idp-mapper",
+      "config": {
+        "syncMode": "FORCE",
+        "claim": "groups",
+        "claim.value": "REPLACE-ME-ENTRA-GROUP-OBJECT-ID-APPROVER_HOD",
+        "role": "approver_hod",
+        "attribute.friendly.name": "Head of Department / business approver"
+      }
+    },
+    {
+      "name": "entra-group-to-purchase_user",
+      "identityProviderAlias": "entra-id",
+      "identityProviderMapper": "oidc-role-idp-mapper",
+      "config": {
+        "syncMode": "FORCE",
+        "claim": "groups",
+        "claim.value": "REPLACE-ME-ENTRA-GROUP-OBJECT-ID-PURCHASE_USER",
+        "role": "purchase_user",
+        "attribute.friendly.name": "Purchase desk"
+      }
+    },
+    {
+      "name": "entra-group-to-sales_user",
+      "identityProviderAlias": "entra-id",
+      "identityProviderMapper": "oidc-role-idp-mapper",
+      "config": {
+        "syncMode": "FORCE",
+        "claim": "groups",
+        "claim.value": "REPLACE-ME-ENTRA-GROUP-OBJECT-ID-SALES_USER",
+        "role": "sales_user",
+        "attribute.friendly.name": "Sales desk"
+      }
+    },
+    {
+      "name": "entra-group-to-fa_user",
+      "identityProviderAlias": "entra-id",
+      "identityProviderMapper": "oidc-role-idp-mapper",
+      "config": {
+        "syncMode": "FORCE",
+        "claim": "groups",
+        "claim.value": "REPLACE-ME-ENTRA-GROUP-OBJECT-ID-FA_USER",
+        "role": "fa_user",
+        "attribute.friendly.name": "FA desk"
+      }
+    },
+    {
+      "name": "entra-group-to-logistics_user",
+      "identityProviderAlias": "entra-id",
+      "identityProviderMapper": "oidc-role-idp-mapper",
+      "config": {
+        "syncMode": "FORCE",
+        "claim": "groups",
+        "claim.value": "REPLACE-ME-ENTRA-GROUP-OBJECT-ID-LOGISTICS_USER",
+        "role": "logistics_user",
+        "attribute.friendly.name": "Logistics and operations"
+      }
+    },
+    {
+      "name": "entra-group-to-finance_user",
+      "identityProviderAlias": "entra-id",
+      "identityProviderMapper": "oidc-role-idp-mapper",
+      "config": {
+        "syncMode": "FORCE",
+        "claim": "groups",
+        "claim.value": "REPLACE-ME-ENTRA-GROUP-OBJECT-ID-FINANCE_USER",
+        "role": "finance_user",
+        "attribute.friendly.name": "Finance"
+      }
+    },
+    {
+      "name": "entra-group-to-admin",
+      "identityProviderAlias": "entra-id",
+      "identityProviderMapper": "oidc-role-idp-mapper",
+      "config": {
+        "syncMode": "FORCE",
+        "claim": "groups",
+        "claim.value": "REPLACE-ME-ENTRA-GROUP-OBJECT-ID-ADMIN",
+        "role": "admin",
+        "attribute.friendly.name": "Platform administrators"
+      }
+    },
+    {
+      "name": "entra-group-to-auditor",
+      "identityProviderAlias": "entra-id",
+      "identityProviderMapper": "oidc-role-idp-mapper",
+      "config": {
+        "syncMode": "FORCE",
+        "claim": "groups",
+        "claim.value": "REPLACE-ME-ENTRA-GROUP-OBJECT-ID-AUDITOR",
+        "role": "auditor",
+        "attribute.friendly.name": "Audit and information security (read-only)"
+      }
+    }
+  ]
 }

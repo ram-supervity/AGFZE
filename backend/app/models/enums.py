@@ -77,8 +77,32 @@ class TransactionStatus(str, Enum):
 
 
 class PriceBasis(str, Enum):
+    """How a deal's price is arrived at.
+
+    `THREE_MONTH_LME` is discovery's third sales pricing mechanism, alongside a locked price and a
+    straight percentage of the LME: the price is struck against the three-month LME quotation
+    taken ahead of ETD/ETA rather than against the cash settlement of a single day.
+
+    The averaged figure itself is *recorded* here, never computed. Discovery is explicit that the
+    exchange has no usable feed - "West Metal website (no public API available)... user manually
+    enters 3-month LME price for the day" - so this platform holds no daily price series to
+    average. Producing an average from data it does not have would be inventing the price, which
+    is precisely the class of number this platform exists to stop appearing.
+    """
+
     FIXED = "fixed"
     LME_PERCENT = "lme_percent"
+    THREE_MONTH_LME = "three_month_lme"
+
+
+# The two bases whose price moves with the exchange. A rule that compares a contracted LME
+# percentage against the one recorded on a transaction applies to both, and grouping them here
+# rather than naming `lme_percent` at each call site is what stops a deal quietly falling out of a
+# check by being re-classified from one LME basis to the other.
+LME_LINKED_PRICE_BASES: tuple[str, ...] = (
+    PriceBasis.LME_PERCENT.value,
+    PriceBasis.THREE_MONTH_LME.value,
+)
 
 
 class InvoiceStatus(str, Enum):

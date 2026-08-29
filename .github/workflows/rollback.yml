@@ -1,0 +1,77 @@
+name: Rollback
+
+# One service, one revision, one command. Deliberately a workflow of its own rather than a branch
+# inside the release: rolling back at three in the morning should not require finding the run that
+# deployed, and it must never require rolling back the other service too.
+#
+# Traffic is shifted back to a revision that is still there. Nothing is rebuilt, nothing is
+# re-deployed, and no migration is reversed - a schema change that cannot be rolled forward past
+# is a decision for a person, not for a button, and the workflow says so rather than guessing.
+
+on:
+  workflow_dispatch:
+    inputs:
+      service:
+        description: Which service to roll back
+        required: true
+        type: choice
+        options: [agfze-backend, agfze-frontend]
+      revision:
+        description: Revision to send 100% of traffic to (blank = the one before the current)
+        required: false
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  REGION: me-central1
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 15
+    steps:
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_DEPLOY_SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Resolve the target revision
+        id: target
+        run: |
+          service="${{ inputs.service }}"
+          target="${{ inputs.revision }}"
+          if [ -z "$target" ]; then
+            # The revision immediately before the one serving. Listed newest first, so the second
+            # entry is the previous one.
+            target=$(gcloud run revisions list --service "$service" --region "$REGION" \
+              --sort-by '~metadata.creationTimestamp' --format 'value(metadata.name)' \
+              | sed -n '2p')
+          fi
+          [ -n "$target" ] || { echo "::error::no previous revision to roll back to"; exit 1; }
+          echo "revision=$target" >> "$GITHUB_OUTPUT"
+
+      - name: Shift all traffic back
+        run: |
+          gcloud run services update-traffic "${{ inputs.service }}" \
+            --region "$REGION" \
+            --to-revisions "${{ steps.target.outputs.revision }}=100" \
+            --quiet
+
+      - name: Report
+        run: |
+          {
+            echo "### Rolled back"
+            echo ""
+            echo "\`${{ inputs.service }}\` is serving \`${{ steps.target.outputs.revision }}\`."
+            echo ""
+            echo "The other service was not touched."
+            echo ""
+            echo "**The database schema was not reverted.** If this rollback is because of a"
+            echo "migration, run \`alembic downgrade\` deliberately through the migrate job after"
+            echo "checking what the reverted revision expects to find."
+          } >> "$GITHUB_STEP_SUMMARY"

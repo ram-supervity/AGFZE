@@ -26,22 +26,17 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from app.core.config import settings
+from app.core.disclaimer import AI_DISCLAIMER_TEXT
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)
 
 TEMPLATE_ROOT = Path(__file__).resolve().parent / "templates"
 
-# The exact wording the application shows on screen, kept identical on purpose. The canonical
-# copy is `frontend/src/components/shared/ai-disclaimer.tsx`; if that text is ever revised, this
-# constant is revised with it, because a disclaimer that differs between two channels is two
-# different disclaimers.
-AI_DISCLAIMER_TEXT = (
-    "AI-extracted information may contain errors and must be verified against the source document "
-    "before approval. This platform does not replace the designated approver's review. For "
-    "transactions above configured value or risk thresholds, or where source documents conflict, "
-    "escalate to the approver before proceeding."
-)
+# The disclaimer itself now lives in `core.disclaimer`, imported above. Every channel that prints
+# it - this one, and the reply composer - reads the same string without either importing the other,
+# which matters structurally: a composer importing the SMTP module for a string would read, in the
+# import graph, as a second route to a mail relay. It is not one.
 
 # The template stem per notification type. Anything unmapped renders `generic`.
 TEMPLATE_BY_TYPE: dict[str, str] = {

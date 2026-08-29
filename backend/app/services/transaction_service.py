@@ -199,10 +199,26 @@ def infer_invoice_status(values: dict[str, str | None], document: Document | Non
     return InvoiceStatus.PROVISIONAL.value
 
 
+# How the three-month quotation is written on the documents this platform reads. Matched on the
+# normalised text - spacing and hyphenation vary between a supplier in Jebel Ali and a buyer in
+# Ningbo, and the phrase itself does not.
+THREE_MONTH_MARKERS: tuple[str, ...] = ("3 month", "3month", "three month", "3m lme", "3-m lme")
+
+
 def infer_price_basis(values: dict[str, str | None]) -> tuple[str, Decimal | None]:
-    """LME-linked when a percentage is stated anywhere in the price basis, otherwise fixed."""
+    """Which of the three mechanisms this deal is priced on, read off the stated basis.
+
+    A three-month quotation is recognised ahead of a plain percentage because the two are not
+    alternatives: "3-month LME less 6%" is a three-month deal that also carries a percentage, and
+    reading it as a straight percentage of the cash settlement would lose which quotation the
+    percentage is taken off. The percentage is kept either way, so nothing that used to be
+    captured stops being captured.
+    """
     basis_text = values.get("price_basis") or ""
+    normalised = " ".join(basis_text.lower().replace("-", " ").split())
     percentage = to_percentage(basis_text) if "%" in basis_text else None
+    if any(marker.replace("-", " ") in normalised for marker in THREE_MONTH_MARKERS):
+        return PriceBasis.THREE_MONTH_LME.value, percentage
     if percentage is not None:
         return PriceBasis.LME_PERCENT.value, percentage
     return PriceBasis.FIXED.value, None

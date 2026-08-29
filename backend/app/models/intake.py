@@ -246,3 +246,76 @@ class ExtractedField(Base):
 
     document: Mapped[Document] = relationship(back_populates="fields")
     overridden_by: Mapped[User | None] = relationship(lazy="selectin")
+
+
+# The states one composed reply moves through. There is no `sending`: the Graph call is made
+# inside the request that a person deliberately made, and it either succeeded or it did not.
+REPLY_STATUSES: tuple[str, ...] = ("draft", "sent", "failed", "withdrawn")
+
+
+class EmailReplyDraft(Base):
+    """A reply this platform composed on an inbound thread, and whether a person sent it.
+
+    Discovery asks for the platform to answer a broker or a supplier on the thread their message
+    arrived on, "initially via human-approved draft", and for every reply to carry the standing
+    disclaimer. This table is the "initially" - and it is not a stage the platform is expected to
+    grow out of, because the row exists for the same reason the approval queue does: something
+    leaving this platform for a counterparty's inbox is an action with a name on it.
+
+    Three properties are load-bearing.
+
+    **Nothing here can be sent by the platform itself.** There is no scheduler, no worker and no
+    retry that reaches the send path. A draft becomes a sent message inside a request a signed-in
+    person made, and `sent_by_id` records which one.
+
+    **The body is stored as it was approved.** Not as a template plus parameters resolved later:
+    what somebody read before they sent it is what this column holds, so the audit answer to "what
+    did we actually tell them" is a column rather than a reconstruction.
+
+    **The disclaimer is not optional and not separable.** It is appended by the composer and is
+    part of `body_text`; there is no code path that produces a body without it.
+    """
+
+    __tablename__ = "email_reply_drafts"
+    __table_args__ = (
+        CheckConstraint(f"status IN ({sql_in_list(REPLY_STATUSES)})", name="reply_status_valid"),
+        Index("ix_email_reply_drafts_request_status", "request_id", "status"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(GUID, primary_key=True, default=uuid.uuid4)
+    request_id: Mapped[uuid.UUID] = mapped_column(
+        GUID, ForeignKey("requests.id", ondelete="CASCADE"), index=True
+    )
+    # The captured message this is a reply to. The thread is Graph's to maintain: the draft is
+    # created through `createReply` on this message, so the headers that put it in the right
+    # conversation are the provider's work and never this platform's guess at them.
+    email_message_id: Mapped[uuid.UUID] = mapped_column(
+        GUID, ForeignKey("email_messages.id", ondelete="CASCADE"), index=True
+    )
+    status: Mapped[str] = mapped_column(String(16), default="draft", index=True)
+    subject: Mapped[str | None] = mapped_column(String(1024))
+    # Exactly what was composed, disclaimer included, as plain text.
+    body_text: Mapped[str] = mapped_column(Text)
+    # Graph's id for the draft, once one exists there. NULL while the reply has only been composed
+    # here - which is every deployment with outbound replies switched off.
+    provider_draft_id: Mapped[str | None] = mapped_column(String(512))
+    # Why a send did not happen. The provider's own reason, kept so the desk sees what to fix.
+    failure_reason: Mapped[str | None] = mapped_column(Text)
+    composed_by_id: Mapped[uuid.UUID | None] = mapped_column(
+        GUID, ForeignKey("users.id", ondelete="SET NULL"), index=True
+    )
+    composed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    # Who sent it. NULL on anything that has not been sent, and never set by anything but the
+    # send endpoint acting for a signed-in person.
+    sent_by_id: Mapped[uuid.UUID | None] = mapped_column(
+        GUID, ForeignKey("users.id", ondelete="SET NULL"), index=True
+    )
+    sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
+    )
+
+    request: Mapped[Request] = relationship(lazy="selectin")
+    email_message: Mapped[EmailMessage] = relationship(lazy="selectin")
+    composed_by: Mapped[User | None] = relationship(lazy="selectin", foreign_keys=[composed_by_id])
+    sent_by: Mapped[User | None] = relationship(lazy="selectin", foreign_keys=[sent_by_id])

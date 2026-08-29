@@ -5,6 +5,7 @@ import { notFound, redirect } from "next/navigation";
 
 import { AttachmentGrid } from "@/components/intake/attachment-grid";
 import { CategoryPanel } from "@/components/intake/category-panel";
+import { ReplyPanel } from "@/components/intake/reply-panel";
 import { RequestMatchingPanel } from "@/components/transactions/request-matching-panel";
 import { AiDisclaimer } from "@/components/shared/ai-disclaimer";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -12,7 +13,12 @@ import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ApiError, fetchRequestDetail } from "@/lib/api-client";
+import {
+  ApiError,
+  fetchRequestDetail,
+  fetchRequestReplies,
+  type ReplyDraftList,
+} from "@/lib/api-client";
 import { getServerAuthSession } from "@/lib/auth";
 import { STATUS_LABELS, canCorrect, labelFor } from "@/lib/intake";
 import { normaliseRoles } from "@/lib/roles";
@@ -39,6 +45,17 @@ export default async function RequestDetailPage({
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) notFound();
     throw error;
+  }
+
+  // Read alongside the request rather than lazily from the panel: whether this deployment can
+  // send at all is part of what the screen has to say honestly, and a panel that had to discover
+  // it after mounting would offer a button before knowing whether it could work.
+  let replies: ReplyDraftList | null = null;
+  try {
+    replies = await fetchRequestReplies(session.accessToken, id);
+  } catch {
+    // A failure here costs the reply panel and nothing else. The request itself still reads.
+    replies = null;
   }
 
   return (
@@ -117,6 +134,10 @@ export default async function RequestDetailPage({
             documents={detail.documents}
             canResolve={canWriteTransactions(roles)}
           />
+
+          {replies ? (
+            <ReplyPanel requestId={detail.id} replies={replies} canCompose={canCorrect(roles)} />
+          ) : null}
 
           <Card>
             <CardHeader>

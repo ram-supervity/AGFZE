@@ -21,7 +21,19 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 
 from app.core.roles import ALL_ROLES
 from app.models.enums import DOCUMENT_TYPES, TERRITORIES
-from app.models.reporting import DISTRIBUTABLE_REPORT_TYPES, DISTRIBUTION_CHANNELS
+from app.models.reporting import (
+    DISTRIBUTABLE_REPORT_TYPES,
+    DISTRIBUTION_CHANNELS,
+    REPORT_TYPES,
+)
+from app.services.analytics.report_templates import (
+    HEADLINE_FIGURE_KEYS,
+    KIND_AI_SUMMARY,
+    KIND_KPI_GRID,
+    SECTION_KINDS,
+    SECTION_SOURCES,
+    SOURCE_HEADLINE,
+)
 
 # Long enough to be a reason rather than a keystroke. The same floor the approval decision and the
 # manual integration completion already hold their reasons to.
@@ -290,3 +302,127 @@ class ReportDistributionRuleList(BaseModel):
     report_types: list[str] = Field(default_factory=lambda: list(DISTRIBUTABLE_REPORT_TYPES))
     channels: list[str] = Field(default_factory=lambda: list(DISTRIBUTION_CHANNELS))
     roles: list[str] = Field(default_factory=lambda: list(ALL_ROLES))
+
+
+# --- report templates ----------------------------------------------------------------------------
+
+
+class ReportSectionWrite(BaseModel):
+    """One section of a report, as an administrator edits it.
+
+    Every field here decides what is *asked for*, never what the answer is. A section names a data
+    block the report service already produces and, optionally, which of that block's figures to
+    print and in what order; the figures themselves are computed from the governed tables at
+    generation time and are not reachable from this screen at all.
+    """
+
+    key: str = Field(min_length=1, max_length=48)
+    title: str = Field(min_length=1, max_length=160)
+    kind: str
+    source: str
+    description: str | None = Field(default=None, max_length=1000)
+    figures: list[str] = Field(default_factory=list)
+
+    @field_validator("kind")
+    @classmethod
+    def _known_kind(cls, value: str) -> str:
+        if value not in SECTION_KINDS:
+            raise ValueError("A section renders as one of: " + ", ".join(SECTION_KINDS) + ".")
+        return value
+
+    @field_validator("source")
+    @classmethod
+    def _known_source(cls, value: str) -> str:
+        # Checked here rather than at render time. A section naming a source nothing produces
+        # fails the document build, which is correct and far too late: the report is already
+        # scheduled, and the failure surfaces to a worker rather than to the person who caused it.
+        if value not in SECTION_SOURCES:
+            raise ValueError(
+                "This platform produces no such data block. Choose one of: "
+                + ", ".join(SECTION_SOURCES)
+                + "."
+            )
+        return value
+
+    @model_validator(mode="after")
+    def _figures_belong_to_the_source(self) -> ReportSectionWrite:
+        chosen = [value.strip() for value in self.figures if value and value.strip()]
+        if not chosen:
+            return self
+        if self.kind != KIND_KPI_GRID or self.source != SOURCE_HEADLINE:
+            raise ValueError(
+                "Only a headline figure grid narrows to chosen figures. Every other section "
+                "prints the whole block its source produces."
+            )
+        unknown = [value for value in chosen if value not in HEADLINE_FIGURE_KEYS]
+        if unknown:
+            raise ValueError("Not figures this platform computes: " + ", ".join(unknown) + ".")
+        object.__setattr__(self, "figures", list(dict.fromkeys(chosen)))
+        return self
+
+
+class ReportTemplateRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    template_key: str
+    report_type: str
+    title: str
+    description: str
+    sections: list[dict[str, Any]]
+    disclosures: list[str]
+    wants_ai_summary: bool
+    include_detail_rows: bool
+    default_period_days: int
+    change_reason: str
+    changed_at: datetime
+    changed_by_name: str | None = None
+    section_count: int = 0
+
+
+class ReportTemplateUpdate(ChangeReasoned):
+    """The structure, and nothing that would make this a different template.
+
+    `template_key` and `report_type` are absent by construction, exactly as a rule's scope and a
+    document schema's type are. A generated report records which template produced it, and
+    re-pointing a template at another report type would leave those records claiming a structure
+    the document was never built to.
+    """
+
+    title: str | None = Field(default=None, min_length=1, max_length=255)
+    description: str | None = Field(default=None, min_length=1, max_length=2000)
+    sections: list[ReportSectionWrite] | None = None
+    disclosures: list[str] | None = None
+
+    @field_validator("sections")
+    @classmethod
+    def _coherent(cls, value: list[ReportSectionWrite] | None) -> list[ReportSectionWrite] | None:
+        if value is None:
+            return None
+        if not value:
+            raise ValueError("A report has to carry at least one section.")
+        keys = [section.key for section in value]
+        duplicates = sorted({key for key in keys if keys.count(key) > 1})
+        if duplicates:
+            raise ValueError("Section keys must be unique: " + ", ".join(duplicates) + ".")
+        summaries = [section for section in value if section.kind == KIND_AI_SUMMARY]
+        if len(summaries) > 1:
+            raise ValueError("A report carries at most one AI summary section.")
+        return value
+
+    @field_validator("disclosures")
+    @classmethod
+    def _non_empty_disclosures(cls, value: list[str] | None) -> list[str] | None:
+        if value is None:
+            return None
+        cleaned = [item.strip() for item in value if item and item.strip()]
+        return list(dict.fromkeys(cleaned))
+
+
+class ReportTemplateList(BaseModel):
+    items: list[ReportTemplateRead]
+    # The vocabularies the screen offers, read from the service rather than retyped in the client.
+    report_types: list[str] = Field(default_factory=lambda: list(REPORT_TYPES))
+    section_kinds: list[str] = Field(default_factory=lambda: list(SECTION_KINDS))
+    section_sources: list[str] = Field(default_factory=lambda: list(SECTION_SOURCES))
+    headline_figures: list[str] = Field(default_factory=lambda: list(HEADLINE_FIGURE_KEYS))

@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { forwardRef, useState, type ButtonHTMLAttributes } from "react";
 
 import { NewFaTransactionForm } from "@/components/transactions/new-fa-transaction-form";
 import { NewSalesLegForm } from "@/components/transactions/new-sales-leg-form";
 import { NewTransactionForm } from "@/components/transactions/new-transaction-form";
 import type { CommodityCode, FaFieldSchema } from "@/lib/api-client";
+import { useRovingTabs } from "@/lib/use-roving-tabs";
 import { cn } from "@/lib/utils";
 
 export interface NewTransactionTabsProps {
@@ -47,6 +48,11 @@ const PATHS: { key: Path; title: string; hint: string }[] = [
  *
  * Putting all three behind one "new transaction" button that behaved differently would hide
  * exactly the distinctions that keep this platform free of a merge.
+ *
+ * The strip carries the same roving tabindex the exception queue's categories do. Without it each
+ * path sits in the page's tab order, so somebody reaching the form itself by keyboard steps
+ * through all three first, and the arrow keys - which is what a tablist is expected to answer to -
+ * do nothing at all.
  */
 export function NewTransactionTabs({
   commodities,
@@ -62,33 +68,29 @@ export function NewTransactionTabs({
   };
   const available = PATHS.filter((path) => permitted[path.key]);
   const [path, setPath] = useState<Path>(available[0]?.key ?? "purchase");
+  const activeIndex = Math.max(
+    0,
+    available.findIndex((entry) => entry.key === path),
+  );
+  const { tabProps } = useRovingTabs(available.length, (index) => {
+    const next = available[index];
+    if (next) setPath(next.key);
+  });
 
   return (
     <div className="space-y-6">
       {available.length > 1 ? (
         <div className="flex flex-wrap gap-2" role="tablist" aria-label="What are you registering">
-          {available.map((entry) => {
-            const active = entry.key === path;
-            return (
-              <button
-                key={entry.key}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                onClick={() => setPath(entry.key)}
-                className={cn(
-                  "rounded-md border px-3 py-2 text-left text-sm transition-colors",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                  active
-                    ? "border-secondary bg-secondary/10 text-foreground"
-                    : "border-border bg-surface text-muted-foreground hover:text-foreground",
-                )}
-              >
-                <span className="block font-medium">{entry.title}</span>
-                <span className="block text-xs">{entry.hint}</span>
-              </button>
-            );
-          })}
+          {available.map((entry, index) => (
+            <PathTab
+              key={entry.key}
+              title={entry.title}
+              hint={entry.hint}
+              selected={index === activeIndex}
+              onSelect={() => setPath(entry.key)}
+              {...tabProps(index, index === activeIndex)}
+            />
+          ))}
         </div>
       ) : null}
 
@@ -102,3 +104,34 @@ export function NewTransactionTabs({
     </div>
   );
 }
+
+const PathTab = forwardRef<
+  HTMLButtonElement,
+  {
+    title: string;
+    hint: string;
+    selected: boolean;
+    onSelect: () => void;
+  } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "onSelect" | "title">
+>(function PathTab({ title, hint, selected, onSelect, ...rest }, ref) {
+  return (
+    <button
+      ref={ref}
+      type="button"
+      role="tab"
+      aria-selected={selected}
+      onClick={onSelect}
+      {...rest}
+      className={cn(
+        "rounded-md border px-3 py-2 text-left text-sm transition-colors",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        selected
+          ? "border-secondary bg-secondary/10 text-foreground"
+          : "border-border bg-surface text-muted-foreground hover:text-foreground",
+      )}
+    >
+      <span className="block font-medium">{title}</span>
+      <span className="block text-xs">{hint}</span>
+    </button>
+  );
+});

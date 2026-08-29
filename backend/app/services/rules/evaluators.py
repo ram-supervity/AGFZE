@@ -27,7 +27,7 @@ from decimal import Decimal
 from rapidfuzz import fuzz
 from sqlalchemy import select
 
-from app.models.enums import RuleSeverity
+from app.models.enums import LME_LINKED_PRICE_BASES, RuleSeverity
 from app.models.intake import Document
 from app.services.rules.catalog import CheckKey, RuleId
 from app.services.rules.registry import (
@@ -372,7 +372,10 @@ def _rate_outcome(context: RuleContext) -> RuleOutcome:
     contracted_rate, contracted_lme = _contracted_price(context)
     invoice_rate = to_decimal(context.fields_of(context.latest_value_document()).get("rate"))
 
-    if context.transaction.price_basis == "lme_percent" and contracted_lme is not None:
+    # Both LME-linked bases, not only the plain percentage. A "3-month LME less 6%" deal carries
+    # a percentage exactly as a cash-settlement one does, and re-classifying it must not quietly
+    # drop it out of the comparison it was already subject to.
+    if context.transaction.price_basis in LME_LINKED_PRICE_BASES and contracted_lme is not None:
         expected: Decimal | None = contracted_lme
         actual: Decimal | None = context.transaction.lme_percentage
         field_name = "lme_percentage"
@@ -514,10 +517,14 @@ async def evaluate_request_traceability(context: RuleContext) -> list[RuleOutcom
 
 @register(RuleId.BR_08, implemented=False)
 async def evaluate_failure_routing(context: RuleContext) -> list[RuleOutcome]:
-    # Detection is real and already happens - every failing outcome above is surfaced against its
-    # rule, field and values. The queue a failure is routed *to* is what does not exist yet.
+    # Satisfied generically rather than evaluated, and by real code: every hard-severity failure
+    # any rule above produces is routed to the exception queue by `governance.hooks`, which reads
+    # the outcomes and opens a case against the configured owner. A rule of its own here would be
+    # a second, narrower implementation of routing that already happens for all of them.
     return not_applicable(
-        RuleId.BR_08, "Failures are detected and surfaced; the exception queue arrives in Step 4."
+        RuleId.BR_08,
+        "Enforced generically: every hard failure is routed to the exception queue by the "
+        "governance hook, whichever rule produced it.",
     )
 
 

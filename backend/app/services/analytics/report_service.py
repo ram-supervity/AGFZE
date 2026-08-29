@@ -70,7 +70,9 @@ from app.services.analytics.report_templates import (
     SOURCE_TURNAROUND_TREND,
     ReportTemplate,
     SectionSpec,
-    template_for,
+)
+from app.services.analytics.report_templates import (
+    resolve as resolve_template,
 )
 from app.services.analytics.scope import DashboardScope, scope_for
 from app.services.audit_service import ActorType, record_audit_event
@@ -829,7 +831,10 @@ async def generate(
 ) -> Report:
     """Compute, render, store, audit, and write one new `Report` row. Never an update."""
     moment = now or utcnow()
-    template = template_for(request.report_type)
+    # The configured structure, read at generation time. An administrator's edit takes effect on
+    # the next report; the ones already generated keep the structure they were built to, which is
+    # what `reports.template_key` and the stored `content` between them make answerable.
+    template = await resolve_template(session, request.report_type)
     working_scope = scope or (scope_for(requested_by) if requested_by else system_scope())
     working_scope = working_scope.narrowed_to(
         None if request.stream == STREAM_BOTH else request.stream
@@ -983,7 +988,9 @@ async def queue_generation(
     The same `job_service` and the same `GET /jobs/{job_id}/status` Step 1 established and every
     step since has reused. There is no second job mechanism here and no second polling endpoint.
     """
-    template_for(request.report_type)
+    # Refuses a report type nothing is configured for before a job is created, so a request that
+    # cannot produce a document fails in front of the person who made it rather than in a worker.
+    await resolve_template(session, request.report_type)
     job = await job_service.create_job(
         session, job_type=JOB_TYPE_REPORT, created_by_id=requested_by.id
     )

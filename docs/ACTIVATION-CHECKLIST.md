@@ -1,6 +1,6 @@
 # Activation checklist — what is still needed from outside this repository
 
-Four integrations are code-complete and configuration-blocked. None of them needs a code change to
+Five integrations are code-complete and configuration-blocked. None of them needs a code change to
 go live: each reads its endpoint and credentials from configuration, and each behaves honestly
 while unconfigured — preparing the data and asking a person to finish, rather than failing or
 pretending to have succeeded.
@@ -76,9 +76,12 @@ values into the wrong columns of a live operational spreadsheet.
 
 ## CONFIG-028 — Keycloak ↔ Microsoft Entra ID brokering
 
-The shipped realm export configures **zero** identity providers, so sign-in today is against
-Keycloak's own local accounts. JWT verification, the NextAuth integration and the role mapping are
-all complete and correct.
+The shipped realm export now carries the broker, imported **disabled** and populated entirely
+with `REPLACE-ME…` placeholders — one OIDC identity provider (`entra-id`) and eight group-to-role
+mappers, one per platform role. Sign-in today is still against Keycloak's own local accounts,
+because a disabled provider changes nothing; JWT verification, the NextAuth integration and the
+role mapping have been complete and correct throughout. Activation is a data fill, not a code or
+schema change. `infra/keycloak/README.md` is the step-by-step.
 
 **Needed from AGFZE IT:** an Entra ID application registration for **identity brokering**.
 
@@ -87,12 +90,57 @@ all complete and correct.
 > reading the shared mailbox). Conflating the two would give the sign-in flow mailbox permissions
 > it has no business holding. Ask for a separate registration.
 
-Then, in the realm: add an OIDC identity provider pointing at the tenant, and map Entra ID group
-claims onto the platform roles **exactly** as `PlatformRole` names them — `approver_hod`,
-`purchase_user`, `sales_user`, `fa_user`, `logistics_user`, `finance_user`, `admin`, `auditor`. A
-group that maps to no role produces an account that can sign in and see nothing, which is confusing
-rather than dangerous; a group mapped to the wrong role is the opposite.
+Then replace every placeholder in `infra/keycloak/realm-agfze.json`:
+
+| Placeholder | What it is |
+|---|---|
+| `REPLACE-ME-TENANT-ID` | The tenant id, in six endpoint URLs. |
+| `REPLACE-ME-BROKER-APP-CLIENT-ID` | The broker registration's application (client) id. |
+| `REPLACE-ME-BROKER-APP-CLIENT-SECRET` | Its secret, injected at import from the secret store. |
+| `REPLACE-ME-ENTRA-GROUP-OBJECT-ID-<ROLE>` | One group object id per role, on each of the eight mappers. |
+
+The mappers already name the platform roles **exactly** as `PlatformRole` names them —
+`approver_hod`, `purchase_user`, `sales_user`, `fa_user`, `logistics_user`, `finance_user`,
+`admin`, `auditor` — so the only thing to supply is which Entra ID group is which. A group that
+maps to no role produces an account that can sign in and see nothing, which is confusing rather
+than dangerous; a group mapped to the wrong role is the opposite.
+
+Two things in the app registration itself, and a sign-in fails without either: the redirect URI
+`https://<keycloak-host>/realms/agfze/broker/entra-id/endpoint`, and the **`groups` claim switched
+on** in the token configuration. Every mapper reads that claim; with it off, each one matches
+nothing. Finally set `"enabled": true` on the provider and re-import.
 
 **Verify by:** a real sign-in through the full Authorization Code Flow with PKCE, checking the
 issued token's `realm_access.roles` matches what the person should hold — and, specifically, that
 somebody in no mapped group does *not* arrive holding a desk role.
+
+
+---
+
+## CONFIG-029 — Outbound replies on an inbound thread
+
+The platform can answer a broker or a supplier on the thread their message arrived on: composing
+writes a draft that is readable and rewritable, and sending it is a separate, explicit call a
+signed-in person makes, recorded against their account. There is no worker, scheduler or event
+handler anywhere with a route to the send path.
+
+It ships **switched off**, and deliberately as its own switch rather than as a consequence of the
+Graph credentials existing. Reading a shared mailbox and putting a message into a supplier's inbox
+from AGFZE's own address are different decisions.
+
+**Needed from AGFZE IT:**
+
+| Setting / grant | What it is |
+|---|---|
+| `Mail.ReadWrite` (application) | Creating the reply draft on the original conversation. Narrow it to the same shared mailbox, with the same application access policy the existing `Mail.Read` grant uses. |
+| `Mail.Send` (application) | Sending that draft. Same narrowing. |
+| `GRAPH_REPLY_ENABLED=true` | The platform's own switch. Until it is set, a reply can be drafted and read here and cannot leave — and the screen says exactly that rather than offering a button that could only fail. |
+
+**Also needed, from the business rather than from IT:** confirmation that a reply going out over
+AGFZE's address needs no approval tier above the desk that writes it. The platform currently treats
+the explicit send as the human approval, and records who made it; no separate approver role was
+invented, because no source document names one.
+
+**Verify by:** drafting a reply on a test thread, reading the stored body back — it carries the
+request reference and the standing disclaimer, added by the server rather than by the form — then
+sending it and confirming it arrives **in the original conversation** rather than as a new message.

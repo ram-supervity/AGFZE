@@ -814,6 +814,83 @@ export async function fetchRequestDetail(
   return unwrap(await apiFetch<RequestDetail>(`/requests/${id}`, { accessToken }));
 }
 
+export interface ReplyDraft {
+  id: string;
+  request_id: string;
+  status: "draft" | "sent" | "failed" | "withdrawn";
+  subject: string | null;
+  /** Exactly what was composed, disclaimer included. Never reconstructed from a template. */
+  body_text: string;
+  failure_reason: string | null;
+  composed_at: string;
+  composed_by_name: string | null;
+  sent_at: string | null;
+  sent_by_name: string | null;
+}
+
+export interface ReplyDraftList {
+  items: ReplyDraft[];
+  recipient_address: string | null;
+  /** False where this deployment can compose a reply and cannot send one. */
+  outbound_enabled: boolean;
+}
+
+export async function fetchRequestReplies(
+  accessToken: string,
+  requestId: string,
+): Promise<ReplyDraftList> {
+  return unwrap(
+    await apiFetch<ReplyDraftList>(`/requests/${requestId}/replies`, { accessToken }),
+  );
+}
+
+/** Writes a draft. Contacts no mailbox, on any deployment. */
+export async function composeRequestReply(
+  accessToken: string,
+  requestId: string,
+  body: { message: string },
+): Promise<ReplyDraft> {
+  return unwrap(
+    await apiFetch<ReplyDraft>(`/requests/${requestId}/replies`, {
+      method: "POST",
+      accessToken,
+      body,
+    }),
+  );
+}
+
+/**
+ * The one call in this client that puts a message into somebody else's inbox.
+ *
+ * Deliberately its own function rather than a flag on the compose call: a caller cannot reach it
+ * by accident, and a reader of this file can find every send path by finding this name.
+ */
+export async function sendRequestReply(
+  accessToken: string,
+  requestId: string,
+  draftId: string,
+): Promise<ReplyDraft> {
+  return unwrap(
+    await apiFetch<ReplyDraft>(`/requests/${requestId}/replies/${draftId}/send`, {
+      method: "POST",
+      accessToken,
+    }),
+  );
+}
+
+export async function withdrawRequestReply(
+  accessToken: string,
+  requestId: string,
+  draftId: string,
+): Promise<ReplyDraft> {
+  return unwrap(
+    await apiFetch<ReplyDraft>(`/requests/${requestId}/replies/${draftId}/withdraw`, {
+      method: "POST",
+      accessToken,
+    }),
+  );
+}
+
 export async function overrideRequestCategory(
   accessToken: string,
   id: string,
@@ -1918,6 +1995,49 @@ export interface ReportDistributionRuleBody {
   is_active: boolean;
 }
 
+export interface ReportTemplateSection {
+  key: string;
+  title: string;
+  kind: string;
+  source: string;
+  description: string | null;
+  figures: string[];
+}
+
+export interface ReportTemplateRow {
+  id: string;
+  template_key: string;
+  report_type: string;
+  title: string;
+  description: string;
+  sections: ReportTemplateSection[];
+  disclosures: string[];
+  wants_ai_summary: boolean;
+  include_detail_rows: boolean;
+  default_period_days: number;
+  change_reason: string;
+  changed_at: string;
+  changed_by_name: string | null;
+  section_count: number;
+}
+
+export interface ReportTemplateList {
+  items: ReportTemplateRow[];
+  report_types: string[];
+  section_kinds: string[];
+  section_sources: string[];
+  /** The headline figures a KPI grid may narrow to, read from the service that computes them. */
+  headline_figures: string[];
+}
+
+export interface ReportTemplateBody {
+  change_reason: string;
+  title?: string;
+  description?: string;
+  sections?: ReportTemplateSection[];
+  disclosures?: string[];
+}
+
 export interface DocumentTypeSchemaRow {
   id: string;
   document_type: string;
@@ -2123,6 +2243,33 @@ export async function updateReportDistributionRule(
 ): Promise<ReportDistributionRuleRow> {
   return unwrap(
     await apiFetch<ReportDistributionRuleRow>(`/admin/report-distribution/${id}`, {
+      method: "PATCH",
+      accessToken,
+      body,
+    }),
+  );
+}
+
+/** What each report is made of. Never what it says: every figure is still computed at
+ * generation time from the governed tables. */
+export async function fetchReportTemplates(
+  accessToken: string,
+  params: Record<string, string | number | boolean | undefined> = {},
+): Promise<ReportTemplateList> {
+  return unwrap(
+    await apiFetch<ReportTemplateList>(`/admin/report-templates${buildQuery(params)}`, {
+      accessToken,
+    }),
+  );
+}
+
+export async function updateReportTemplate(
+  accessToken: string,
+  id: string,
+  body: ReportTemplateBody,
+): Promise<ReportTemplateRow> {
+  return unwrap(
+    await apiFetch<ReportTemplateRow>(`/admin/report-templates/${id}`, {
       method: "PATCH",
       accessToken,
       body,

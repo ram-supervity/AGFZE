@@ -118,3 +118,54 @@ class UploadAccepted(BaseModel):
     job_id: UUID
     document_ids: list[UUID]
     rejected: list[dict[str, str]] = Field(default_factory=list)
+
+
+# --- replying on the thread a request arrived on ---------------------------------------------
+
+
+class ReplyDraftRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    request_id: UUID
+    status: str
+    subject: str | None
+    # The body exactly as it was composed, disclaimer included. What a person read before sending
+    # is what is stored and what is returned, so "what did we tell them" is never reconstructed.
+    body_text: str
+    failure_reason: str | None
+    composed_at: datetime
+    composed_by_name: str | None = None
+    sent_at: datetime | None
+    sent_by_name: str | None = None
+
+
+class ReplyDraftList(BaseModel):
+    items: list[ReplyDraftRead]
+    # Who the next reply on this thread would reach, so the desk is never guessing.
+    recipient_address: str | None = None
+    # Whether this deployment can actually send. False means a reply can be composed and read here
+    # and cannot leave; the screen says so rather than offering a button that can only fail.
+    outbound_enabled: bool = False
+
+
+class ReplyComposeRequest(BaseModel):
+    """What the desk wants to say, and nothing else.
+
+    There is no recipient field, no subject field and no attachment field, deliberately. The
+    recipient and the thread come from the captured message so a reply cannot be redirected to an
+    address nobody on this platform received anything from, and the disclaimer is appended by the
+    composer rather than supplied by the caller.
+    """
+
+    message: str = Field(min_length=20, max_length=8000)
+
+    @field_validator("message")
+    @classmethod
+    def _substantial(cls, value: str) -> str:
+        cleaned = value.strip()
+        if len(cleaned) < 20:
+            raise ValueError(
+                "Write at least a sentence. This goes to a counterparty over AGFZE's own address."
+            )
+        return cleaned

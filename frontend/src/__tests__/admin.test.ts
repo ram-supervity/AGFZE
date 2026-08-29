@@ -22,6 +22,7 @@ describe("ADMIN_AREAS", () => {
       "document-types",
       "audit",
       "report-distribution",
+      "report-templates",
       "integrations",
     ]);
   });
@@ -29,10 +30,14 @@ describe("ADMIN_AREAS", () => {
   it("has no screen for anything deliberately left out of the admin module", () => {
     // Each exclusion is its own decision, not an oversight. The tracker/SAP/DMS endpoints are
     // infrastructure and change by deployment; the rule-to-exception-category mapping decides
-    // which desk owns which failure and stays seed data; report *templates* are still seed data.
-    // Report *distribution* is deliberately not on this list any more - it is the one piece of
-    // configuration whose effect is that a person is contacted, which is precisely why it earns a
-    // screen with a mandatory reason and an audit trail.
+    // which desk owns which failure and stays seed data.
+    //
+    // Two entries are deliberately not on this list any more. Report *distribution* is the one
+    // piece of configuration whose effect is that a person is contacted, which is precisely why
+    // it earns a screen with a mandatory reason and an audit trail. Report *templates* are here
+    // because the governing material asks for the exact report structures to be confirmed with
+    // AGFZE, and a conversation should not need a release - the screen edits structure only, and
+    // no figure is reachable from it.
     const hrefs = ADMIN_AREAS.map((area) => area.href);
     for (const excluded of [
       "/admin/integration-config",
@@ -41,7 +46,6 @@ describe("ADMIN_AREAS", () => {
       "/admin/dms",
       "/admin/exception-mapping",
       "/admin/rule-categories",
-      "/admin/report-templates",
     ]) {
       expect(hrefs).not.toContain(excluded);
     }

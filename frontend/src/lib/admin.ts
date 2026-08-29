@@ -4,15 +4,17 @@ import { hasAnyRole } from "@/lib/roles";
 /**
  * The administration areas that exist, and the only ones that exist.
  *
- * Several other things this platform stores are technically configuration and deliberately have
- * no screen: the tracker/SAP/DMS endpoints are infrastructure and change by deployment, the
- * rule-to-exception-category mapping is seed data that decides which desk owns which failure, and
- * the report *templates* are still seed data. None of them is listed here, and adding one would be
- * a change to what this platform lets somebody edit at runtime, not a cosmetic addition to a menu.
+ * Two other things this platform stores are technically configuration and deliberately have no
+ * screen: the tracker/SAP/DMS endpoints are infrastructure and change by deployment, and the
+ * rule-to-exception-category mapping is seed data that decides which desk owns which failure.
+ * Neither is listed here, and adding one would be a change to what this platform lets somebody
+ * edit at runtime, not a cosmetic addition to a menu.
  *
- * Report *distribution* is listed, and is the newest entry. It is the one piece of configuration
- * whose effect is that somebody is contacted, which is exactly why it belongs on a screen with a
- * mandatory reason and an audit trail rather than in an environment variable nobody can review.
+ * Report *distribution* is the one piece of configuration whose effect is that somebody is
+ * contacted, which is exactly why it belongs on a screen with a mandatory reason and an audit
+ * trail rather than in an environment variable nobody can review. Report *templates* are the
+ * newest entry: the governing material asks for the exact report structures to be confirmed with
+ * AGFZE, and a conversation is not a release.
  */
 export const ADMIN_AREAS = [
   {
@@ -49,6 +51,13 @@ export const ADMIN_AREAS = [
     href: "/admin/report-distribution",
     summary:
       "Which roles receive the daily and monthly reports, and on which channel. Empty until somebody configures it, and a report reaches nobody until they do.",
+  },
+  {
+    key: "report-templates",
+    label: "Report templates",
+    href: "/admin/report-templates",
+    summary:
+      "Which sections each report carries, in what order, and which figures go in each. Structure only — every number is still computed from the governed tables when the report is generated.",
   },
   {
     key: "integrations",
@@ -158,7 +167,54 @@ export function territoryLabel(value: string | null): string {
 export const REPORT_TYPE_LABELS: Record<string, string> = {
   daily: "Daily operations",
   monthly: "Monthly management",
+  adhoc: "Ad-hoc",
 };
+
+/** What each kind of section actually puts on the page, said once so the dialog need not. */
+export const SECTION_KIND_LABELS: Record<string, string> = {
+  kpi_grid: "Figure grid",
+  breakdown: "Breakdown table",
+  table: "Table",
+  ai_summary: "AI summary paragraph",
+  note: "Note",
+};
+
+/**
+ * Where a section's numbers come from.
+ *
+ * Named for what the reader sees rather than for the function that assembles it: an administrator
+ * choosing a section is choosing a subject, not a code path.
+ */
+export const SECTION_SOURCE_LABELS: Record<string, string> = {
+  headline: "Headline figures",
+  transactions_by_status: "Transactions by status",
+  exceptions_by_category: "Exceptions by category and age",
+  approvals: "Approval queue",
+  integrations: "Downstream postings",
+  shipments: "Cargo",
+  extraction_by_document_type: "Extraction by document type",
+  turnaround_trend: "Turnaround and automation by day",
+  transaction_detail: "The transactions themselves",
+};
+
+export function sectionKindLabel(value: string): string {
+  return SECTION_KIND_LABELS[value] ?? value.replace(/_/g, " ");
+}
+
+export function sectionSourceLabel(value: string): string {
+  return SECTION_SOURCE_LABELS[value] ?? value.replace(/_/g, " ");
+}
+
+/**
+ * A figure key as a person reads it.
+ *
+ * Deliberately a formatter rather than a lookup table: the headline block's keys come from the
+ * API, and a table here would silently print a raw key the day the service computes a new one.
+ */
+export function headlineFigureLabel(value: string): string {
+  const words = value.replace(/_/g, " ");
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
 
 export function reportTypeLabel(value: string): string {
   return REPORT_TYPE_LABELS[value] ?? value.replace(/_/g, " ");

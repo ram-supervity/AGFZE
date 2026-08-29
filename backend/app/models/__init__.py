@@ -30,7 +30,13 @@ from app.models.enums import (
 )
 from app.models.governance import ApprovalTask, ExceptionCase, RuleExceptionMapping
 from app.models.identity import User
-from app.models.intake import Document, EmailMessage, ExtractedField, Request
+from app.models.intake import (
+    Document,
+    EmailMessage,
+    EmailReplyDraft,
+    ExtractedField,
+    Request,
+)
 from app.models.integration import DocumentPack, IntegrationJob
 from app.models.jobs import BackgroundJob, JobStatus
 from app.models.logistics import BillOfLading, Container, Shipment, ShipmentIssue
@@ -44,6 +50,7 @@ from app.models.reporting import (
     REPORT_TYPES,
     Report,
     ReportDistributionRule,
+    ReportTemplateConfiguration,
 )
 from app.models.transactions import (
     BatchSequence,
@@ -79,6 +86,7 @@ __all__ = [
     "DocumentType",
     "DocumentTypeSchema",
     "EmailMessage",
+    "EmailReplyDraft",
     "ExceptionCase",
     "ExceptionCategory",
     "ExceptionPriority",
@@ -99,6 +107,7 @@ __all__ = [
     "PushSubscription",
     "Report",
     "ReportDistributionRule",
+    "ReportTemplateConfiguration",
     "Request",
     "RequestCategory",
     "RequestSource",

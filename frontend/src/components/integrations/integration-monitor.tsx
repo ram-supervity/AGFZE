@@ -4,7 +4,7 @@ import { ExternalLink, PlugZap, RefreshCw, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useState } from "react";
+import { forwardRef, useState, type ButtonHTMLAttributes } from "react";
 import toast from "react-hot-toast";
 
 import { ManualCompletionDialog } from "@/components/integrations/manual-completion-dialog";
@@ -41,6 +41,7 @@ import {
   targetAvailabilityNote,
   type IntegrationTarget,
 } from "@/lib/integrations";
+import { useRovingTabs } from "@/lib/use-roving-tabs";
 import { formatDateTime } from "@/lib/utils";
 
 export interface IntegrationMonitorProps {
@@ -131,6 +132,34 @@ export function IntegrationMonitor({ queue, filters }: IntegrationMonitorProps) 
 
   const active = filters.target as IntegrationTarget | "";
 
+  // "All systems" first, then the three targets. Kept as one list so the keyboard navigation
+  // counts and indexes exactly what is rendered, rather than the tabs plus a special case.
+  const tabs: {
+    key: IntegrationTarget | "";
+    label: string;
+    count: number;
+    title?: string;
+  }[] = [
+    {
+      key: "",
+      label: "All systems",
+      count: Object.values(queue.counts_by_target).reduce((sum, value) => sum + value, 0),
+    },
+    ...INTEGRATION_TARGETS.map((target) => ({
+      key: target,
+      label: INTEGRATION_TARGET_LABELS[target],
+      count: queue.counts_by_target[target] ?? 0,
+      title: targetAvailabilityNote(target, Boolean(queue.configured_targets[target])),
+    })),
+  ];
+  const activeIndex = Math.max(
+    0,
+    tabs.findIndex((tab) => tab.key === active),
+  );
+  const { tabProps } = useRovingTabs(tabs.length, (index) =>
+    navigate({ target_system: tabs[index].key || null }),
+  );
+
   return (
     <div className="space-y-4">
       <div
@@ -138,20 +167,15 @@ export function IntegrationMonitor({ queue, filters }: IntegrationMonitorProps) 
         aria-label="Target systems"
         className="flex flex-wrap gap-1.5 border-b border-border pb-3"
       >
-        <TargetTab
-          label="All systems"
-          count={Object.values(queue.counts_by_target).reduce((sum, value) => sum + value, 0)}
-          selected={active === ""}
-          onSelect={() => navigate({ target_system: null })}
-        />
-        {INTEGRATION_TARGETS.map((target) => (
+        {tabs.map((tab, index) => (
           <TargetTab
-            key={target}
-            label={INTEGRATION_TARGET_LABELS[target]}
-            count={queue.counts_by_target[target] ?? 0}
-            selected={active === target}
-            title={targetAvailabilityNote(target, Boolean(queue.configured_targets[target]))}
-            onSelect={() => navigate({ target_system: target })}
+            key={tab.key || "all"}
+            label={tab.label}
+            count={tab.count}
+            selected={index === activeIndex}
+            title={tab.title}
+            onSelect={() => navigate({ target_system: tab.key || null })}
+            {...tabProps(index, index === activeIndex)}
           />
         ))}
       </div>
@@ -414,26 +438,25 @@ function cnSpin(spinning: boolean): string {
   return spinning ? "mr-1.5 h-3.5 w-3.5 animate-spin" : "mr-1.5 h-3.5 w-3.5";
 }
 
-function TargetTab({
-  label,
-  count,
-  selected,
-  title,
-  onSelect,
-}: {
-  label: string;
-  count: number;
-  selected: boolean;
-  title?: string;
-  onSelect: () => void;
-}) {
+const TargetTab = forwardRef<
+  HTMLButtonElement,
+  {
+    label: string;
+    count: number;
+    selected: boolean;
+    title?: string;
+    onSelect: () => void;
+  } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "onSelect">
+>(function TargetTab({ label, count, selected, title, onSelect, ...rest }, ref) {
   return (
     <button
+      ref={ref}
       type="button"
       role="tab"
       aria-selected={selected}
       title={title}
       onClick={onSelect}
+      {...rest}
       className={
         selected
           ? "inline-flex items-center gap-2 rounded-md bg-secondary/15 px-3 py-1.5 text-sm font-medium text-foreground"
@@ -446,4 +469,4 @@ function TargetTab({
       </Badge>
     </button>
   );
-}
+});

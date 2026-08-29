@@ -141,8 +141,10 @@ describe("visibleNavChildren", () => {
 
   it("lists the administration screens that exist, and only those", () => {
     // Deliberately absent, and each for its own reason: the tracker/SAP/DMS endpoints are
-    // infrastructure and stay environment-only, the rule-to-exception-category mapping stays
-    // seed data, and the report templates were explicitly deferred by the reporting step.
+    // infrastructure and stay environment-only, and the rule-to-exception-category mapping stays
+    // seed data. The report-distribution and report-template screens exist and are reached from
+    // the Admin landing page's own list rather than from the sidebar, which carries the five
+    // screens somebody navigates to directly.
     expect(visibleNavChildren(admin, ["admin"]).map((child) => child.href)).toEqual([
       "/admin/users",
       "/admin/rules",
@@ -150,7 +152,7 @@ describe("visibleNavChildren", () => {
       "/admin/audit",
       "/admin/integrations",
     ]);
-    for (const href of ["/admin/integrations-config", "/admin/exception-mapping", "/admin/report-templates"]) {
+    for (const href of ["/admin/integrations-config", "/admin/exception-mapping"]) {
       expect(visibleNavChildren(admin, ["admin"]).map((child) => child.href)).not.toContain(href);
     }
   });

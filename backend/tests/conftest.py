@@ -142,6 +142,9 @@ SEEDED_TABLES = frozenset(
         # would leave the engine unable to categorise any failure, which is a state no real
         # deployment can be in.
         "rule_exception_mappings",
+        # A report's structure. Seeded by its migration and editable on the admin screen, so it
+        # belongs on both lists below for the same reason the rule thresholds do.
+        "report_template_configurations",
     }
 )
 
@@ -162,6 +165,14 @@ EDITABLE_SEEDED_COLUMNS: dict[str, tuple[str, ...]] = {
     "document_type_schemas": (
         "field_schema",
         "mandatory_documents",
+        "change_reason",
+        "changed_by_id",
+    ),
+    "report_template_configurations": (
+        "title",
+        "description",
+        "sections",
+        "disclosures",
         "change_reason",
         "changed_by_id",
     ),

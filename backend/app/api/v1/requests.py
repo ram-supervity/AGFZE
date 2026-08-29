@@ -1,4 +1,10 @@
-"""The inbox queue and one request's detail."""
+"""The inbox queue, one request's detail, and the reply that goes back on its thread.
+
+The reply endpoints are the only place on this platform where something leaves for a
+counterparty's inbox, and they are shaped by that. Composing writes a row and touches no mailbox;
+sending is its own call, made by a signed-in person, recorded against their account. There is no
+endpoint, worker or event here that does both.
+"""
 
 from __future__ import annotations
 
@@ -9,24 +15,28 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy import func, select
 from sqlalchemy.orm import selectinload
 
+from app.core.config import settings
 from app.core.dependencies import CurrentUser, DbSession, require_roles
 from app.core.errors import NotFoundError
 from app.core.roles import PlatformRole
 from app.db.base import utcnow
 from app.models.enums import BUSINESS_STREAMS, REQUEST_CATEGORIES, REQUEST_STATUSES
 from app.models.identity import User
-from app.models.intake import Document, Request
+from app.models.intake import Document, EmailReplyDraft, Request
 from app.schemas.common import ResponseEnvelope
 from app.schemas.intake import (
     CategoryOverrideRequest,
     DocumentSummary,
     EmailMessageRead,
     Page,
+    ReplyComposeRequest,
+    ReplyDraftList,
+    ReplyDraftRead,
     RequestDetail,
     RequestQueue,
     RequestSummary,
 )
-from app.services import document_service, request_service
+from app.services import document_service, email_reply_service, request_service
 from app.services.audit_service import ActorType, record_audit_event
 from app.services.storage import get_storage_service
 
@@ -217,3 +227,118 @@ async def override_category(
     await session.refresh(request)
 
     return await read_request(request_id=request.id, user=user, session=session)
+
+
+# --- replying on the thread a request arrived on -----------------------------------------------
+#
+# Two endpoints and never one. Composing a reply reaches no mailbox at all; sending it is a
+# separate call a person makes deliberately, and their account is what the audit trail records
+# against the message. Nothing on this platform can move a draft to sent on its own.
+
+
+def _reply_read(draft: EmailReplyDraft) -> ReplyDraftRead:
+    read = ReplyDraftRead.model_validate(draft)
+    read.composed_by_name = draft.composed_by.display_name if draft.composed_by else None
+    read.sent_by_name = draft.sent_by.display_name if draft.sent_by else None
+    return read
+
+
+@router.get(
+    "/{request_id}/replies",
+    response_model=ResponseEnvelope[ReplyDraftList],
+    summary="Every reply composed on this request's thread, sent or not",
+)
+async def list_replies(
+    request_id: UUID,
+    user: CurrentUser,
+    session: DbSession,
+) -> ResponseEnvelope[ReplyDraftList]:
+    request = await request_service.get_request(session, request_id)
+    drafts = await email_reply_service.list_for_request(session, request.id)
+    recipient = request.email_message.sender_address if request.email_message is not None else None
+    return ResponseEnvelope[ReplyDraftList](
+        data=ReplyDraftList(
+            items=[_reply_read(draft) for draft in drafts],
+            recipient_address=recipient,
+            outbound_enabled=settings.reply_configured,
+        )
+    )
+
+
+@router.post(
+    "/{request_id}/replies",
+    response_model=ResponseEnvelope[ReplyDraftRead],
+    summary="Compose a reply on this thread — stored for review, sent to nobody",
+)
+async def compose_reply(
+    request_id: UUID,
+    payload: ReplyComposeRequest,
+    user: CorrectionUser,
+    session: DbSession,
+) -> ResponseEnvelope[ReplyDraftRead]:
+    """Writes a draft and returns it. No mailbox is contacted by this call, on any deployment."""
+    draft = await email_reply_service.compose(
+        session, request_id, message=payload.message, composed_by=user
+    )
+    await session.commit()
+    await session.refresh(draft)
+    return ResponseEnvelope[ReplyDraftRead](
+        data=_reply_read(draft),
+        message=(
+            "Drafted. Nothing has been sent: read it back, and send it deliberately when it says "
+            "what you mean."
+        ),
+    )
+
+
+@router.post(
+    "/{request_id}/replies/{draft_id}/send",
+    response_model=ResponseEnvelope[ReplyDraftRead],
+    summary="Send a composed reply on the original thread, recorded against your account",
+)
+async def send_reply(
+    request_id: UUID,
+    draft_id: UUID,
+    user: CorrectionUser,
+    session: DbSession,
+) -> ResponseEnvelope[ReplyDraftRead]:
+    """The one call on this platform that puts a message into somebody else's inbox.
+
+    It exists as its own endpoint precisely so that nothing else can reach it: there is no branch
+    of the compose path, no background task and no event handler that sends. A person did this.
+    """
+    draft = await email_reply_service.get_draft(session, draft_id)
+    if draft.request_id != request_id:
+        raise NotFoundError("That reply does not belong to this request.")
+
+    sent = await email_reply_service.send(session, draft_id, sent_by=user)
+    await session.commit()
+    await session.refresh(sent)
+    return ResponseEnvelope[ReplyDraftRead](
+        data=_reply_read(sent),
+        message="Sent on the original thread, recorded against your account.",
+    )
+
+
+@router.post(
+    "/{request_id}/replies/{draft_id}/withdraw",
+    response_model=ResponseEnvelope[ReplyDraftRead],
+    summary="Abandon a composed reply that has not been sent",
+)
+async def withdraw_reply(
+    request_id: UUID,
+    draft_id: UUID,
+    user: CorrectionUser,
+    session: DbSession,
+) -> ResponseEnvelope[ReplyDraftRead]:
+    draft = await email_reply_service.get_draft(session, draft_id)
+    if draft.request_id != request_id:
+        raise NotFoundError("That reply does not belong to this request.")
+
+    withdrawn = await email_reply_service.withdraw(session, draft_id, withdrawn_by=user)
+    await session.commit()
+    await session.refresh(withdrawn)
+    return ResponseEnvelope[ReplyDraftRead](
+        data=_reply_read(withdrawn),
+        message="Withdrawn. Nothing was sent.",
+    )

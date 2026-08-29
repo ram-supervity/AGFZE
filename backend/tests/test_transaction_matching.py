@@ -15,7 +15,14 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from app.models.enums import DocumentType, InvoiceStatus, MatchMethod, TransactionStatus
+from app.core.config import settings
+from app.models.enums import (
+    BusinessStream,
+    DocumentType,
+    InvoiceStatus,
+    MatchMethod,
+    TransactionStatus,
+)
 from app.models.intake import Document
 from app.models.transactions import PurchaseLeg, RuleEvaluation, TradeTransaction
 from app.services import matching_service, transaction_service
@@ -432,6 +439,48 @@ def test_the_batch_prefix_follows_the_documented_format() -> None:
     assert (
         transaction_service.financial_year_suffix(datetime(2026, 8, 1, tzinfo=timezone.utc)) == "26"
     )
+
+
+async def test_a_batch_number_already_allocated_is_never_renumbered(
+    db_session: AsyncSession,
+) -> None:
+    """The safeguard that has to hold if the prefix format is ever corrected.
+
+    Discovery's worked example does not parse under the format discovery itself states, so the
+    field order is an open question (`KNOWN-GAPS.md` §18). Whatever it is resolved to, a number
+    already allocated must keep it: it is quoted on generated documents, synced into the tracker
+    workbook and carried into SAP as the posting's header text - three systems, two of them
+    outside this platform, and none of them told about a renumbering.
+
+    Allocation reads the prefix once, at the moment a batch is created, and nothing anywhere
+    recomputes it for a transaction that already has one. Asserted by changing the prefix under a
+    live allocation and checking the earlier one is untouched.
+    """
+    original = await transaction_service.next_batch_number(db_session)
+    await db_session.commit()
+
+    transaction = TradeTransaction(
+        request_id=(await make_request(db_session)).id,
+        transaction_code="TXN-BATCH-STABILITY",
+        stream=BusinessStream.SCRAP.value,
+        status=TransactionStatus.MATCHED.value,
+        batch_number=original,
+    )
+    db_session.add(transaction)
+    await db_session.commit()
+
+    # The format changes. Every number allocated from here on carries the new company segment.
+    settings.BATCH_COMPANY_CODE = "70"
+    try:
+        later = await transaction_service.next_batch_number(db_session)
+        await db_session.commit()
+    finally:
+        settings.BATCH_COMPANY_CODE = "26"
+
+    assert later.split("-", 1)[0] != original.split("-", 1)[0]
+
+    await db_session.refresh(transaction)
+    assert transaction.batch_number == original
 
 
 async def test_sequential_allocations_never_repeat_a_number(db_session: AsyncSession) -> None:

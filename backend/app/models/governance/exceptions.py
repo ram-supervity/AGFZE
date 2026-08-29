@@ -50,13 +50,20 @@ class RuleExceptionMapping(Base):
             f"exception_type IN ({sql_in_list(EXCEPTION_CATEGORIES)})",
             name="rule_exception_mapping_type_valid",
         ),
+        # These two are named shorter than reads naturally, and deliberately. With the naming
+        # convention's `ck_rule_exception_mappings_` prefix in front of them, the fuller
+        # `..._owner_role_valid` and `..._priority_valid` came to 66 and 64 characters, past
+        # PostgreSQL's 63-character identifier limit - so what the database actually held was a
+        # truncated, hashed name that could never match what the model declared, and
+        # `alembic check` reported a difference on every run for ever. Kept inside the limit here
+        # rather than left to be silently cut somewhere else.
         CheckConstraint(
             f"owner_role IN ({sql_in_list(ALL_ROLES)})",
-            name="rule_exception_mapping_owner_role_valid",
+            name="rule_exception_mapping_owner_valid",
         ),
         CheckConstraint(
             f"priority IN ({sql_in_list(EXCEPTION_PRIORITIES)})",
-            name="rule_exception_mapping_priority_valid",
+            name="rule_exception_priority_valid",
         ),
         UniqueConstraint("rule_id", "check_key", name="uq_rule_exception_mappings_rule_check"),
     )

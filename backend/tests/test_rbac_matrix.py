@@ -136,6 +136,28 @@ MATRIX: tuple[Endpoint, ...] = (
         DESKS,
         body={"category": "purchase", "reason": "Reclassified during the matrix run."},
     ),
+    # Replying on the thread a request arrived on. Reading is open to everybody signed in, on the
+    # same transparency principle as the request itself; composing, sending and withdrawing are
+    # the desks'. The approver is deliberately outside that set, exactly as they are for the
+    # category correction: they review and sign off, and are not the corresponding party.
+    Endpoint("GET", f"{PREFIX}/requests/{ANY_ID}/replies", EVERYONE),
+    Endpoint(
+        "POST",
+        f"{PREFIX}/requests/{ANY_ID}/replies",
+        DESKS,
+        body={"message": "Confirming the booking against your reference, per the matrix run."},
+    ),
+    Endpoint(
+        "POST",
+        f"{PREFIX}/requests/{ANY_ID}/replies/{ANY_ID}/send",
+        DESKS,
+        notes="the one route on this platform that puts a message into somebody else's inbox",
+    ),
+    Endpoint(
+        "POST",
+        f"{PREFIX}/requests/{ANY_ID}/replies/{ANY_ID}/withdraw",
+        DESKS,
+    ),
     Endpoint("POST", f"{PREFIX}/documents/upload", DESKS, body={}),
     Endpoint("GET", f"{PREFIX}/documents", EVERYONE),
     Endpoint("GET", f"{PREFIX}/documents/{ANY_ID}", EVERYONE),
@@ -306,6 +328,13 @@ MATRIX: tuple[Endpoint, ...] = (
             "channel": "in_app",
             "change_reason": "Matrix run, reason recorded.",
         },
+    ),
+    Endpoint("GET", f"{PREFIX}/admin/report-templates", frozenset({ADMIN})),
+    Endpoint(
+        "PATCH",
+        f"{PREFIX}/admin/report-templates/{ANY_ID}",
+        frozenset({ADMIN}),
+        body={"change_reason": "Matrix run, reason recorded."},
     ),
     Endpoint("GET", f"{PREFIX}/audit", frozenset({ADMIN, AUDITOR})),
     Endpoint("GET", f"{PREFIX}/audit/export", frozenset({ADMIN, AUDITOR})),

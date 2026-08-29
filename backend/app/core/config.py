@@ -129,6 +129,12 @@ class Settings(BaseSettings):
     GRAPH_WEBHOOK_CLIENT_STATE: str = ""
     GRAPH_SUBSCRIPTION_TTL_MINUTES: int = 4230
     GRAPH_MAX_ATTACHMENTS_PER_MESSAGE: int = 25
+    # Outbound replies on an inbound thread. Off by default and deliberately its own switch rather
+    # than a consequence of the Graph credentials existing: reading a shared mailbox and putting a
+    # message into a supplier's inbox from AGFZE's address are different decisions, and the second
+    # one needs `Mail.ReadWrite` and `Mail.Send` granted on top of the read scope. With this off, a
+    # reply can still be composed and reviewed here; it simply cannot leave.
+    GRAPH_REPLY_ENABLED: bool = False
 
     # --- AI extraction --------------------------------------------------------------------------
     AI_PROVIDER: str = "gemini_flash"
@@ -372,6 +378,11 @@ class Settings(BaseSettings):
             and self.AZURE_AD_CLIENT_SECRET.strip()
             and self.GRAPH_MAILBOX_ADDRESS.strip()
         )
+
+    @property
+    def reply_configured(self) -> bool:
+        """Whether this deployment can actually send a reply, rather than only compose one."""
+        return bool(self.graph_configured and self.GRAPH_REPLY_ENABLED)
 
     @property
     def ai_configured(self) -> bool:

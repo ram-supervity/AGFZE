@@ -4,13 +4,20 @@ A dedicated Azure AD app registration authenticates with the OAuth2 client-crede
 This is a machine identity: it has no interactive login and is entirely separate from the
 Keycloak/Entra broker staff sign in through.
 
-Two capabilities live on this one client, and they are deliberately not two clients. Step 2 gave
-it Mail.Read, narrowed by an application access policy to the one approved shared mailbox. Step 7
-adds the Excel writes the tracker synchronisation needs, and the grant behind them is
+Three capabilities live on this one client, and they are deliberately not three clients. Step 2
+gave it Mail.Read, narrowed by an application access policy to the one approved shared mailbox.
+Step 7 adds the Excel writes the tracker synchronisation needs, and the grant behind them is
 `Files.ReadWrite.Selected` (or `Sites.Selected` on the site holding the workbooks) - the specific
 tracker workbooks and nothing else. A tenant-wide Files.ReadWrite.All would let this process
 rewrite every document in the organisation to update one row of one spreadsheet, and nothing here
 needs that.
+
+The third is the thread reply, and it is the only one that puts something *out* of this platform.
+It needs `Mail.ReadWrite` and `Mail.Send` on the same mailbox, narrowed by the same application
+access policy, and it stays off until `GRAPH_REPLY_ENABLED` is set - because a capability that can
+email a supplier should be switched on deliberately rather than acquired by upgrading a grant. A
+reply is composed as a *draft* on the original conversation and is sent only by an explicit,
+recorded human action; nothing in this module sends anything on its own.
 
 The Excel operations below are row-level throughout. A row is located, patched or appended
 through the workbook API; the workbook file itself is never downloaded, opened or re-saved, so
@@ -64,6 +71,20 @@ class GraphError(AppError):
 class GraphNotConfiguredError(GraphError):
     code = "mailbox_not_configured"
     message = "Mailbox intake is not configured."
+
+
+class ReplyNotEnabledError(GraphError):
+    """Outbound replies are not switched on for this deployment.
+
+    Its own type, and not a failure. The client below is complete; what is absent is AGFZE's
+    decision to let this platform put a message into a supplier's inbox, plus the two Graph grants
+    that decision implies. A composed reply is still stored and still readable - it simply cannot
+    leave, and the caller says so rather than reporting a send that did not happen.
+    """
+
+    status_code = 409
+    code = "mailbox_reply_not_enabled"
+    message = "Sending a reply from the shared mailbox is not enabled on this deployment."
 
 
 class TrackerNotConfiguredError(GraphError):
@@ -534,6 +555,45 @@ class GraphClient:
             )
         index = await self.add_table_row(row)
         return TrackerWriteResult(row_index=index, created=True, columns_written=written)
+
+    # --- outbound: a reply on the original thread ---------------------------------------------
+    #
+    # Two calls, never one. `createReply` makes a draft that Graph has already threaded onto the
+    # original conversation - correct References and In-Reply-To headers, quoted original, the
+    # sender addressed - and `send` posts it. Keeping them apart is what makes a human approval
+    # possible at all: the draft exists, is readable, and goes nowhere until somebody sends it.
+
+    def _require_reply_enabled(self) -> None:
+        if not settings.reply_configured:
+            raise ReplyNotEnabledError(reason="not_enabled")
+
+    async def create_reply_draft(self, message_id: str, body_text: str) -> str:
+        """Draft a reply on `message_id`'s own thread. Returns the draft's id. Sends nothing.
+
+        The body is posted as `text`, never as HTML. Nothing this platform composes needs markup,
+        and a text body cannot carry a link, an image beacon or a script into a counterparty's
+        mail client on our behalf.
+        """
+        self._require_reply_enabled()
+        response = await self._request(
+            "POST",
+            self._mailbox_url(f"/messages/{message_id}/createReply"),
+            json_body={"message": {"body": {"contentType": "text", "content": body_text}}},
+        )
+        draft_id = str((response.json() or {}).get("id") or "")
+        if not draft_id:
+            raise GraphError(reason="malformed_draft_response")
+        return draft_id
+
+    async def send_draft(self, draft_id: str) -> None:
+        """Send a draft this platform created. The one call in this module that reaches outward."""
+        self._require_reply_enabled()
+        await self._request("POST", self._mailbox_url(f"/messages/{draft_id}/send"))
+
+    async def delete_draft(self, draft_id: str) -> None:
+        """Discard an unsent draft, so a withdrawn reply does not sit in the mailbox forever."""
+        self._require_reply_enabled()
+        await self._request("DELETE", self._mailbox_url(f"/messages/{draft_id}"))
 
     # --- change notifications ---------------------------------------------------------------
 

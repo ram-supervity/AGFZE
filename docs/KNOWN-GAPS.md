@@ -27,7 +27,7 @@ Nothing on this list prevents the platform from running. Several items would pre
 | 4 | Tracker workbook mapping | Unconfigured → prepared for a person | Approved deals never reach the tracker | Operations |
 | 5 | SAP endpoint contract | Unconfigured → prepared for a person | Nothing posts to SAP automatically | Finance / IT |
 | 6 | DMS endpoint contract | Unconfigured → prepared for a person | Nothing files automatically | IT |
-| 7 | Report templates | Two seeded reports; distribution configurable | The reports nobody wanted, and none of the ones they did | Management |
+| 7 | Report templates | Three seeded structures, editable with a reason | The reports nobody wanted, and none of the ones they did | Management |
 | 8 | Vertex AI fallback | An extension point that fails honestly | No second provider if Gemini is unavailable | IT |
 | 9 | Rate-limit counter store | Shared Memorystore; refuses in-process | Behaviour under a Redis outage unconfirmed | IT |
 | 10 | Approval segregation of duties | Enforced; self-approval refused | A lone approver cannot approve their own work | Management |
@@ -42,6 +42,7 @@ Nothing on this list prevents the platform from running. Several items would pre
 | 19 | Document retention | Off, no period, dry run | Documents kept for ever, or a wrong period chosen | Legal / Finance |
 | 20 | Counterparty short codes | Derived on read, not stored | Codes that change when a name is corrected | Operations |
 | 21 | Graph projection | Built; off and unprovisioned | An infrastructure commitment nobody has agreed to | IT / Management |
+| 22 | Outbound reply approval tier | The desk that writes it sends it | A message to a counterparty nobody senior reviewed | Management |
 
 ---
 
@@ -201,13 +202,22 @@ email, and the channel setting on a rule is a *ceiling* on delivery rather than 
 "email" permits an email to recipients whose own notification preference is email, and cannot
 impose one on somebody who never asked to be emailed.
 
-**Templates are still seed data.** Only distribution moved; which reports exist and what is on them
-did not.
+**Templates are configuration now, not seed data.** `/admin/report-templates` edits which
+sections each report carries, in what order, and which figures go in each — with a mandatory
+recorded reason and an audit row, exactly as a threshold does. The three structures were seeded
+into `report_template_configurations` exactly as they shipped, so nothing about any report changed
+at cutover; the first thing that changes is the first thing somebody deliberately changes.
+
+Nothing on that screen can change a *figure*. Every number a report prints is still computed from
+the governed transaction, exception, approval, shipment and posting tables at the moment it is
+generated, and each one still carries the filtered query that reproduces it. The screen decides
+what is asked for, never what the answer is.
 
 **What AGFZE has to confirm.**
 
-- Which reports does management actually want, and what is on them? The two seeded ones are a
-  sensible starting point rather than a specification.
+- Which reports does management actually want, and what is on them? The three seeded structures
+  are a sensible starting point rather than a specification — and confirming them is now an edit
+  rather than a release.
 - Whether a link is sufficient, or whether the business genuinely needs the figures *in* the
   message. The platform deliberately does not put commercial figures in an email body or an
   attachment, and changing that is a decision about where those figures are allowed to travel —
@@ -596,14 +606,53 @@ somebody reading the list above will reasonably ask about them.
 - **Offline support is read-only, permanently.** A mutating action taken with no connection is
   refused and told to the user plainly. It is never queued for later replay, because a queued
   approval arriving hours later against a record that has moved on is worse than a refused one.
-- **Three configuration areas deliberately have no admin screen**: the tracker/SAP/DMS endpoint
-  targets (infrastructure — a deployment and a review), the rule-to-exception-category mapping
-  (seed data deciding which desk owns which failure), and report templates (deferred by the
-  reporting step). Each is reachable, by a deployment, by somebody who meant to.
+- **Two configuration areas deliberately have no admin screen**: the tracker/SAP/DMS endpoint
+  targets (infrastructure — a deployment and a review) and the rule-to-exception-category mapping
+  (seed data deciding which desk owns which failure). Each is reachable, by a deployment, by
+  somebody who meant to.
+- **Replying to a counterparty is possible, and is never automatic.** The platform can answer a
+  broker or a supplier on the thread their message arrived on. Composing a reply reaches no mailbox
+  at all; sending it is a separate call a signed-in person makes, recorded against their account.
+  There is no worker, scheduler or event handler with a route to the send path, and the capability
+  ships switched off (`GRAPH_REPLY_ENABLED=false`) because reading a shared mailbox and writing
+  from AGFZE's address are different decisions — see **#22** below.
 - **Every threshold in the platform is a database row**, not a literal. A rule with no active
   configuration reports itself unconfigured and blocks — with the single, documented exception of
   IV-01 above, which flags instead, because an unconfirmed policy must not be able to stop a desk
   from working.
+
+---
+
+## 22. Who approves a reply going out over AGFZE's address
+
+**What the platform does today.** A desk user — Purchase, Sales, FA, Logistics or Admin, the same
+set that may correct a request's category — composes a reply and sends it. Composing writes a draft
+and reaches no mailbox; sending is a separate, explicit call, and the account that made it is on
+the audit trail against the message. The approver is deliberately *not* in that set, for the same
+reason they are not in the correction set: they review and sign off, and are not the corresponding
+party.
+
+**The reference and the standing disclaimer are appended by the server**, not by the form, so there
+is no path that produces a reply without them and the desk reads exactly what will go out before it
+goes.
+
+**Why there is no separate approval tier.** Discovery asks for a reply to go out "initially via
+human-approved draft" and does not say who approves it. The platform treats the explicit send as
+the human approval — which is what "never automatic" actually requires — rather than inventing an
+approver role no source document names. Inventing one would have been a business rule this platform
+made up about who may speak to a counterparty.
+
+**What AGFZE has to confirm.**
+
+- Is the desk's own send sufficient, or does a reply over AGFZE's address need a second person —
+  and if so, which? If the answer is the HOD, it is a small change: the send endpoint's role gate,
+  and the existing approval queue it would route through.
+- Whether the standing disclaimer, written for AI-derived content on screen, is the right thing to
+  print under a reply a person wrote themselves. It is there today because every reply is composed
+  inside a workspace built on extracted data; a separate outbound wording would be a content
+  decision, not an engineering one.
+
+**Until either is confirmed**, `GRAPH_REPLY_ENABLED` stays false and nothing leaves at all.
 
 ---
 

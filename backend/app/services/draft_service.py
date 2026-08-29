@@ -123,6 +123,17 @@ def _price_terms(transaction: TradeTransaction) -> str:
         if rate:
             fixed_on = leg.fixation_date.isoformat() if leg.fixation_date else None
             return f"{currency} {rate} per MT, fixed" + (f" on {fixed_on}" if fixed_on else "")
+    if transaction.price_basis == PriceBasis.THREE_MONTH_LME.value:
+        # Which quotation the price is struck against is a contractual term, so it is stated even
+        # where no percentage was recorded. The averaged figure itself is never asserted here:
+        # this platform records the three-month price somebody entered and computes no average of
+        # its own, because it holds no daily exchange series to average.
+        percentage = format_decimal(transaction.lme_percentage)
+        return (
+            f"{percentage}% of the 3-month LME quotation"
+            if percentage
+            else "the 3-month LME quotation"
+        )
     if transaction.price_basis == PriceBasis.LME_PERCENT.value and transaction.lme_percentage:
         return f"{format_decimal(transaction.lme_percentage)}% of the LME cash settlement"
     purchase = transaction.purchase_leg

@@ -1,14 +1,18 @@
 """The administration module: rules, document schemas, and the manual role override.
 
-Three screens and no more. Several other things this platform stores are, technically,
-configuration - the tracker/SAP/DMS endpoints, the rule-to-exception-category mapping, the report
-templates - and none of them gets an editing screen here, deliberately:
+Rules, document schemas, report distribution, report templates, and the manual role override.
+Two other things this platform stores are, technically, configuration and still get no editing
+screen here, deliberately:
 
 * the integration endpoints are infrastructure. Changing where an approved deal is posted should
   require a deployment and a review, not a form somebody can fill in at four in the afternoon;
 * the rule-to-category mapping is seed data that decides which desk owns which failure. It has
-  never been part of this platform's page catalog and stays migration-driven;
-* the report templates were explicitly deferred by the reporting step itself.
+  never been part of this platform's page catalog and stays migration-driven.
+
+Report *templates* were on that list until now. They are on this page instead because the
+governing material asks for reports to be built against configuration rather than hard-coded
+layouts and for the exact templates to be confirmed with AGFZE - which is a conversation, not a
+release, and a conversation needs a screen.
 
 Every endpoint here enforces the Admin role server-side through the shared dependency, not by
 which link the sidebar happened to draw.
@@ -42,7 +46,7 @@ from app.core.roles import ALL_ROLES, PlatformRole, normalise_roles
 from app.db.base import utcnow
 from app.models.configuration import DocumentTypeSchema, RuleConfiguration
 from app.models.identity import User
-from app.models.reporting import ReportDistributionRule
+from app.models.reporting import ReportDistributionRule, ReportTemplateConfiguration
 from app.schemas.admin import (
     AdminUserList,
     AdminUserRead,
@@ -52,6 +56,9 @@ from app.schemas.admin import (
     ReportDistributionRuleList,
     ReportDistributionRuleRead,
     ReportDistributionRuleWrite,
+    ReportTemplateList,
+    ReportTemplateRead,
+    ReportTemplateUpdate,
     RuleConfigurationList,
     RuleConfigurationRead,
     RuleConfigurationUpdate,
@@ -60,6 +67,7 @@ from app.schemas.admin import (
 )
 from app.schemas.common import ResponseEnvelope
 from app.services import keycloak_admin, notification_service
+from app.services.analytics.report_templates import SectionSpec, section_as_row
 from app.services.audit_service import ActorType, record_audit_event
 from app.services.rules.catalog import RULE_BY_ID
 
@@ -80,6 +88,7 @@ class AdminAuditEvent:
     RULE_UPDATED = "admin.rule_configuration.updated"
     REPORT_DISTRIBUTION_SAVED = "admin.report_distribution.saved"
     REPORT_DISTRIBUTION_DELETED = "admin.report_distribution.deleted"
+    REPORT_TEMPLATE_UPDATED = "admin.report_template.updated"
     DOCUMENT_SCHEMA_UPDATED = "admin.document_type_schema.updated"
     USER_ROLES_UPDATED = "admin.user.roles_updated"
     USER_ROLES_UPDATE_FAILED = "admin.user.roles_update_failed"
@@ -691,4 +700,135 @@ async def update_report_distribution(
     return ResponseEnvelope[ReportDistributionRuleRead](
         data=await _distribution_read(session, target),
         message=f"The {row.report_type} distribution rule is saved and {state}.",
+    )
+
+
+# --- report templates ----------------------------------------------------------------------------
+#
+# What a report is made of, rather than what it says. Nothing on this screen can change a figure:
+# every number a report prints is computed from the governed tables at the moment it is generated,
+# and these rows decide only which blocks are asked for and in what order they are laid out.
+
+
+def _template_read(row: ReportTemplateConfiguration) -> ReportTemplateRead:
+    read = ReportTemplateRead.model_validate(row)
+    read.changed_by_name = row.changed_by.display_name if row.changed_by else None
+    read.section_count = len(row.sections or [])
+    return read
+
+
+@router.get(
+    "/report-templates",
+    response_model=ResponseEnvelope[ReportTemplateList],
+    summary="What each report is made of: its sections, their order and their figures",
+)
+async def list_report_templates(
+    user: PlatformAdmin,
+    session: DbSession,
+    report_type: str | None = Query(None),
+) -> ResponseEnvelope[ReportTemplateList]:
+    statement = select(ReportTemplateConfiguration).options(
+        selectinload(ReportTemplateConfiguration.changed_by)
+    )
+    if report_type:
+        statement = statement.where(ReportTemplateConfiguration.report_type == report_type)
+    rows = list(
+        (await session.scalars(statement.order_by(ReportTemplateConfiguration.report_type))).all()
+    )
+    return ResponseEnvelope[ReportTemplateList](
+        data=ReportTemplateList(items=[_template_read(row) for row in rows])
+    )
+
+
+@router.patch(
+    "/report-templates/{template_id}",
+    response_model=ResponseEnvelope[ReportTemplateRead],
+    summary="Change what a report carries, with a mandatory recorded reason",
+)
+async def update_report_template(
+    template_id: UUID,
+    payload: ReportTemplateUpdate,
+    user: PlatformAdmin,
+    session: DbSession,
+) -> ResponseEnvelope[ReportTemplateRead]:
+    """An edit governs the next generation and never a past one.
+
+    The reports already produced keep their own `content` and their own `template_key`, which is
+    exactly why neither is recomputed on read: a document says what it said when it was generated,
+    and this endpoint cannot reach back and change that.
+    """
+    row = await session.get(ReportTemplateConfiguration, template_id)
+    if row is None:
+        raise NotFoundError("That report template does not exist.")
+
+    before = {
+        "title": row.title,
+        "section_keys": [str(section.get("key")) for section in (row.sections or [])],
+        "disclosure_count": len(row.disclosures or []),
+    }
+
+    if payload.title is not None:
+        row.title = payload.title.strip()
+    if payload.description is not None:
+        row.description = payload.description.strip()
+    if payload.sections is not None:
+        # Written through the same converter the migration's seed and the generator's reader both
+        # use, so a stored section can never be a shape only this endpoint knows how to produce.
+        row.sections = [
+            section_as_row(
+                SectionSpec(
+                    key=section.key,
+                    title=section.title,
+                    kind=section.kind,
+                    source=section.source,
+                    description=section.description,
+                    figures=tuple(section.figures),
+                )
+            )
+            for section in payload.sections
+        ]
+    if payload.disclosures is not None:
+        row.disclosures = list(payload.disclosures)
+    row.change_reason = payload.change_reason
+    row.changed_by_id = user.id
+    row.changed_at = utcnow()
+    await session.flush()
+
+    after_keys = [str(section.get("key")) for section in (row.sections or [])]
+    await record_audit_event(
+        session,
+        event_type=AdminAuditEvent.REPORT_TEMPLATE_UPDATED,
+        entity_type="report_template_configuration",
+        entity_id=row.id,
+        actor_id=user.id,
+        actor_type=ActorType.USER,
+        # Section keys and counts, never the section bodies: the trail records that the structure
+        # changed and how, not a second copy of every report's layout.
+        metadata={
+            "template_key": row.template_key,
+            "report_type": row.report_type,
+            "before": before,
+            "after": {
+                "title": row.title,
+                "section_keys": after_keys,
+                "disclosure_count": len(row.disclosures or []),
+            },
+            "sections_added": sorted(set(after_keys) - set(before["section_keys"])),
+            "sections_removed": sorted(set(before["section_keys"]) - set(after_keys)),
+            "change_reason": row.change_reason,
+        },
+    )
+    await session.commit()
+
+    refreshed = await session.scalar(
+        select(ReportTemplateConfiguration)
+        .where(ReportTemplateConfiguration.id == row.id)
+        .options(selectinload(ReportTemplateConfiguration.changed_by))
+    )
+    return ResponseEnvelope[ReportTemplateRead](
+        data=_template_read(refreshed or row),
+        message=(
+            f"The {row.report_type} report is updated. It takes this shape from its next "
+            "generation; the reports already produced keep the structure they were built to."
+        ),
     )

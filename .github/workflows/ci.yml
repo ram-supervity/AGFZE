@@ -1,0 +1,212 @@
+name: CI
+
+# Blocking, not advisory. Every job below is required on `main` and on every pull request that
+# targets it, and `release.yml` will not deploy a commit whose CI run did not succeed. A step
+# that fails here fails the build; nothing is `continue-on-error`.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  # Called by release.yml so a tag is verified by the same pipeline rather than by a copy of it.
+  workflow_call:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.12"
+  NODE_VERSION: "22"
+
+jobs:
+  backend:
+    name: Backend — lint, format, tests, migrations, image
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    services:
+      # The suite's real target. It falls back to SQLite for a container-less checkout, and CI is
+      # not that: a migration that behaves differently on PostgreSQL has to fail here.
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: agfze
+          POSTGRES_PASSWORD: agfze
+          POSTGRES_DB: agfze
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U agfze -d agfze"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install system libraries the runtime needs
+        # libmagic is what python-magic reads a file's real leading bytes through. Without it the
+        # magic-byte validation cannot run at all, and every intake test would be meaningless.
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libmagic1
+
+      - name: Install dependencies
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Lint
+        working-directory: backend
+        run: ruff check .
+
+      - name: Format check
+        working-directory: backend
+        run: ruff format --check .
+
+      - name: Create the test database
+        env:
+          PGPASSWORD: agfze
+        run: |
+          psql -h localhost -U agfze -d agfze -v ON_ERROR_STOP=1 \
+            -c "SELECT 'CREATE DATABASE agfze_test OWNER agfze'
+                WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'agfze_test')\gexec"
+
+      - name: Test suite
+        working-directory: backend
+        env:
+          ENV: testing
+          TEST_DATABASE_URL: postgresql+asyncpg://agfze:agfze@localhost:5432/agfze_test
+        run: pytest -q
+
+      - name: Alembic migration dry-run against a disposable database
+        # A separate database, created and dropped inside this step, so what is proved is that the
+        # migrations build the schema from nothing - and that every downgrade is real. The test
+        # suite migrates too, but it migrates a database the previous run left behind.
+        working-directory: backend
+        env:
+          PGPASSWORD: agfze
+        run: |
+          psql -h localhost -U agfze -d agfze -v ON_ERROR_STOP=1 \
+            -c "DROP DATABASE IF EXISTS agfze_migration_check"
+          psql -h localhost -U agfze -d agfze -v ON_ERROR_STOP=1 \
+            -c "CREATE DATABASE agfze_migration_check OWNER agfze"
+          export DATABASE_URL="postgresql+asyncpg://agfze:agfze@localhost:5432/agfze_migration_check"
+          export ENV=testing
+          alembic upgrade head
+          # Down to base and back up again: a downgrade nobody exercises is a downgrade that does
+          # not work, and it is the only thing standing between a bad release and a rollback.
+          alembic downgrade base
+          alembic upgrade head
+          alembic check
+          psql -h localhost -U agfze -d agfze -v ON_ERROR_STOP=1 \
+            -c "DROP DATABASE agfze_migration_check"
+
+      - name: Multi-stage image build
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: false
+          load: true
+          tags: agfze-backend:${{ github.sha }}
+
+      - name: The image starts and refuses an unsafe production configuration
+        # Two facts in one step: the image runs, and the production settings profile genuinely
+        # blocks a deployment that has not supplied its credentials. A profile that only refuses
+        # in theory is not a safeguard.
+        run: |
+          set +e
+          output=$(docker run --rm -e ENV=production agfze-backend:${{ github.sha }} \
+            python -c "from app.core.config import get_settings; get_settings()" 2>&1)
+          status=$?
+          set -e
+          echo "$output"
+          if [ $status -eq 0 ]; then
+            echo "::error::the production profile started with no credentials configured"
+            exit 1
+          fi
+          echo "$output" | grep -q "Refusing to start with an unsafe production configuration"
+
+  frontend:
+    name: Frontend — lint, format, types, tests, worker manifest, image
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Lint
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Format check
+        working-directory: frontend
+        # Prettier is not a dependency of this project; the ESLint configuration carries the
+        # formatting rules, and this asserts that no file would be changed by fixing them.
+        run: npx eslint . --max-warnings=0
+
+      - name: Type check
+        working-directory: frontend
+        run: npm run typecheck
+
+      - name: Test suite
+        working-directory: frontend
+        run: npm run test
+
+      - name: Build
+        working-directory: frontend
+        env:
+          NEXT_PUBLIC_API_BASE_URL: https://api.example.invalid/api/v1
+          NEXT_TELEMETRY_DISABLED: "1"
+        run: npm run build
+
+      - name: Verify the service-worker precache manifest against this build
+        # The build's postbuild step writes public/sw.js from the build manifest. This checks that
+        # what it wrote actually matches what was built - a stale worker installs against URLs
+        # that 404, and it does so silently, because a missing asset is swallowed by design.
+        working-directory: frontend
+        env:
+          NEXT_PUBLIC_API_BASE_URL: https://api.example.invalid/api/v1
+        run: npm run verify:sw
+
+      - name: Multi-stage image build
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: false
+          load: true
+          build-args: |
+            NEXT_PUBLIC_API_BASE_URL=https://api.example.invalid/api/v1
+          tags: agfze-frontend:${{ github.sha }}
+
+  gate:
+    name: CI gate
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    if: always()
+    steps:
+      # One required check to protect the branch with, and one that cannot pass by a job being
+      # skipped: `always()` plus an explicit result test is what makes a cancelled or skipped
+      # dependency a failure rather than a silent success.
+      - name: Both suites must have succeeded
+        run: |
+          echo "backend: ${{ needs.backend.result }}"
+          echo "frontend: ${{ needs.frontend.result }}"
+          [ "${{ needs.backend.result }}" = "success" ] || exit 1
+          [ "${{ needs.frontend.result }}" = "success" ] || exit 1

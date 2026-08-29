@@ -33,7 +33,17 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, Index, Integer, String, Text
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, utcnow
@@ -66,9 +76,9 @@ class Report(Base):
     id: Mapped[uuid.UUID] = mapped_column(GUID, primary_key=True, default=uuid.uuid4)
     report_type: Mapped[str] = mapped_column(String(16), index=True)
     output_format: Mapped[str] = mapped_column(String(8), index=True)
-    # Which shipped template produced it. A template change is a seed-data change until the admin
-    # screen that edits one arrives; the key is recorded so a later reader knows which structure
-    # this document was built to.
+    # Which template produced it, recorded so a later reader knows the structure this document
+    # was built to. Templates are editable configuration, so the key answers "what shape was this
+    # report when it was generated" rather than "what shape is that report today".
     template_key: Mapped[str] = mapped_column(String(48), index=True)
     title: Mapped[str] = mapped_column(String(255))
     period_start: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
@@ -104,6 +114,67 @@ class Report(Base):
     )
 
     generated_by: Mapped[User | None] = relationship(lazy="selectin")
+
+
+class ReportTemplateConfiguration(Base):
+    """A report's structure, as an editable row rather than as layout code.
+
+    What is held here is exactly the structure: which sections a report carries, in what order,
+    and which figures go in each. What is *not* held here is any figure. Every number a report
+    prints is still computed from the governed tables at generation time - this table decides only
+    what is asked for and how it is laid out, which is why editing a template can never change
+    what a past report said and can never make a new one say something the data does not.
+
+    The same discipline every other configuration table on this platform follows: a mandatory
+    `change_reason`, an attributed editor, and no value anywhere in application code. The three
+    shipped structures are seeded by the migration that creates this table, so the day the screen
+    arrives nothing about any report changes until somebody deliberately edits one.
+
+    `template_key` and `report_type` are the row's identity and are never editable. Re-pointing a
+    template at another report type would leave the reports already generated under it claiming a
+    structure they were not built to, and `reports.template_key` records which structure produced
+    each document precisely so that stays answerable.
+    """
+
+    __tablename__ = "report_template_configurations"
+    __table_args__ = (
+        CheckConstraint(
+            f"report_type IN ({_in_list(REPORT_TYPES)})", name="report_template_type_valid"
+        ),
+        # One template per report type. The generator resolves a template by the type it was asked
+        # for, so two rows claiming the same type would make which structure it used a matter of
+        # row order.
+        UniqueConstraint("report_type", name="uq_report_template_configurations_report_type"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(GUID, primary_key=True, default=uuid.uuid4)
+    template_key: Mapped[str] = mapped_column(String(48), unique=True, index=True)
+    report_type: Mapped[str] = mapped_column(String(16), index=True)
+    title: Mapped[str] = mapped_column(String(255))
+    description: Mapped[str] = mapped_column(Text)
+    # `[{key, title, kind, source, description, figures: [...]}]`, in the order they are printed.
+    sections: Mapped[list[dict[str, Any]]] = mapped_column(JSONBType, default=list)
+    # The standing disclosures printed on the document itself. Editable with everything else,
+    # because a disclosure that could not follow a structure change would go stale silently.
+    disclosures: Mapped[list[str]] = mapped_column(JSONBType, default=list)
+    # Whether this template asks the model for its one-paragraph summary, and whether it lists the
+    # transactions themselves under the summary. Behavioural rather than structural, and carried
+    # here so the whole template is one row rather than a row plus two constants.
+    wants_ai_summary: Mapped[bool] = mapped_column(Boolean, default=False)
+    include_detail_rows: Mapped[bool] = mapped_column(Boolean, default=False)
+    default_period_days: Mapped[int] = mapped_column(Integer, default=1)
+    change_reason: Mapped[str] = mapped_column(Text)
+    changed_by_id: Mapped[uuid.UUID | None] = mapped_column(
+        GUID, ForeignKey("users.id", ondelete="SET NULL"), index=True
+    )
+    changed_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, index=True
+    )
+
+    changed_by: Mapped[User | None] = relationship(lazy="selectin")
 
 
 # Which report types can be distributed. Ad-hoc is deliberately absent and must stay absent: its
