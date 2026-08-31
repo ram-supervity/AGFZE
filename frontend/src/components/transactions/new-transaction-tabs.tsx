@@ -123,11 +123,11 @@ const PathTab = forwardRef<
       onClick={onSelect}
       {...rest}
       className={cn(
-        "rounded-md border px-3 py-2 text-left text-sm transition-colors",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "rounded-control border-thin px-space-150 py-space-100 text-left text-body-sm transition-colors",
+        "focus-visible:outline-none focus-visible:ring-thick focus-visible:ring-ring",
         selected
           ? "border-secondary bg-secondary/10 text-foreground"
-          : "border-border bg-surface text-muted-foreground hover:text-foreground",
+          : "border-border bg-elevation-default text-muted-foreground hover:text-foreground",
       )}
     >
       <span className="block font-medium">{title}</span>

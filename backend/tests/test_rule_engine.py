@@ -20,6 +20,7 @@ from app.services.rules import engine as rule_engine
 from app.services.rules.catalog import ALL_RULE_IDS, CheckKey, RuleId
 from app.services.rules.registry import registered_rules
 from app.services.rules.values import money, percentage_difference, to_decimal
+from tests.utils.sales import attach_sales_leg_row
 from tests.utils.transactions import (
     contract_values,
     invoice_values,
@@ -30,6 +31,7 @@ from tests.utils.transactions import (
 
 
 async def _context(session: AsyncSession, transaction):
+    transaction = await rule_engine.load_transaction(session, transaction.id)
     return await rule_engine.build_context(session, transaction)
 
 
@@ -204,20 +206,172 @@ async def test_br02_fails_when_nothing_identifies_the_deal(db_session: AsyncSess
 # --- BR-04  mandatory document pack -------------------------------------------------------------
 
 
-async def test_br04_fails_and_names_what_the_india_pack_is_missing(
+async def test_br04_purchase_intake_passes_with_invoice_packing_list_and_weight_slip(
     db_session: AsyncSession,
 ) -> None:
+    request = await make_request(db_session)
+    transaction = await make_transaction(db_session, request=request)
+    await make_document(
+        db_session,
+        request,
+        values=invoice_values(),
+        filename="invoice.pdf",
+        territory="india",
+        transaction_id=transaction.id,
+    )
+    for entry in ("packing_list", "weight_slip"):
+        await make_document(
+            db_session,
+            request,
+            values={},
+            document_type=DocumentType.SHIPPING_DOCUMENT.value,
+            filename=f"{entry}.pdf",
+            territory="india",
+            transaction_id=transaction.id,
+        )
+    await db_session.commit()
+
+    context = await _context(db_session, transaction)
+    outcomes = await registered_rules()[RuleId.BR_04].evaluator(context)
+
+    assert len(outcomes) == 1
+    assert outcomes[0].passed is True
+    assert outcomes[0].expected_value == "3 of 3 documents"
+    assert outcomes[0].actual_value == "3 of 3 documents"
+    assert (
+        "The purchase document pack is complete: invoice, packing list and weight slip present."
+        in outcomes[0].message
+    )
+    for doc in (
+        "certificate of origin",
+        "freight certificate",
+        "form 6",
+        "form 9",
+        "mill test certificate",
+        "chemical analysis certificate",
+    ):
+        assert doc not in outcomes[0].message
+
+
+async def test_br04_purchase_intake_fails_and_lists_only_missing_purchase_documents(
+    db_session: AsyncSession,
+) -> None:
+    # A purchase transaction with only invoice and contract attached is missing packing_list and weight_slip.
     transaction = await _seeded_transaction(db_session, territory="india")
     context = await _context(db_session, transaction)
 
     outcomes = await registered_rules()[RuleId.BR_04].evaluator(context)
 
+    assert len(outcomes) == 1
     assert outcomes[0].passed is False
+    assert outcomes[0].expected_value == "3 of 3 documents"
+    assert outcomes[0].actual_value == "1 of 3 documents"
     assert "packing list" in outcomes[0].message
+    assert "weight slip" in outcomes[0].message
+    for doc in (
+        "certificate of origin",
+        "freight certificate",
+        "form 6",
+        "form 9",
+        "mill test certificate",
+        "chemical analysis certificate",
+    ):
+        assert doc not in outcomes[0].message
+
+
+async def test_br04_sales_leg_switches_purchase_transaction_to_full_territory_checklist(
+    db_session: AsyncSession,
+) -> None:
+    request = await make_request(db_session)
+    transaction = await make_transaction(db_session, request=request)
+    await make_document(
+        db_session,
+        request,
+        values=invoice_values(),
+        filename="invoice.pdf",
+        territory="india",
+        transaction_id=transaction.id,
+    )
+    for entry in ("packing_list", "weight_slip"):
+        await make_document(
+            db_session,
+            request,
+            values={},
+            document_type=DocumentType.SHIPPING_DOCUMENT.value,
+            filename=f"{entry}.pdf",
+            territory="india",
+            transaction_id=transaction.id,
+        )
+    # Add a sales leg, which moves the deal to the sales stage
+    await attach_sales_leg_row(
+        db_session,
+        transaction,
+        customer_name="Global Steel Mills Ltd",
+        territory="india",
+        sales_contract_no="SC-2026-001",
+    )
+    await db_session.commit()
+
+    context = await _context(db_session, transaction)
+    outcomes = await registered_rules()[RuleId.BR_04].evaluator(context)
+
+    assert outcomes[0].passed is False
+    assert outcomes[0].expected_value == "8 of 8 documents"
+    for doc in (
+        "certificate of origin",
+        "freight certificate",
+        "form 6",
+        "form 9",
+        "mill test certificate",
+        "chemical analysis certificate",
+    ):
+        assert doc in outcomes[0].message
+
+
+async def test_br04_bill_of_lading_switches_purchase_transaction_to_full_territory_checklist(
+    db_session: AsyncSession,
+) -> None:
+    request = await make_request(db_session)
+    transaction = await make_transaction(db_session, request=request)
+    await make_document(
+        db_session,
+        request,
+        values=invoice_values(),
+        filename="invoice.pdf",
+        territory="india",
+        transaction_id=transaction.id,
+    )
+    for entry in ("packing_list", "weight_slip"):
+        await make_document(
+            db_session,
+            request,
+            values={},
+            document_type=DocumentType.SHIPPING_DOCUMENT.value,
+            filename=f"{entry}.pdf",
+            territory="india",
+            transaction_id=transaction.id,
+        )
+    # Attach draft B/L shipping evidence without a sales leg
+    await make_document(
+        db_session,
+        request,
+        values={},
+        document_type=DocumentType.BL_DRAFT.value,
+        filename="bl_draft.pdf",
+        territory="india",
+        transaction_id=transaction.id,
+    )
+    await db_session.commit()
+
+    context = await _context(db_session, transaction)
+    outcomes = await registered_rules()[RuleId.BR_04].evaluator(context)
+
+    assert outcomes[0].passed is False
+    assert outcomes[0].expected_value == "8 of 8 documents"
     assert "certificate of origin" in outcomes[0].message
 
 
-async def test_br04_passes_once_every_checklist_entry_is_evidenced(
+async def test_br04_passes_at_sales_shipment_stage_when_full_territory_pack_evidenced(
     db_session: AsyncSession,
 ) -> None:
     request = await make_request(db_session)
@@ -254,6 +408,25 @@ async def test_br04_passes_once_every_checklist_entry_is_evidenced(
     outcomes = await registered_rules()[RuleId.BR_04].evaluator(context)
 
     assert outcomes[0].passed is True
+    assert outcomes[0].expected_value == "8 of 8 documents"
+    assert outcomes[0].actual_value == "8 of 8 documents"
+    assert "The india document pack is complete." in outcomes[0].message
+
+
+async def test_br04_fa_transaction_keeps_existing_no_checklist_behavior(
+    db_session: AsyncSession,
+) -> None:
+    from tests.utils.logistics import make_fa_transaction
+
+    transaction = await make_fa_transaction(db_session)
+    context = await _context(db_session, transaction)
+
+    outcomes = await registered_rules()[RuleId.BR_04].evaluator(context)
+
+    assert len(outcomes) == 1
+    assert outcomes[0].passed is True
+    assert outcomes[0].expected_value == "no checklist configured"
+    assert "No mandatory-document checklist is configured" in outcomes[0].message
 
 
 # --- BR-05  quantity variation ------------------------------------------------------------------

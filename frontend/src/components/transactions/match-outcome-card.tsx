@@ -90,8 +90,8 @@ export function MatchOutcomeCard({
   return (
     <div
       className={cn(
-        "space-y-3 rounded-md border px-4 py-3",
-        TONE[current.outcome] ?? "border-border bg-surface",
+        "space-y-space-150 rounded-medium border-thin px-space-200 py-space-150",
+        TONE[current.outcome] ?? "border-border bg-elevation-default",
         className,
       )}
     >
@@ -133,7 +133,7 @@ export function MatchOutcomeCard({
               {current.candidates.map((candidate) => (
                 <li
                   key={candidate.transaction_id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border bg-card px-3 py-2"
+                  className="flex flex-wrap items-center justify-between gap-space-150 rounded-control border-thin border-border bg-elevation-default px-space-150 py-space-100 shadow-raised"
                 >
                   <div className="min-w-0">
                     <p className="font-mono text-sm text-foreground">

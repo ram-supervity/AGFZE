@@ -12,7 +12,7 @@ const LEGAL_LINKS = [
 export default function PublicLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <header className="border-b border-border bg-card">
+      <header className="border-b border-thin border-border bg-elevation-default">
         <div className="mx-auto flex h-16 w-full max-w-4xl items-center justify-between gap-4 px-6">
           <Link href="/signin" aria-label="AGFZE Command Centre home">
             <BrandMark variant="full" />
@@ -28,7 +28,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
 
       <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-12">{children}</main>
 
-      <footer className="border-t border-border bg-card">
+      <footer className="border-t border-thin border-border bg-elevation-default">
         <div className="mx-auto flex w-full max-w-4xl flex-col gap-4 px-6 py-6 sm:flex-row sm:items-center sm:justify-between">
           <nav aria-label="Legal documents" className="flex flex-wrap gap-5">
             {LEGAL_LINKS.map((link) => (

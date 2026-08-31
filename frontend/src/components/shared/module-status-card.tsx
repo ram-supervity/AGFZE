@@ -8,7 +8,7 @@ export function ModuleStatusCard({ item }: { item: NavItem }) {
   return (
     <Card className="h-full shadow-none">
       <CardHeader className="flex flex-row items-start gap-3 space-y-0">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
+        <span className="flex h-control-md w-control-md shrink-0 items-center justify-center rounded-control bg-muted text-muted-foreground">
           <Icon className="h-4 w-4" aria-hidden="true" />
         </span>
         <div className="min-w-0 flex-1 space-y-1.5">

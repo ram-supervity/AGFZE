@@ -91,7 +91,7 @@ export function PageViewer({ filename, pageUrls, sourceUrl, contentType }: PageV
               <DialogTrigger asChild>
                 <button
                   type="button"
-                  className="group relative block w-full overflow-hidden rounded-md border border-border bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="group relative block w-full overflow-hidden rounded-control border-thin border-border bg-elevation-default focus-visible:outline-none focus-visible:ring-thick focus-visible:ring-ring"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img

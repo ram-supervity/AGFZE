@@ -53,8 +53,8 @@ export function OfflineView() {
     <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col justify-center gap-6 px-6 py-12">
       <BrandMark className="text-primary" />
 
-      <div className="rounded-lg border border-border bg-surface p-6">
-        <div className="flex items-start gap-3">
+      <div className="rounded-medium border-thin border-border bg-elevation-default p-space-300">
+        <div className="flex items-start gap-space-150">
           <CloudOff aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-accent" />
           <div>
             <h1 className="text-lg font-semibold text-foreground">You&rsquo;re offline</h1>
@@ -101,7 +101,7 @@ export function OfflineView() {
         <div
           role="status"
           aria-live="polite"
-          className="mt-6 flex flex-wrap items-center gap-3 rounded-md border border-border bg-background px-3.5 py-2.5"
+          className="mt-space-300 flex flex-wrap items-center gap-space-150 rounded-control border-thin border-border bg-elevation-sunken px-space-150 py-space-100"
         >
           {online ? (
             <>

@@ -38,7 +38,7 @@ export function ExceptionFilters({
   const active = Boolean(ownerRole || minAgeHours || status !== "open");
 
   return (
-    <div className="grid gap-3 rounded-lg border border-border bg-surface p-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="grid gap-space-150 rounded-medium border-thin border-border bg-elevation-default p-space-200 sm:grid-cols-2 xl:grid-cols-4">
       <div className="space-y-1.5">
         <Label htmlFor="exc-owner">Owned by</Label>
         <Select

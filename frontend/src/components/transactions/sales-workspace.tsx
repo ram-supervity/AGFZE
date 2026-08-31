@@ -331,7 +331,7 @@ export function SalesWorkspace({
       </div>
 
       {locked ? (
-        <p className="rounded-md border border-pill-green-border bg-pill-green-bg px-4 py-3 text-sm text-foreground">
+        <p className="rounded-medium border-thin border-pill-green-border bg-pill-green-bg px-space-200 py-space-150 text-body-sm text-foreground">
           {lockedNote(detail.status, detail.integration_jobs.length)} No new draft may be generated
           against it either - a draft that differed from what the approver was shown would be worse
           than none.
@@ -454,7 +454,7 @@ export function SalesWorkspace({
                       setFixationOpen(true);
                     }
                   }}
-                  className="rounded-md border border-pill-blue-border bg-pill-blue-bg px-space-100 py-space-050 text-body-sm font-medium text-pill-blue-text transition-colors hover:bg-pill-blue-border focus-visible:outline-none focus-visible:ring-thick focus-visible:ring-ring"
+                  className="rounded-control border-thin border-pill-blue-border bg-pill-blue-bg px-space-100 py-space-050 text-body-sm font-medium text-pill-blue-text transition-colors hover:bg-pill-blue-border focus-visible:outline-none focus-visible:ring-thick focus-visible:ring-ring"
                 >
                   Record price fixation
                 </span>

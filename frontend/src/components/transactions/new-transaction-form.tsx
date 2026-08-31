@@ -201,10 +201,10 @@ export function NewTransactionForm({ commodities }: { commodities: CommodityCode
                 type="button"
                 onClick={() => setStep(entry.key)}
                 className={cn(
-                  "flex items-center gap-2 rounded-md border px-3 py-2 text-left text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  "flex items-center gap-space-100 rounded-control border-thin px-space-150 py-space-100 text-left text-body-sm transition-colors focus-visible:outline-none focus-visible:ring-thick focus-visible:ring-ring",
                   current
                     ? "border-secondary bg-secondary/10 text-foreground"
-                    : "border-border bg-surface text-muted-foreground hover:text-foreground",
+                    : "border-border bg-elevation-default text-muted-foreground hover:text-foreground",
                 )}
                 aria-current={current ? "step" : undefined}
               >
@@ -448,7 +448,7 @@ export function NewTransactionForm({ commodities }: { commodities: CommodityCode
                 event.preventDefault();
                 if (event.dataTransfer.files.length > 0) stage(event.dataTransfer.files);
               }}
-              className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-surface px-6 py-10 text-center"
+              className="flex flex-col items-center justify-center rounded-medium border-2 border-dashed border-border bg-elevation-sunken px-space-300 py-space-500 text-center"
             >
               <UploadCloud
                 className="mb-3 h-7 w-7 text-muted-foreground"
@@ -484,7 +484,7 @@ export function NewTransactionForm({ commodities }: { commodities: CommodityCode
                 {files.map((file) => (
                   <li
                     key={`${file.name}-${file.size}-${file.lastModified}`}
-                    className="flex items-center justify-between gap-3 rounded-md border border-border bg-card px-3 py-2 text-sm"
+                    className="flex items-center justify-between gap-space-150 rounded-control border-thin border-border bg-elevation-default px-space-150 py-space-100 text-body-sm shadow-raised"
                   >
                     <span className="truncate text-foreground">{file.name}</span>
                     <span className="shrink-0 text-xs text-muted-foreground">

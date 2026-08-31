@@ -68,7 +68,7 @@ export function RoleEditDialog({
         {failure ? (
           <p
             role="alert"
-            className="rounded-md border border-pill-red-border bg-pill-red-bg px-3 py-2 text-sm text-signal-blocked"
+            className="rounded-medium border-thin border-pill-red-border bg-pill-red-bg px-space-150 py-space-100 text-body-sm text-signal-blocked"
           >
             {failure} Nothing was changed - this account still holds{" "}
             {user.roles.map((role) => ROLE_LABELS[role as PlatformRole] ?? role).join(", ")}.
@@ -80,7 +80,7 @@ export function RoleEditDialog({
           <ul className="max-h-[38vh] space-y-1.5 overflow-y-auto pr-1">
             {assignableRoles.map((role) => (
               <li key={role}>
-                <label className="flex items-start gap-2.5 rounded-md border border-border px-3 py-2 text-sm">
+                <label className="flex items-start gap-space-100 rounded-control border-thin border-border px-space-150 py-space-100 text-body-sm">
                   <input
                     type="checkbox"
                     className="mt-0.5 h-4 w-4 rounded border-input"

@@ -272,7 +272,7 @@ export function FaWorkspace({
       </div>
 
       {locked ? (
-        <p className="rounded-md border border-pill-green-border bg-pill-green-bg px-4 py-3 text-sm text-foreground">
+        <p className="rounded-medium border-thin border-pill-green-border bg-pill-green-bg px-space-200 py-space-150 text-body-sm text-foreground">
           {lockedNote(detail.status, detail.integration_jobs.length)}
         </p>
       ) : null}

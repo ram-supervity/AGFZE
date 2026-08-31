@@ -450,6 +450,12 @@ CHINA_MANDATORY_DOCUMENTS: list[str] = [
     "mill_test_certificate",
 ]
 
+PURCHASE_INTAKE_DOCUMENTS: tuple[str, ...] = (
+    "invoice",
+    "packing_list",
+    "weight_slip",
+)
+
 
 def fa_schema_rows() -> list[dict[str, Any]]:
     """The one row the FA module seeds, kept apart from the earlier steps' lists for the reason

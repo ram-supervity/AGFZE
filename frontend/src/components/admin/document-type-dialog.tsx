@@ -131,7 +131,7 @@ export function DocumentTypeDialog({
                     aria-label={`Field ${index + 1} type`}
                     value={field.type}
                     onChange={(event) => updateField(index, { type: event.target.value })}
-                    className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+                    className="h-control-md rounded-control border-thin border-input bg-elevation-default px-space-100 text-body-sm"
                   >
                     {FIELD_TYPES.map((type) => (
                       <option key={type} value={type}>
@@ -142,7 +142,7 @@ export function DocumentTypeDialog({
                   <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <input
                       type="checkbox"
-                      className="h-4 w-4 rounded border-input"
+                      className="h-4 w-4 rounded-control border-input"
                       checked={Boolean(field.required)}
                       onChange={(event) =>
                         updateField(index, { required: event.target.checked })
@@ -178,7 +178,7 @@ export function DocumentTypeDialog({
               {documentTypes.map((type) => (
                 <label
                   key={type}
-                  className="inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-sm"
+                  className="inline-flex items-center gap-space-075 rounded-control border-thin border-border px-space-100 py-space-050 text-body-sm"
                 >
                   <input
                     type="checkbox"

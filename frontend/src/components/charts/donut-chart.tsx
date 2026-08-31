@@ -147,14 +147,14 @@ export function DonutChart({ slices, totalLabel, className }: DonutChartProps) {
                   onMouseEnter={() => setActive(slice.key)}
                   onMouseLeave={() => setActive(null)}
                   className={cn(
-                    "flex items-start gap-2 rounded-md px-2 py-1 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                    active === slice.key && "bg-muted",
+                    "flex items-start gap-space-100 rounded-control px-space-100 py-space-050 transition-colors hover:bg-elevation-hovered focus-visible:outline-none focus-visible:ring-thick focus-visible:ring-ring",
+                    active === slice.key && "bg-elevation-hovered",
                   )}
                 >
                   {body}
                 </Link>
               ) : (
-                <span className="flex items-start gap-2 px-2 py-1">{body}</span>
+                <span className="flex items-start gap-space-100 px-space-100 py-space-050">{body}</span>
               )}
             </li>
           );

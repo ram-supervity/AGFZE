@@ -106,7 +106,7 @@ export function PushPrompt() {
   return (
     <aside
       aria-label="Push notification offer"
-      className="mb-4 flex flex-wrap items-start gap-3 rounded-lg border border-pill-purple-border bg-pill-purple-bg px-space-200 py-space-150"
+      className="mb-space-200 flex flex-wrap items-start gap-space-150 rounded-medium border-thin border-pill-purple-border bg-pill-purple-bg px-space-200 py-space-150"
     >
       <BellRing aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
       <div className="min-w-0 flex-1">
@@ -131,7 +131,7 @@ export function PushPrompt() {
         type="button"
         onClick={dismiss}
         aria-label="Dismiss"
-        className="rounded-md p-1 text-muted-foreground hover:bg-muted"
+        className="rounded-control p-space-050 text-muted-foreground hover:bg-elevation-hovered"
       >
         <X aria-hidden="true" className="h-4 w-4" />
       </button>

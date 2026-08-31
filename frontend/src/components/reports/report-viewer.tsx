@@ -121,7 +121,7 @@ export function ReportViewer({ report }: ReportViewerProps) {
       ))}
 
       {content.disclosures.length > 0 ? (
-        <section className="rounded-lg border border-border bg-surface p-5">
+        <section className="rounded-medium border-thin border-border bg-elevation-default shadow-raised p-space-250">
           <h3 className="text-sm font-semibold text-foreground">How to read this report</h3>
           <ul className="mt-3 space-y-2">
             {content.disclosures.map((note) => (
@@ -186,14 +186,14 @@ function Section({ section }: { section: ReportSection }) {
 function AiSummary({ section }: { section: ReportSection }) {
   if (!section.text) {
     return (
-      <p className="rounded-md border border-dashed border-border bg-surface px-4 py-3 text-sm text-muted-foreground">
+      <p className="rounded-medium border-thin border-dashed border-border bg-elevation-sunken px-space-200 py-space-150 text-body-sm text-muted-foreground">
         {section.unavailable_reason ??
           "The AI summary is unavailable for this report. Every figure below it is computed by the platform and is unaffected."}
       </p>
     );
   }
   return (
-    <div className="rounded-md border border-pill-purple-border bg-pill-purple-bg px-space-200 py-space-150">
+    <div className="rounded-medium border-thin border-pill-purple-border bg-pill-purple-bg px-space-200 py-space-150">
       <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-widest text-accent">
         <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
         AI-generated summary

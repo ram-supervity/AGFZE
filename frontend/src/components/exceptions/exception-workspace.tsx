@@ -185,7 +185,7 @@ export function ExceptionWorkspace({ initial, fields, commodities }: ExceptionWo
               {detail.current_evaluation ? (
                 <div
                   className={cn(
-                    "rounded-md border px-3 py-2.5 text-sm",
+                    "rounded-control border-thin px-space-150 py-space-100 text-body-sm",
                     detail.current_evaluation.passed
                       ? "border-pill-green-border bg-pill-green-bg"
                       : "border-pill-red-border bg-pill-red-bg",
@@ -209,7 +209,7 @@ export function ExceptionWorkspace({ initial, fields, commodities }: ExceptionWo
               </CardHeader>
               <CardContent className="space-y-4 pt-0">
                 {detail.resolve_blocked_reason ? (
-                  <p className="rounded-md border border-pill-amber-border bg-pill-amber-bg px-3 py-2 text-sm text-foreground">
+                  <p className="rounded-medium border-thin border-pill-amber-border bg-pill-amber-bg px-space-150 py-space-100 text-body-sm text-foreground">
                     {detail.resolve_blocked_reason}
                   </p>
                 ) : null}

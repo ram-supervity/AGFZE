@@ -35,7 +35,7 @@ function detailFor(event: StatusEvent): string | null {
 export function HistoryPanel({ detail }: { detail: TransactionDetail }) {
   if (detail.history.length === 0) {
     return (
-      <p className="rounded-md border border-dashed border-border bg-surface px-4 py-8 text-center text-sm text-muted-foreground">
+      <p className="rounded-medium border-thin border-dashed border-border bg-elevation-sunken px-space-200 py-space-400 text-center text-body-sm text-muted-foreground">
         Nothing has been recorded against this transaction yet.
       </p>
     );

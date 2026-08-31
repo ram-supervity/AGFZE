@@ -33,7 +33,7 @@ export function LinkedPurchaseCard({ detail, linked }: LinkedPurchaseCardProps) 
   return (
     <section
       className={cn(
-        "space-y-3 rounded-lg border bg-card p-4",
+        "space-y-space-150 rounded-medium border-thin bg-elevation-default p-space-200 shadow-raised",
         mismatch ? "border-pill-red-border bg-pill-red-bg" : "border-border",
       )}
       aria-label="Linked purchase leg"
@@ -66,10 +66,10 @@ export function LinkedPurchaseCard({ detail, linked }: LinkedPurchaseCardProps) 
 
       <div
         className={cn(
-          "rounded-md border px-3 py-2.5",
+          "rounded-control border-thin px-space-150 py-space-100",
           mismatch
             ? "border-pill-red-border bg-pill-red-bg"
-            : "border-border bg-surface",
+            : "border-border bg-elevation-sunken",
         )}
       >
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
@@ -115,7 +115,7 @@ export function LinkedPurchaseCard({ detail, linked }: LinkedPurchaseCardProps) 
           />
         </dl>
       ) : (
-        <p className="rounded-md border border-pill-amber-border bg-pill-amber-bg px-3 py-2 text-sm text-foreground">
+        <p className="rounded-medium border-thin border-pill-amber-border bg-pill-amber-bg px-space-150 py-space-100 text-body-sm text-foreground">
           This transaction carries no purchase leg. The sales leg was attached with an explicit
           acknowledgement that no purchase counterpart exists for this cargo yet.
         </p>

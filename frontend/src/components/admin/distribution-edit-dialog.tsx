@@ -126,7 +126,7 @@ export function DistributionEditDialog({
                 <label key={role} className="flex items-center gap-2 text-sm">
                   <input
                     type="checkbox"
-                    className="h-4 w-4 rounded border-input"
+                    className="h-4 w-4 rounded-control border-input"
                     checked={selectedRoles.includes(role)}
                     onChange={() => toggleRole(role)}
                   />
@@ -161,7 +161,7 @@ export function DistributionEditDialog({
           <label className="flex items-start gap-2.5 text-sm">
             <input
               type="checkbox"
-              className="mt-0.5 h-4 w-4 rounded border-input"
+              className="mt-0.5 h-4 w-4 rounded-control border-input"
               checked={active}
               onChange={(event) => setActive(event.target.checked)}
             />

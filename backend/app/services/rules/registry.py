@@ -16,7 +16,12 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.configuration import RuleConfiguration
-from app.models.enums import DocumentType, RuleSeverity
+from app.models.enums import (
+    SALES_TRIGGER_DOCUMENT_KINDS,
+    DocumentType,
+    PurchaseBundleItem,
+    RuleSeverity,
+)
 from app.models.intake import Document
 from app.models.transactions import TradeTransaction
 
@@ -200,6 +205,57 @@ class RuleContext:
         """Which desk's leg this transaction actually carries, read generically."""
         present = [name for name, value in self.legs.items() if value is not None]
         return present[0] if len(present) == 1 else None
+
+    @property
+    def has_sales_leg(self) -> bool:
+        return self.leg("sales") is not None
+
+    @property
+    def has_purchase_leg(self) -> bool:
+        return self.leg("purchase") is not None
+
+    @property
+    def has_shipment_evidence(self) -> bool:
+        """Whether any document attached to this transaction is shipping/B-L evidence."""
+        for doc in self.documents:
+            if doc.document_type in (DocumentType.BL.value, DocumentType.BL_DRAFT.value):
+                return True
+            kinds = tuple(doc.document_kinds or ())
+            if any(
+                k in SALES_TRIGGER_DOCUMENT_KINDS or k in ("bill_of_lading", "bl", "bl_draft")
+                for k in kinds
+            ):
+                return True
+            if doc.document_type == DocumentType.SHIPPING_DOCUMENT.value:
+                purchase_kinds = {
+                    PurchaseBundleItem.PACKING_LIST.value,
+                    PurchaseBundleItem.WEIGHT_SLIP.value,
+                }
+                if kinds and set(kinds).issubset(purchase_kinds):
+                    continue
+                fname = doc.filename.lower()
+                if not kinds and (
+                    "packing_list" in fname
+                    or "packing list" in fname
+                    or "weight_slip" in fname
+                    or "weight slip" in fname
+                    or "weighbridge" in fname
+                ):
+                    continue
+                return True
+        return False
+
+    @property
+    def is_purchase_stage(self) -> bool:
+        """A purchase transaction that has not yet reached the sales or shipping stage.
+
+        It carries a purchase leg (or is a purchase-direction scrap intake), and has NO
+        sales leg and NO shipment evidence attached.
+        """
+        if self.transaction.stream == "fa" or self.leg("fa") is not None:
+            return False
+        is_purchase = self.has_purchase_leg or self.transaction.stream == "scrap"
+        return is_purchase and not self.has_sales_leg and not self.has_shipment_evidence
 
 
 @dataclass(frozen=True)

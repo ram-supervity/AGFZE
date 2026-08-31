@@ -125,7 +125,7 @@ export function RuleEditDialog({ row, open, onOpenChange, saving, onSave }: Rule
           <label className="flex items-start gap-2.5 text-sm">
             <input
               type="checkbox"
-              className="mt-0.5 h-4 w-4 rounded border-input"
+              className="mt-0.5 h-4 w-4 rounded-control border-input"
               checked={active}
               onChange={(event) => setActive(event.target.checked)}
             />

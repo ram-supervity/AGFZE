@@ -53,7 +53,7 @@ export function ReportTable({ list, filters }: ReportTableProps) {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-end justify-between gap-3 rounded-lg border border-border bg-surface p-4">
+      <div className="flex flex-wrap items-end justify-between gap-space-150 rounded-medium border-thin border-border bg-elevation-default p-space-200">
         <div className="flex flex-wrap gap-3">
           <label className="space-y-1.5 text-xs text-muted-foreground">
             <span className="block">Type</span>

@@ -45,7 +45,7 @@ export function InboxFilters(initial: InboxFiltersProps) {
 
   return (
     <form
-      className="grid gap-3 rounded-lg border border-border bg-surface p-4 sm:grid-cols-2 lg:grid-cols-4"
+      className="grid gap-space-150 rounded-medium border-thin border-border bg-elevation-default p-space-200 sm:grid-cols-2 lg:grid-cols-4"
       onSubmit={(event) => {
         event.preventDefault();
         apply({ search: search.trim() || null });
@@ -94,16 +94,16 @@ export function InboxFilters(initial: InboxFiltersProps) {
       </div>
 
       <div className="flex items-end gap-2">
-        <label className="flex h-9 flex-1 items-center gap-2 rounded-md border border-input bg-background px-3 text-sm">
+        <label className="flex h-control-md flex-1 items-center gap-space-100 rounded-control border-thin border-input bg-elevation-default px-space-150 text-body-sm">
           <input
             type="checkbox"
-            className="h-3.5 w-3.5 accent-[hsl(var(--signal-review))]"
+            className="h-4 w-4 rounded-control accent-[hsl(var(--signal-review))]"
             checked={initial.needsReview}
             onChange={(event) => apply({ needs_review: event.target.checked ? "true" : null })}
           />
           <span>Needs review</span>
         </label>
-        <Button type="submit" variant="outline" size="sm" className="h-9">
+        <Button type="submit" variant="outline" size="sm" className="h-control-md">
           Search
         </Button>
         {active ? (

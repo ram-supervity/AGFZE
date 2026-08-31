@@ -162,8 +162,8 @@ export function UploadWorkspace() {
               if (event.dataTransfer.files.length > 0) stage(event.dataTransfer.files);
             }}
             className={cn(
-              "flex flex-col items-center justify-center rounded-lg border-2 border-dashed px-6 py-12 text-center transition-colors",
-              dragging ? "border-secondary bg-secondary/5" : "border-border bg-surface",
+              "flex flex-col items-center justify-center rounded-medium border-2 border-dashed px-space-300 py-space-600 text-center transition-colors",
+              dragging ? "border-secondary bg-secondary/5" : "border-border bg-elevation-sunken",
             )}
           >
             <UploadCloud className="mb-3 h-8 w-8 text-muted-foreground" aria-hidden="true" />
@@ -201,7 +201,7 @@ export function UploadWorkspace() {
               {staged.map((item) => (
                 <li
                   key={item.key}
-                  className="flex items-start gap-3 rounded-md border border-border bg-card p-3"
+                  className="flex items-start gap-space-150 rounded-control border-thin border-border bg-elevation-default p-space-150 shadow-raised"
                 >
                   <StatusIcon state={item.state} />
                   <div className="min-w-0 flex-1">
@@ -229,7 +229,7 @@ export function UploadWorkspace() {
                       onClick={() =>
                         setStaged((current) => current.filter((entry) => entry.key !== item.key))
                       }
-                      className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="rounded-control p-space-050 text-muted-foreground transition-colors hover:bg-elevation-hovered hover:text-foreground focus-visible:outline-none focus-visible:ring-thick focus-visible:ring-ring"
                     >
                       <X className="h-4 w-4" aria-hidden="true" />
                     </button>

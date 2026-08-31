@@ -101,8 +101,8 @@ export function CategoryPanel({ detail, canCorrect }: CategoryPanelProps) {
               variant="outline"
               className={
                 detail.deal_direction === "sales"
-                  ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                  : "border-blue-500/40 bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                  ? "border-pill-green-border bg-pill-green-bg text-pill-green-text"
+                  : "border-pill-blue-border bg-pill-blue-bg text-pill-blue-text"
               }
             >
               {detail.deal_direction === "sales" ? "Sales deal" : "Purchase deal"}

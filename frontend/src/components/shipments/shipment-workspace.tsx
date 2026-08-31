@@ -184,7 +184,7 @@ export function ShipmentWorkspace({ initial, documents }: ShipmentWorkspaceProps
       </div>
 
       {shipment.review_flagged ? (
-        <p className="flex items-start gap-2 rounded-md border border-pill-amber-border bg-pill-amber-bg px-4 py-3 text-sm text-foreground">
+        <p className="flex items-start gap-space-100 rounded-medium border-thin border-pill-amber-border bg-pill-amber-bg px-space-200 py-space-150 text-body-sm text-foreground">
           <TriangleAlert
             className="mt-0.5 h-4 w-4 shrink-0 text-signal-review"
             aria-hidden="true"
@@ -199,7 +199,7 @@ export function ShipmentWorkspace({ initial, documents }: ShipmentWorkspaceProps
       ) : null}
 
       {shipment.last_error ? (
-        <p className="rounded-md border border-pill-red-border bg-pill-red-bg px-4 py-3 text-sm text-foreground">
+        <p className="rounded-medium border-thin border-pill-red-border bg-pill-red-bg px-space-200 py-space-150 text-body-sm text-foreground">
           The last tracking attempt failed: {shipment.last_error}
           {shipment.consecutive_failures > 1
             ? ` That is ${shipment.consecutive_failures} in a row.`

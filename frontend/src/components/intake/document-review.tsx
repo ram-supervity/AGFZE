@@ -228,7 +228,7 @@ export function DocumentReview({
       ) : null}
 
       {detail.extraction_error ? (
-        <p className="rounded-md border border-pill-red-border bg-pill-red-bg px-4 py-3 text-sm text-foreground">
+        <p className="rounded-medium border-thin border-pill-red-border bg-pill-red-bg px-space-200 py-space-150 text-body-sm text-foreground">
           {detail.extraction_error}
         </p>
       ) : null}
@@ -245,7 +245,7 @@ export function DocumentReview({
 
         <div className="space-y-6">
           {sections.length === 0 ? (
-            <p className="rounded-md border border-dashed border-border bg-surface px-4 py-8 text-center text-sm text-muted-foreground">
+            <p className="rounded-medium border-thin border-dashed border-border bg-elevation-sunken px-space-200 py-space-400 text-center text-body-sm text-muted-foreground">
               No fields have been extracted from this document yet.
             </p>
           ) : (

@@ -180,7 +180,7 @@ export function GenerateDraftPanel({
       </div>
 
       {!canGenerate && blocker ? (
-        <p className="rounded-md border border-pill-amber-border bg-pill-amber-bg px-3 py-2 text-sm text-foreground">
+        <p className="rounded-medium border-thin border-pill-amber-border bg-pill-amber-bg px-space-150 py-space-100 text-body-sm text-foreground">
           {blocker}
         </p>
       ) : null}
@@ -247,8 +247,8 @@ export function GenerateDraftPanel({
                 <li
                   key={draft.id}
                   className={cn(
-                    "flex flex-wrap items-center justify-between gap-2 rounded-md border",
-                    "border-border bg-card px-3 py-1.5 text-xs",
+                    "flex flex-wrap items-center justify-between gap-2 rounded-control border-thin",
+                    "border-border bg-elevation-default px-space-150 py-space-075 text-body-xs",
                   )}
                 >
                   <span className="truncate font-mono text-foreground">

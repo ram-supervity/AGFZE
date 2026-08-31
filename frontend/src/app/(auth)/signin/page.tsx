@@ -55,7 +55,7 @@ function SignInForm() {
       {errorMessage ? (
         <p
           role="alert"
-          className="rounded-md border border-pill-red-border bg-pill-red-bg px-space-200 py-space-150 text-body-md text-foreground"
+          className="rounded-medium border-thin border-pill-red-border bg-pill-red-bg px-space-200 py-space-150 text-body-md text-foreground"
         >
           {errorMessage}
         </p>

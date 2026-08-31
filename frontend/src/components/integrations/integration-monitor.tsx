@@ -193,7 +193,7 @@ export function IntegrationMonitor({ queue, filters }: IntegrationMonitorProps) 
         </p>
       )}
 
-      <div className="grid gap-3 rounded-lg border border-border bg-surface p-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-space-150 rounded-medium border-thin border-border bg-elevation-default p-space-200 sm:grid-cols-2 xl:grid-cols-4">
         <div className="space-y-1.5">
           <Label htmlFor="job-target">Target system</Label>
           <Select
@@ -312,7 +312,7 @@ export function IntegrationMonitor({ queue, filters }: IntegrationMonitorProps) 
                   {job.status === "failed" && job.failure_reason ? (
                     <p
                       role="alert"
-                      className="mt-1.5 max-w-[22rem] rounded-md border border-pill-red-border bg-pill-red-bg px-2 py-1.5 text-xs text-signal-blocked"
+                      className="mt-space-075 max-w-[22rem] rounded-control border-thin border-pill-red-border bg-pill-red-bg px-space-100 py-space-075 text-body-xs text-signal-blocked"
                     >
                       <TriangleAlert
                         className="mr-1 inline h-3 w-3 align-[-2px]"
@@ -459,8 +459,8 @@ const TargetTab = forwardRef<
       {...rest}
       className={
         selected
-          ? "inline-flex items-center gap-2 rounded-md bg-secondary/15 px-3 py-1.5 text-sm font-medium text-foreground"
-          : "inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-surface hover:text-foreground"
+          ? "inline-flex items-center gap-space-100 rounded-control bg-secondary/15 px-space-150 py-space-075 text-body-sm font-medium text-foreground"
+          : "inline-flex items-center gap-space-100 rounded-control px-space-150 py-space-075 text-body-sm text-muted-foreground transition-colors hover:bg-elevation-hovered hover:text-foreground"
       }
     >
       <span>{label}</span>

@@ -60,7 +60,7 @@ export function ShipmentFilters({
   const filtered = Boolean(search || status || carrier || portOfDischarge || staleOnly);
 
   return (
-    <div className="space-y-3 rounded-lg border border-border bg-surface p-4">
+    <div className="space-y-space-150 rounded-medium border-thin border-border bg-elevation-default p-space-200">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div className="space-y-1.5">
           <Label htmlFor="shipment-search">Container, B/L or vessel</Label>
@@ -73,7 +73,7 @@ export function ShipmentFilters({
             <Input
               id="shipment-search"
               value={term}
-              placeholder="MSKU7781234"
+              placeholder="e.g. MEDU1234567, MSCU..., vessel name"
               onChange={(event) => setTerm(event.target.value)}
             />
           </form>
@@ -86,7 +86,7 @@ export function ShipmentFilters({
             value={status}
             onChange={(event) => navigate({ status: event.target.value })}
           >
-            <option value="">Every status</option>
+            <option value="">All statuses</option>
             {SHIPMENT_STATUSES.map((value) => (
               <option key={value} value={value}>
                 {SHIPMENT_STATUS_LABELS[value as ShipmentStatus]}
@@ -102,7 +102,7 @@ export function ShipmentFilters({
             value={carrier}
             onChange={(event) => navigate({ carrier: event.target.value })}
           >
-            <option value="">Every carrier</option>
+            <option value="">All carriers</option>
             {carriers.map((value) => (
               <option key={value} value={value}>
                 {value}
@@ -112,13 +112,13 @@ export function ShipmentFilters({
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="shipment-port">Port of discharge</Label>
+          <Label htmlFor="shipment-pod">Discharge port</Label>
           <Select
-            id="shipment-port"
+            id="shipment-pod"
             value={portOfDischarge}
             onChange={(event) => navigate({ port_of_discharge: event.target.value })}
           >
-            <option value="">Every port</option>
+            <option value="">All ports</option>
             {ports.map((value) => (
               <option key={value} value={value}>
                 {value}
@@ -128,16 +128,17 @@ export function ShipmentFilters({
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
         <div className="flex flex-wrap items-center gap-2">
-          <Button
-            type="button"
-            size="sm"
-            variant={staleOnly ? "secondary" : "outline"}
-            onClick={() => navigate({ stale_only: staleOnly ? "" : "true" })}
-          >
-            Not checked recently
-          </Button>
+          <label className="flex items-center gap-2 text-xs text-muted-foreground">
+            <input
+              type="checkbox"
+              className="h-4 w-4 rounded-control border-input"
+              checked={staleOnly}
+              onChange={(event) => navigate({ stale_only: event.target.checked ? "true" : "" })}
+            />
+            <span>Stale tracking only</span>
+          </label>
           {filtered ? (
             <Button
               type="button"
@@ -151,7 +152,7 @@ export function ShipmentFilters({
         </div>
 
         <div
-          className="flex items-center gap-1 rounded-md border border-border bg-card p-0.5"
+          className="flex items-center gap-space-025 rounded-control border-thin border-border bg-elevation-sunken p-space-025"
           role="group"
           aria-label="View"
         >
@@ -170,14 +171,14 @@ export function ShipmentFilters({
                 aria-pressed={active}
                 onClick={() => onViewChange(option.key)}
                 className={cn(
-                  "inline-flex items-center gap-1.5 rounded px-2.5 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  "inline-flex items-center gap-space-075 rounded-control px-space-100 py-space-050 text-body-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-thick focus-visible:ring-ring",
                   active
                     ? "bg-secondary/15 text-foreground"
-                    : "text-muted-foreground hover:text-foreground",
+                    : "text-muted-foreground hover:bg-elevation-hovered hover:text-foreground",
                 )}
               >
                 <Icon className="h-3.5 w-3.5" aria-hidden="true" />
-                {option.label}
+                <span>{option.label}</span>
               </button>
             );
           })}

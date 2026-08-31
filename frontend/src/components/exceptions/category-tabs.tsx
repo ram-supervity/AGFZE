@@ -92,10 +92,10 @@ const Tab = forwardRef<
       onClick={onSelect}
       {...rest}
       className={cn(
-        "inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "inline-flex items-center gap-space-100 rounded-control px-space-150 py-space-075 text-body-sm transition-colors focus-visible:outline-none focus-visible:ring-thick focus-visible:ring-ring",
         selected
           ? "bg-secondary/15 font-medium text-foreground"
-          : "text-muted-foreground hover:bg-surface hover:text-foreground",
+          : "text-muted-foreground hover:bg-elevation-hovered hover:text-foreground",
       )}
     >
       <span>{label}</span>

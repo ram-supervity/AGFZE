@@ -44,7 +44,7 @@ export function FieldEditor({ field, editable, saving, onSave }: FieldEditorProp
   return (
     <div
       className={cn(
-        "space-y-2 rounded-md border border-border border-l-4 bg-card p-3",
+        "space-y-space-100 rounded-control border-thin border-border border-l-4 bg-elevation-default p-space-150 shadow-raised",
         BAND_BORDER[band],
       )}
     >
@@ -142,7 +142,7 @@ export function FieldEditor({ field, editable, saving, onSave }: FieldEditorProp
             {showHistory ? "Hide override history" : "Corrected by a person - show history"}
           </button>
           {showHistory ? (
-            <dl className="mt-2 space-y-1 rounded-md bg-surface p-2.5 text-xs">
+            <dl className="mt-space-100 space-y-space-050 rounded-control bg-elevation-sunken p-space-100 text-body-xs">
               <div className="flex justify-between gap-3">
                 <dt className="text-muted-foreground">Original AI value</dt>
                 <dd className="break-words text-right text-foreground">

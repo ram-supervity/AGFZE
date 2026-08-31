@@ -79,7 +79,7 @@ export function SettingsForm({ profile }: SettingsFormProps) {
 
   return (
     <div className="space-y-6">
-      <section className="space-y-3 rounded-lg border border-border bg-surface p-4">
+      <section className="space-y-space-150 rounded-medium border-thin border-border bg-elevation-default p-space-200">
         <div>
           <h2 className="text-sm font-semibold text-foreground">Profile</h2>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -131,7 +131,7 @@ export function SettingsForm({ profile }: SettingsFormProps) {
         </dl>
       </section>
 
-      <section className="space-y-4 rounded-lg border border-border bg-surface p-4">
+      <section className="space-y-space-200 rounded-medium border-thin border-border bg-elevation-default p-space-200">
         <div>
           <h2 className="text-sm font-semibold text-foreground">Preferences</h2>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -144,7 +144,7 @@ export function SettingsForm({ profile }: SettingsFormProps) {
         <fieldset className="space-y-2">
           <legend className="text-sm font-medium text-foreground">Delivery</legend>
 
-          <div className="rounded-md border border-dashed border-border px-3 py-2.5">
+          <div className="rounded-control border-thin border-dashed border-border px-space-150 py-space-100">
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-foreground">In-app</span>
               <Badge variant="muted">Always on</Badge>
@@ -156,11 +156,11 @@ export function SettingsForm({ profile }: SettingsFormProps) {
             </p>
           </div>
 
-          <label className="flex items-start gap-2.5 rounded-md border border-border px-3 py-2.5 text-sm">
+          <label className="flex items-start gap-space-100 rounded-control border-thin border-border px-space-150 py-space-100 text-body-sm">
             <input
               type="checkbox"
               name="email-copies"
-              className="mt-0.5 h-4 w-4"
+              className="mt-0.5 h-4 w-4 rounded-control border-input"
               checked={emailCopies}
               onChange={(event) => setEmailCopies(event.target.checked)}
             />

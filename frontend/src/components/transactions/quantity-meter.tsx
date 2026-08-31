@@ -36,7 +36,7 @@ export function QuantityMeter({ coverage }: QuantityMeterProps) {
 
   return (
     <section
-      className={cn("space-y-3 rounded-lg border bg-card p-4", state === "exceeded" && "border-signal-blocked/45")}
+      className={cn("space-y-space-150 rounded-medium border-thin border-border bg-elevation-default p-space-200 shadow-raised", state === "exceeded" && "border-signal-blocked/45")}
       aria-label="Sales contract quantity coverage"
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
@@ -116,10 +116,10 @@ export function QuantityMeter({ coverage }: QuantityMeterProps) {
 
       <p
         className={cn(
-          "rounded-md border px-3 py-2 text-sm leading-relaxed",
+          "rounded-control border-thin px-space-150 py-space-100 text-body-sm leading-relaxed",
           state === "exceeded"
             ? "border-pill-red-border bg-pill-red-bg text-foreground"
-            : "border-border bg-surface text-muted-foreground",
+            : "border-border bg-elevation-sunken text-muted-foreground",
         )}
       >
         {coverage.message}

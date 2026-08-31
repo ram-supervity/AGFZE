@@ -193,7 +193,7 @@ export function NewSalesLegForm() {
 
           {results !== null ? (
             results.length === 0 ? (
-              <p className="rounded-md border border-dashed border-border bg-surface px-3 py-6 text-center text-sm text-muted-foreground">
+              <p className="rounded-medium border-thin border-dashed border-border bg-elevation-sunken px-space-150 py-space-300 text-center text-body-sm text-muted-foreground">
                 Nothing open matched that. Widen the search, or select a batch with no purchase
                 leg below and acknowledge the exception explicitly.
               </p>
@@ -210,11 +210,11 @@ export function NewSalesLegForm() {
                           setAcknowledged(false);
                         }}
                         className={cn(
-                          "flex w-full items-start gap-3 rounded-md border px-3 py-2.5 text-left transition-colors",
-                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                          "flex w-full items-start gap-space-150 rounded-control border-thin px-space-150 py-space-100 text-left transition-colors",
+                          "focus-visible:outline-none focus-visible:ring-thick focus-visible:ring-ring",
                           active
                             ? "border-secondary bg-secondary/10"
-                            : "border-border bg-surface hover:border-secondary/60",
+                            : "border-border bg-elevation-default hover:border-secondary/60",
                         )}
                         aria-pressed={active}
                       >
@@ -258,7 +258,7 @@ export function NewSalesLegForm() {
           ) : null}
 
           {needsAcknowledgement ? (
-            <div className="space-y-2 rounded-md border border-pill-amber-border bg-pill-amber-bg p-3">
+            <div className="space-y-space-100 rounded-medium border-thin border-pill-amber-border bg-pill-amber-bg p-space-150">
               <p className="flex items-start gap-2 text-sm font-medium text-foreground">
                 <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
                 Batch {selected?.batch_number} has no purchase leg.

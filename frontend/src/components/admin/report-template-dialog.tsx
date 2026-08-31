@@ -243,7 +243,7 @@ export function ReportTemplateDialog({
                           <label key={figure} className="flex items-center gap-2 text-sm">
                             <input
                               type="checkbox"
-                              className="h-4 w-4 rounded border-input"
+                              className="h-4 w-4 rounded-control border-input"
                               checked={section.figures.includes(figure)}
                               onChange={() => toggleFigure(index, figure)}
                             />

@@ -64,7 +64,7 @@ export function ValidationPanel({
 
   if (rules.length === 0) {
     return (
-      <p className="rounded-md border border-dashed border-border bg-surface px-4 py-8 text-center text-sm text-muted-foreground">
+      <p className="rounded-medium border-thin border-dashed border-border bg-elevation-sunken px-space-200 py-space-400 text-center text-body-sm text-muted-foreground">
         No rule has been evaluated against this transaction yet. Validation runs as soon as a
         document is matched to it or a field is corrected.
       </p>
@@ -79,7 +79,7 @@ export function ValidationPanel({
         const offerAcknowledge = canAcknowledge && isAcknowledgeable(rule);
 
         return (
-          <li key={rule.id} className={cn("space-y-2 rounded-md border px-3 py-2.5", tone(rule))}>
+          <li key={rule.id} className={cn("space-y-space-100 rounded-control border-thin px-space-150 py-space-100", tone(rule))}>
             <div className="flex items-start gap-2.5">
               <Icon rule={rule} />
               <div className="min-w-0 flex-1 space-y-1">

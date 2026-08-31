@@ -109,6 +109,13 @@ async def evaluate_business_reference(context: RuleContext) -> list[RuleOutcome]
 # --- BR-04  the territory's mandatory document pack -----------------------------------------
 
 
+PURCHASE_INTAKE_DOCUMENTS: tuple[str, ...] = (
+    "invoice",
+    "packing_list",
+    "weight_slip",
+)
+
+
 def _pack_entry_present(entry: str, documents: list[Document]) -> Document | None:
     """Is this checklist entry evidenced by something actually attached?
 
@@ -135,13 +142,12 @@ def _pack_entry_present(entry: str, documents: list[Document]) -> Document | Non
 
 @register(RuleId.BR_04)
 async def evaluate_mandatory_documents(context: RuleContext) -> list[RuleOutcome]:
-    """Read the checklist Step 2 seeded against the territory and check the pack against it."""
+    """Read the checklist seeded against the territory (or purchase bundle) and check the pack."""
     ratio, _ = context.threshold(RuleId.BR_04, CheckKey.DOCUMENT_PACK)
     if ratio is None:
         return [_unconfigured(RuleId.BR_04, CheckKey.DOCUMENT_PACK, "document_pack")]
 
-    checklist = context.mandatory_documents
-    if not checklist:
+    if not context.mandatory_documents:
         return [
             RuleOutcome(
                 rule_id=RuleId.BR_04,
@@ -159,12 +165,29 @@ async def evaluate_mandatory_documents(context: RuleContext) -> list[RuleOutcome
             )
         ]
 
+    is_purchase = context.is_purchase_stage
+    checklist = PURCHASE_INTAKE_DOCUMENTS if is_purchase else context.mandatory_documents
+    pack_name = "purchase" if is_purchase else (context.territory or "configured")
+
     missing = [
         entry for entry in checklist if _pack_entry_present(entry, context.documents) is None
     ]
     present_count = len(checklist) - len(missing)
     achieved = Decimal(present_count) / Decimal(len(checklist))
     passed = achieved >= ratio
+
+    if passed:
+        message = (
+            "The purchase document pack is complete: invoice, packing list and weight slip present."
+            if is_purchase
+            else f"The {pack_name} document pack is complete."
+        )
+    else:
+        message = (
+            "The document pack is incomplete. Still missing: "
+            + ", ".join(entry.replace("_", " ") for entry in missing)
+            + "."
+        )
 
     return [
         RuleOutcome(
@@ -175,13 +198,7 @@ async def evaluate_mandatory_documents(context: RuleContext) -> list[RuleOutcome
             field_name="document_pack",
             expected_value=f"{len(checklist)} of {len(checklist)} documents",
             actual_value=f"{present_count} of {len(checklist)} documents",
-            message=(
-                f"The {context.territory or 'configured'} document pack is complete."
-                if passed
-                else "The document pack is incomplete. Still missing: "
-                + ", ".join(entry.replace("_", " ") for entry in missing)
-                + "."
-            ),
+            message=message,
         )
     ]
 

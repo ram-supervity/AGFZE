@@ -232,7 +232,7 @@ export function ApprovalDecisionScreen({
                 <div
                   key={rule.id}
                   className={cn(
-                    "rounded-md border px-3 py-2 text-sm",
+                    "rounded-control border-thin px-space-150 py-space-100 text-body-sm",
                     rule.passed
                       ? rule.acknowledged
                         ? "border-pill-amber-border bg-pill-amber-bg"

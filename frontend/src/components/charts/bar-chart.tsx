@@ -72,12 +72,12 @@ export function BarChart({ data, max, valueLabel, className }: BarChartProps) {
             {row.href ? (
               <Link
                 href={row.href}
-                className="block rounded-md px-2 py-1.5 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="block rounded-control px-space-100 py-space-075 transition-colors hover:bg-elevation-hovered focus-visible:outline-none focus-visible:ring-thick focus-visible:ring-ring"
               >
                 {body}
               </Link>
             ) : (
-              <div className="px-2 py-1.5">{body}</div>
+              <div className="px-space-100 py-space-075">{body}</div>
             )}
           </li>
         );

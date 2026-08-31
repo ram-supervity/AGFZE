@@ -41,7 +41,7 @@ export default async function AdminPage() {
           <li key={area.key}>
             <Link
               href={area.href}
-              className="flex h-full flex-col rounded-lg border border-border bg-surface p-4 transition-colors hover:border-secondary/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex h-full flex-col rounded-medium border-thin border-border bg-elevation-default p-space-200 shadow-raised transition-colors hover:border-secondary/45 focus-visible:outline-none focus-visible:ring-thick focus-visible:ring-ring"
             >
               <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
                 {area.label}

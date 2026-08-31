@@ -83,8 +83,8 @@ export function RequestQueueTable({ queue }: { queue: RequestQueue }) {
                           variant="outline"
                           className={
                             request.deal_direction === "sales"
-                              ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs"
-                              : "border-blue-500/40 bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs"
+                              ? "border-pill-green-border bg-pill-green-bg text-pill-green-text text-body-xs"
+                              : "border-pill-blue-border bg-pill-blue-bg text-pill-blue-text text-body-xs"
                           }
                         >
                           {request.deal_direction === "sales" ? "Sales deal" : "Purchase deal"}

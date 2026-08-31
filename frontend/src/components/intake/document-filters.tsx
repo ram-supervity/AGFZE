@@ -47,7 +47,7 @@ export function DocumentFilters(initial: DocumentFiltersProps) {
 
   return (
     <form
-      className="grid gap-3 rounded-lg border border-border bg-surface p-4 sm:grid-cols-2 xl:grid-cols-5"
+      className="grid gap-space-150 rounded-medium border-thin border-border bg-elevation-default p-space-200 sm:grid-cols-2 xl:grid-cols-5"
       onSubmit={(event) => {
         event.preventDefault();
         apply({ search: search.trim() || null });

@@ -86,7 +86,7 @@ export function PushSettings() {
   }
 
   return (
-    <div className="rounded-md border border-border px-3 py-2.5">
+    <div className="rounded-control border-thin border-border px-space-150 py-space-100">
       <div className="flex flex-wrap items-start gap-x-3 gap-y-2">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">

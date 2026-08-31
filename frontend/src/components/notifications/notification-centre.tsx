@@ -155,12 +155,12 @@ export function NotificationCentre({ data, unreadOnly }: NotificationCentreProps
                 {row.link ? (
                   <Link
                     href={row.link}
-                    className="block rounded-lg border border-border bg-surface p-3.5 transition-colors hover:border-secondary/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="block rounded-medium border-thin border-border bg-elevation-default p-space-200 transition-colors hover:border-secondary/45 focus-visible:outline-none focus-visible:ring-thick focus-visible:ring-ring"
                   >
                     {body}
                   </Link>
                 ) : (
-                  <div className="rounded-lg border border-border bg-surface p-3.5">{body}</div>
+                  <div className="rounded-medium border-thin border-border bg-elevation-default p-space-200">{body}</div>
                 )}
               </li>
             );

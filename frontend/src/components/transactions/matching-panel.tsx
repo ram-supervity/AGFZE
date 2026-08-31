@@ -64,7 +64,7 @@ export function MatchingPanel({ detail }: { detail: TransactionDetail }) {
       ) : null}
 
       {detail.commodity_needs_review ? (
-        <p className="rounded-md border border-pill-amber-border bg-pill-amber-bg px-3 py-2 text-sm text-foreground">
+        <p className="rounded-medium border-thin border-pill-amber-border bg-pill-amber-bg px-space-150 py-space-100 text-body-sm text-foreground">
           The grade read from the document
           {detail.extracted_commodity_value
             ? ` - "${detail.extracted_commodity_value}" - `
@@ -78,7 +78,7 @@ export function MatchingPanel({ detail }: { detail: TransactionDetail }) {
           Linked documents ({detail.documents.length})
         </h3>
         {detail.documents.length === 0 ? (
-          <p className="rounded-md border border-dashed border-border bg-surface px-3 py-6 text-center text-sm text-muted-foreground">
+          <p className="rounded-medium border-thin border-dashed border-border bg-elevation-sunken px-space-150 py-space-300 text-center text-body-sm text-muted-foreground">
             No documents attached yet. That is a normal state for a transaction registered by
             hand - attach them from the inbox upload screen, or as the supplier sends them.
           </p>
