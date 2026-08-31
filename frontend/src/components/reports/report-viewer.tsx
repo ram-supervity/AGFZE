@@ -49,7 +49,7 @@ export function ReportViewer({ report }: ReportViewerProps) {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-lg border border-border bg-card p-5">
+      <section className="rounded-medium border-thin border-border bg-elevation-default shadow-raised p-5">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0 space-y-1.5">
             <div className="flex flex-wrap items-center gap-2">
@@ -111,7 +111,7 @@ export function ReportViewer({ report }: ReportViewerProps) {
           </Meta>
         </dl>
 
-        <p className="mt-4 rounded-md border border-border bg-surface px-4 py-3 text-xs leading-relaxed text-muted-foreground">
+        <p className="mt-4 rounded-medium border-thin border-border bg-elevation-sunken px-4 py-3 text-xs leading-relaxed text-muted-foreground">
           {report.distribution_note}
         </p>
       </section>
@@ -149,7 +149,7 @@ function Meta({ label, children }: { label: string; children: React.ReactNode })
 
 function Section({ section }: { section: ReportSection }) {
   return (
-    <section className="rounded-lg border border-border bg-card p-5">
+    <section className="rounded-medium border-thin border-border bg-elevation-default shadow-raised p-5">
       <h3 className="text-sm font-semibold text-foreground">{section.title}</h3>
       {section.description ? (
         <p className="mt-1 max-w-3xl text-xs leading-relaxed text-muted-foreground">
@@ -193,7 +193,7 @@ function AiSummary({ section }: { section: ReportSection }) {
     );
   }
   return (
-    <div className="rounded-md border border-accent/25 bg-accent/5 px-4 py-3">
+    <div className="rounded-md border border-pill-purple-border bg-pill-purple-bg px-space-200 py-space-150">
       <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-widest text-accent">
         <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
         AI-generated summary
@@ -218,7 +218,7 @@ function FigureGrid({ section }: { section: ReportSection }) {
       {figures.map((figure) => {
         const href = drillThroughHref(figure);
         return (
-          <div key={figure.key} className="rounded-md border border-border bg-surface p-4">
+          <div key={figure.key} className="rounded-medium border-thin border-border bg-elevation-sunken p-4">
             <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
               {figure.label}
             </p>

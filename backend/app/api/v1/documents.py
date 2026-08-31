@@ -40,6 +40,8 @@ from app.schemas.document import (
     ExtractedFieldRead,
     FieldCorrectionRequest,
     FieldSchemaRead,
+    PurchaseBundleItemRead,
+    PurchaseBundleRead,
     ReclassifyAccepted,
     ReclassifyRequest,
 )
@@ -47,8 +49,11 @@ from app.schemas.intake import Page, UploadAccepted
 from app.schemas.transaction import MatchCandidateRead, MatchOutcomeRead, MatchResolution
 from app.services import (
     document_service,
+    draft_service,
     extraction_service,
     matching_service,
+    purchase_completion,
+    purchase_intake,
     request_service,
     sales_service,
     transaction_service,
@@ -575,6 +580,7 @@ async def reclassify_document(
     document = await _load(session, document_id)
     previous_type = document.document_type
     previous_territory = document.territory
+    previous_direction = document.deal_direction
 
     if document.original_document_type is None:
         document.original_document_type = previous_type
@@ -582,6 +588,8 @@ async def reclassify_document(
     document.document_type = payload.document_type
     if payload.territory is not None:
         document.territory = payload.territory
+    if payload.deal_direction is not None:
+        document.deal_direction = payload.deal_direction
     if payload.document_kinds is not None:
         # BR-04 reads this list, so a correction here is a correction to whether the pack is
         # complete. It is recorded as a human's and survives the re-extraction queued below.
@@ -604,6 +612,8 @@ async def reclassify_document(
             "new_document_type": payload.document_type,
             "previous_territory": previous_territory,
             "new_territory": document.territory,
+            "previous_deal_direction": previous_direction,
+            "new_deal_direction": document.deal_direction,
             "previous_document_kinds": previous_kinds,
             "new_document_kinds": list(document.document_kinds or ()),
             "original_ai_document_type": document.original_document_type,
@@ -658,6 +668,7 @@ async def confirm_extraction(
         actor_type=ActorType.USER,
         metadata={
             "document_type": document.document_type,
+            "deal_direction": document.deal_direction,
             "territory": document.territory,
             "field_count": len(document.fields),
             "overridden_field_count": sum(1 for row in document.fields if row.is_overridden),
@@ -669,28 +680,10 @@ async def confirm_extraction(
     # The seam Step 2 left open. A confirmed extraction is the event matching subscribes to, and
     # it is the only trigger on this path: nothing here decides which batch a document belongs
     # to, it hands the confirmed document to the service whose job that is.
-    #
-    # A sales-triggering document takes the sales route instead. It never opens a transaction of
-    # its own: it reports which existing batch it belongs to, and the Sales User attaches the leg
-    # through `POST /transactions/{id}/sales-leg`. Falling through to the purchase path would
-    # silently create a second, purchase-less transaction for cargo that has already been bought.
     if sales_service.is_sales_document(document):
-        sales_match = await sales_service.evaluate_attachment(session, document)
-        if (
-            sales_match.outcome == matching_service.Outcome.AUTO_LINKED
-            and sales_match.transaction_id is not None
-            and document.transaction_id is None
-        ):
-            target = await transaction_service.get_transaction(session, sales_match.transaction_id)
-            await matching_service.link_document(
-                session,
-                target,
-                document,
-                method=sales_match.method or MatchMethod.FUZZY_AUTO.value,
-                score=sales_match.score,
-                rationale=sales_match.message,
-                actor_id=user.id,
-            )
+        outcome = await sales_service.on_sales_extraction_confirmed(
+            session, document, actor_id=user.id
+        )
         await session.commit()
         confirmed = await _load(session, document_id)
         return ResponseEnvelope[ConfirmationResult](
@@ -699,24 +692,89 @@ async def confirm_extraction(
                 request_id=confirmed.request_id,
                 extraction_status=confirmed.extraction_status,
                 confirmed_at=confirmed.confirmed_at or datetime.now(timezone.utc),
-                matching=_sales_match_read(sales_match),
+                matching=_match_read(outcome),
             ),
-            message=f"Extraction confirmed. {sales_match.message}".strip(),
+            message=f"Extraction confirmed. {outcome.message}".strip(),
         )
 
     outcome = await matching_service.on_extraction_confirmed(session, document, actor_id=user.id)
     confirmed = await _load(session, document_id)
 
-    return ResponseEnvelope[ConfirmationResult](
-        data=ConfirmationResult(
-            document_id=confirmed.id,
-            request_id=confirmed.request_id,
-            extraction_status=confirmed.extraction_status,
-            confirmed_at=confirmed.confirmed_at or datetime.now(timezone.utc),
-            matching=_match_read(outcome),
-        ),
-        message=f"Extraction confirmed. {outcome.message}".strip(),
+    # The purchase side's completion step. Confirming an extraction is where the platform learns
+    # the figures are signed off, so it is where the drafts this platform writes for a purchase
+    # deal are queued and where the batch's Loading Sheet row is written. Both go through the
+    # machinery that already existed - `draft_service.queue_generation` and the tracker payload -
+    # and both do nothing at all until the three-document bundle is genuinely complete.
+    completion = await _run_purchase_completion(session, confirmed, user)
+
+    result = ConfirmationResult(
+        document_id=confirmed.id,
+        request_id=confirmed.request_id,
+        extraction_status=confirmed.extraction_status,
+        confirmed_at=confirmed.confirmed_at or datetime.now(timezone.utc),
+        matching=_match_read(outcome),
     )
+    message = f"Extraction confirmed. {outcome.message}".strip()
+    if completion is not None:
+        bundle, run = completion
+        result.purchase_bundle = bundle
+        result.generated_document_types = sorted(run.generated)
+        result.generation_job_ids = [run.generated[name] for name in sorted(run.generated)]
+        result.loading_sheet_batch = run.loading_sheet_batch
+        result.loading_sheet_status = run.loading_sheet_status
+        result.completion_blocker = run.blocker
+        trailer = purchase_completion.message(run)
+        if trailer:
+            message = f"{message} {trailer}".strip()
+
+    return ResponseEnvelope[ConfirmationResult](data=result, message=message)
+
+
+def _bundle_read(status: purchase_intake.BundleStatus) -> PurchaseBundleRead:
+    return PurchaseBundleRead(
+        items=[
+            PurchaseBundleItemRead(
+                item=row.item,
+                label=row.label,
+                received=row.received,
+                confirmed=row.confirmed,
+                document_id=row.document_id,
+                filename=row.filename,
+            )
+            for row in status.items
+        ],
+        missing=list(status.missing),
+        complete=status.complete,
+        confirmed=status.confirmed,
+        unexpected=[
+            PurchaseBundleItemRead(
+                item=row.document_type or "unknown",
+                label=(row.document_type or "unknown").replace("_", " ").title(),
+                received=True,
+                confirmed=row.confirmed_at is not None,
+                document_id=row.id,
+                filename=row.filename,
+            )
+            for row in status.unexpected
+        ],
+        summary=status.summary(),
+    )
+
+
+async def _run_purchase_completion(
+    session: DbSession, document: Document, user: User
+) -> tuple[PurchaseBundleRead, purchase_completion.CompletionResult] | None:
+    """Report the bundle, and set off what a complete one owes. None for a non-purchase batch."""
+    if document.transaction_id is None:
+        return None
+    transaction = await draft_service.load_transaction(session, document.transaction_id)
+    if transaction.purchase_leg is None:
+        return None
+
+    run = await purchase_completion.on_purchase_confirmed(session, transaction, actor=user)
+    await session.commit()
+    status = await purchase_intake.status_for_transaction(session, transaction.id)
+    return _bundle_read(status), run
 
 
 def _sales_match_read(match: sales_service.SalesMatch) -> MatchOutcomeRead:

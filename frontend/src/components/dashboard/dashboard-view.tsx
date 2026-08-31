@@ -88,7 +88,7 @@ export function DashboardView({ summary, stream }: DashboardViewProps) {
           summary.exceptions.over_72h > 0 ? (
             <Badge
               variant="outline"
-              className="border-signal-blocked/35 bg-signal-blocked/10 text-signal-blocked"
+              className="border-pill-red-border bg-pill-red-bg text-pill-red-text"
             >
               {summary.exceptions.over_72h} over 72h
             </Badge>
@@ -230,7 +230,7 @@ export function DashboardView({ summary, stream }: DashboardViewProps) {
         {panels.map((panel) => panelNodes[panel]).filter(Boolean)}
       </div>
 
-      <section className="rounded-lg border border-border bg-card p-5">
+      <section className="rounded-medium border-thin border-border bg-elevation-default shadow-raised p-5">
         <h3 className="text-sm font-semibold text-foreground">How these figures are computed</h3>
         <p className="mt-1 text-xs text-muted-foreground">
           Every number on this screen is a live count or duration over the transaction records

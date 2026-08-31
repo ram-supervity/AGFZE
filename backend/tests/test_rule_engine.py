@@ -84,19 +84,21 @@ def test_the_registry_carries_every_catalogued_rule() -> None:
     registered = registered_rules()
 
     assert set(registered) == set(ALL_RULE_IDS)
-    # Sixteen: the thirteen governing rules, the sales module's cross-transaction quantity rule,
-    # the invoice-dating rule, and the invoiced-weight-against-the-bill-of-lading rule - the last
-    # three each under a namespace of their own, for the same reason: none of them is one of the
-    # thirteen, and appending them to that numbering would misrepresent where they came from.
-    assert len(ALL_RULE_IDS) == 16
+    # Seventeen: the thirteen governing rules, the sales module's cross-transaction quantity
+    # rule, the invoice-dating rule, the invoiced-weight-against-the-bill-of-lading rule, and the
+    # buying desk's three-document intake bundle - the last four each under a namespace of their
+    # own, for the same reason: none of them is one of the thirteen, and appending them to that
+    # numbering would misrepresent where they came from.
+    assert len(ALL_RULE_IDS) == 17
     assert RuleId.SL_01 in registered
     assert RuleId.IV_01 in registered
     assert RuleId.LG_01 in registered
+    assert RuleId.PR_01 in registered
 
 
 def test_only_the_evaluable_rules_are_marked_implemented() -> None:
     """BR-07 joined the five with the sales module, BR-03 with the shipment one, then IV-01, then
-    LG-01.
+    LG-01, then PR-01 with the purchase-intake bundle.
 
     Nothing else moved. The six that remain unimplemented are still registered, still walked by
     the orchestrator, and still write nothing - which is what they should do until the step that
@@ -114,6 +116,7 @@ def test_only_the_evaluable_rules_are_marked_implemented() -> None:
         RuleId.BR_13,
         RuleId.IV_01,
         RuleId.LG_01,
+        RuleId.PR_01,
         RuleId.SL_01,
     }
 

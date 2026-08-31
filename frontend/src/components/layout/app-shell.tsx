@@ -70,11 +70,11 @@ export function AppShell({
         <MobileNav roles={roles} open={mobileOpen} onOpenChange={setMobileOpen} />
         <main
           className={cn(
-            "pt-14 transition-[padding] duration-200",
+            "pt-14 transition-[padding] duration-medium",
             collapsed ? "lg:pl-16" : "lg:pl-64",
           )}
         >
-          <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+          <div className="mx-auto w-full max-w-7xl px-space-200 py-space-300 md:px-space-300 lg:px-space-400 xl:px-space-500">
             {/* Both render nothing at all in the ordinary case: the banner only when the
                 connection is gone or the data on screen came out of the cache, and the prompt
                 only once work has actually reached this person - never on page load. */}

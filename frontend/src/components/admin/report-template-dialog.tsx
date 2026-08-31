@@ -125,7 +125,7 @@ export function ReportTemplateDialog({
           </DialogDescription>
         </div>
 
-        <dl className="grid grid-cols-2 gap-3 rounded-md border border-border bg-surface px-3 py-2.5 text-sm">
+        <dl className="grid grid-cols-2 gap-3 rounded-medium border-thin border-border bg-elevation-sunken px-3 py-2.5 text-sm">
           <div>
             <dt className="text-xs uppercase tracking-wide text-muted-foreground">Template key</dt>
             <dd className="font-mono text-foreground">{row.template_key}</dd>
@@ -162,7 +162,7 @@ export function ReportTemplateDialog({
               {sections.map((section, index) => (
                 <li
                   key={`${section.key}-${index}`}
-                  className="space-y-3 rounded-md border border-border bg-surface p-3"
+                  className="space-y-3 rounded-medium border-thin border-border bg-elevation-sunken p-3"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">

@@ -184,7 +184,7 @@ export function ShipmentWorkspace({ initial, documents }: ShipmentWorkspaceProps
       </div>
 
       {shipment.review_flagged ? (
-        <p className="flex items-start gap-2 rounded-md border border-signal-review/35 bg-signal-review/10 px-4 py-3 text-sm text-foreground">
+        <p className="flex items-start gap-2 rounded-md border border-pill-amber-border bg-pill-amber-bg px-4 py-3 text-sm text-foreground">
           <TriangleAlert
             className="mt-0.5 h-4 w-4 shrink-0 text-signal-review"
             aria-hidden="true"
@@ -199,7 +199,7 @@ export function ShipmentWorkspace({ initial, documents }: ShipmentWorkspaceProps
       ) : null}
 
       {shipment.last_error ? (
-        <p className="rounded-md border border-signal-blocked/35 bg-signal-blocked/10 px-4 py-3 text-sm text-foreground">
+        <p className="rounded-md border border-pill-red-border bg-pill-red-bg px-4 py-3 text-sm text-foreground">
           The last tracking attempt failed: {shipment.last_error}
           {shipment.consecutive_failures > 1
             ? ` That is ${shipment.consecutive_failures} in a row.`
@@ -246,7 +246,7 @@ export function ShipmentWorkspace({ initial, documents }: ShipmentWorkspaceProps
               shipment.issues.length > 0 ? (
                 <Badge
                   variant="outline"
-                  className="border-signal-review/35 bg-signal-review/10 text-signal-review"
+                  className="border-pill-amber-border bg-pill-amber-bg text-pill-amber-text"
                 >
                   {shipment.issues.length} logged
                 </Badge>
@@ -266,7 +266,7 @@ export function ShipmentWorkspace({ initial, documents }: ShipmentWorkspaceProps
 
         <div className="space-y-4">
           <section
-            className="space-y-3 rounded-lg border border-border bg-card p-4"
+            className="space-y-3 rounded-medium border-thin border-border bg-elevation-default shadow-raised p-4"
             aria-label="Linked transaction"
           >
             <h2 className="text-sm font-semibold text-foreground">Linked transaction</h2>
@@ -306,7 +306,7 @@ export function ShipmentWorkspace({ initial, documents }: ShipmentWorkspaceProps
           </section>
 
           <section
-            className="space-y-3 rounded-lg border border-border bg-card p-4"
+            className="space-y-3 rounded-medium border-thin border-border bg-elevation-default shadow-raised p-4"
             aria-label="Shipment details"
           >
             <h2 className="text-sm font-semibold text-foreground">Shipment</h2>
@@ -322,7 +322,7 @@ export function ShipmentWorkspace({ initial, documents }: ShipmentWorkspaceProps
           </section>
 
           <section
-            className="space-y-3 rounded-lg border border-border bg-card p-4"
+            className="space-y-3 rounded-medium border-thin border-border bg-elevation-default shadow-raised p-4"
             aria-label="Bill of lading"
           >
             <h2 className="text-sm font-semibold text-foreground">Bill of lading</h2>
@@ -358,7 +358,7 @@ export function ShipmentWorkspace({ initial, documents }: ShipmentWorkspaceProps
 
           {shipment.containers.length > 1 ? (
             <section
-              className="space-y-2 rounded-lg border border-border bg-card p-4"
+              className="space-y-2 rounded-medium border-thin border-border bg-elevation-default shadow-raised p-4"
               aria-label="Other containers on this batch"
             >
               <h2 className="text-sm font-semibold text-foreground">

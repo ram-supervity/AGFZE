@@ -104,7 +104,7 @@ export default async function RequestDetailPage({
 
               {/* Rendered as text inside a pre element - sender-supplied content is never
                   interpreted as markup. */}
-              <pre className="max-h-[28rem] overflow-auto whitespace-pre-wrap break-words rounded-md border border-border bg-surface p-4 font-sans text-sm leading-relaxed text-foreground">
+              <pre className="max-h-[28rem] overflow-auto whitespace-pre-wrap break-words rounded-medium border-thin border-border bg-elevation-sunken p-4 font-sans text-sm leading-relaxed text-foreground">
                 {detail.email?.body_text?.trim() ||
                   "This request carries no email body: it was created from a portal upload."}
               </pre>
@@ -128,6 +128,34 @@ export default async function RequestDetailPage({
         </div>
 
         <div className="space-y-6">
+          {detail.transaction_id ? (
+            <Card className="border-pill-blue-border bg-pill-blue-bg">
+              <CardContent className="flex items-center justify-between p-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-secondary">
+                    {detail.transaction_leg_type === "sales" || detail.deal_direction === "sales"
+                      ? "Sales Deal"
+                      : "Purchase Deal"}
+                  </p>
+                  <p className="text-sm font-medium text-foreground">
+                    Transaction active on platform
+                  </p>
+                </div>
+                <Button asChild size="sm">
+                  <Link
+                    href={
+                      detail.transaction_leg_type === "sales" || detail.deal_direction === "sales"
+                        ? `/transactions/sales/${detail.transaction_id}`
+                        : `/transactions/purchase/${detail.transaction_id}`
+                    }
+                  >
+                    Open Workspace →
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          ) : null}
+
           <CategoryPanel detail={detail} canCorrect={canCorrect(roles)} />
 
           <RequestMatchingPanel

@@ -15,6 +15,7 @@ from app.models.enums import (
     IntegrationJobStatus,
     IntegrationTargetSystem,
     InvoiceStatus,
+    LoadingSheetSyncStatus,
     MatchMethod,
     PaymentCondition,
     PriceBasis,
@@ -37,7 +38,7 @@ from app.models.intake import (
     ExtractedField,
     Request,
 )
-from app.models.integration import DocumentPack, IntegrationJob
+from app.models.integration import DocumentPack, IntegrationJob, LoadingSheetRow
 from app.models.jobs import BackgroundJob, JobStatus
 from app.models.logistics import BillOfLading, Container, Shipment, ShipmentIssue
 from app.models.notifications import Notification
@@ -99,6 +100,8 @@ __all__ = [
     "IntegrationTargetSystem",
     "InvoiceStatus",
     "JobStatus",
+    "LoadingSheetRow",
+    "LoadingSheetSyncStatus",
     "MatchMethod",
     "Notification",
     "PaymentCondition",

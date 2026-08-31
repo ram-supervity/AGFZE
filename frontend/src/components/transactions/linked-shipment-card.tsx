@@ -38,7 +38,7 @@ export function LinkedShipmentCard({ shipments }: LinkedShipmentCardProps) {
   if (shipments.length === 0) {
     return (
       <section
-        className="space-y-2 rounded-lg border border-dashed border-border bg-surface p-4"
+        className="space-y-2 rounded-medium border-thin border-dashed border-border bg-elevation-sunken p-4"
         aria-label="Linked shipment"
       >
         <div className="flex items-center gap-2">
@@ -55,7 +55,7 @@ export function LinkedShipmentCard({ shipments }: LinkedShipmentCardProps) {
 
   return (
     <section
-      className="space-y-3 rounded-lg border border-border bg-card p-4"
+      className="space-y-3 rounded-medium border-thin border-border bg-elevation-default shadow-raised p-4"
       aria-label="Linked shipment"
     >
       <div className="flex items-center justify-between gap-2">
@@ -72,7 +72,7 @@ export function LinkedShipmentCard({ shipments }: LinkedShipmentCardProps) {
         {shipments.map((shipment) => (
           <li
             key={shipment.id}
-            className="space-y-2 rounded-md border border-border bg-surface px-3 py-2.5"
+            className="space-y-2 rounded-medium border-thin border-border bg-elevation-sunken px-3 py-2.5"
           >
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="font-mono text-sm text-secondary">
@@ -117,14 +117,14 @@ export function LinkedShipmentCard({ shipments }: LinkedShipmentCardProps) {
                 {shipment.original_bl_received ? (
                   <Badge
                     variant="outline"
-                    className="border-signal-confident/35 bg-signal-confident/10 text-signal-confident"
+                    className="border-pill-green-border bg-pill-green-bg text-pill-green-text"
                   >
                     Original B/L received
                   </Badge>
                 ) : (
                   <Badge
                     variant="outline"
-                    className="border-signal-review/35 bg-signal-review/10 text-signal-review"
+                    className="border-pill-amber-border bg-pill-amber-bg text-pill-amber-text"
                   >
                     Original B/L not yet in hand
                   </Badge>
@@ -132,7 +132,7 @@ export function LinkedShipmentCard({ shipments }: LinkedShipmentCardProps) {
                 {shipment.review_flagged ? (
                   <Badge
                     variant="outline"
-                    className="border-signal-review/35 bg-signal-review/10 text-signal-review"
+                    className="border-pill-amber-border bg-pill-amber-bg text-pill-amber-text"
                   >
                     <TriangleAlert className="mr-1 h-3 w-3" aria-hidden="true" />
                     Needs a look

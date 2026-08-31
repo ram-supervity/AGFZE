@@ -97,7 +97,7 @@ export function UsersTable({ data, search }: UsersTableProps) {
       {data.identity_provider_configured ? null : (
         <p
           role="status"
-          className="rounded-md border border-signal-review/35 bg-signal-review/10 px-3 py-2 text-sm text-signal-review"
+          className="rounded-md border border-pill-amber-border bg-pill-amber-bg px-3 py-2 text-sm text-signal-review"
         >
           This deployment has no Keycloak Admin API credential configured, so role assignment
           cannot be changed from here. Roles still arrive from the identity provider on every

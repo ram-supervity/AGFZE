@@ -22,7 +22,7 @@ function isActive(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-const ROW = "relative flex h-9 items-center rounded-md text-sm transition-colors";
+const ROW = "relative flex h-control-md items-center rounded-control text-body-md transition-colors";
 
 export function SidebarNav({
   items,
@@ -38,7 +38,7 @@ export function SidebarNav({
       {items.map((item) => {
         const Icon = item.icon;
         const active = item.status === "available" && isActive(pathname, item.href);
-        const spacing = collapsed ? "justify-center px-0" : "gap-3 px-3";
+        const spacing = collapsed ? "justify-center px-0" : "gap-space-150 px-space-150";
 
         const row =
           item.status === "available" ? (
@@ -49,7 +49,7 @@ export function SidebarNav({
               className={cn(
                 ROW,
                 spacing,
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-active",
+                "focus-visible:outline-none focus-visible:ring-thick focus-visible:ring-sidebar-active",
                 active
                   ? "bg-sidebar-border/70 font-medium text-sidebar-foreground"
                   : "text-sidebar-foreground/85 hover:bg-sidebar-border/50 hover:text-sidebar-foreground",
@@ -61,7 +61,7 @@ export function SidebarNav({
                   className="absolute inset-y-1 left-0 w-0.5 rounded-full bg-sidebar-active"
                 />
               ) : null}
-              <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <Icon className="size-icon-small shrink-0" aria-hidden="true" />
               {collapsed ? null : <span className="truncate">{item.label}</span>}
             </Link>
           ) : (
@@ -70,7 +70,7 @@ export function SidebarNav({
               tabIndex={-1}
               className={cn(ROW, spacing, "cursor-default text-sidebar-muted")}
             >
-              <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <Icon className="size-icon-small shrink-0" aria-hidden="true" />
               {collapsed ? null : (
                 <>
                   <span className="truncate">{item.label}</span>
@@ -86,7 +86,7 @@ export function SidebarNav({
         const children = visibleNavChildren(item, roles);
         const nested =
           children.length > 0 && !collapsed ? (
-            <ul className="mt-0.5 space-y-0.5 border-l border-sidebar-border pl-3">
+            <ul className="mt-0.5 space-y-0.5 border-l border-thin border-sidebar-border pl-space-150">
               {children.map((child) => (
                 <li key={child.key}>
                   <ChildRow
@@ -141,7 +141,7 @@ function ChildRow({
       aria-current={active ? "page" : undefined}
       title={child.summary}
       className={cn(
-        "flex h-8 items-center rounded-md px-3 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-active",
+        "flex h-8 items-center rounded-control px-space-150 text-body-md transition-colors focus-visible:outline-none focus-visible:ring-thick focus-visible:ring-sidebar-active",
         active
           ? "bg-sidebar-border/70 font-medium text-sidebar-foreground"
           : "text-sidebar-foreground/75 hover:bg-sidebar-border/50 hover:text-sidebar-foreground",
@@ -161,9 +161,9 @@ function tooltipFor(item: NavItem, collapsed: boolean): ReactNode {
   return (
     <div className="space-y-1">
       {collapsed ? <p className="font-medium">{item.label}</p> : null}
-      <p className="text-xs leading-relaxed">{item.summary}</p>
+      <p className="text-body-xs leading-relaxed">{item.summary}</p>
       {item.availableFrom ? (
-        <p className="text-xs opacity-80">Arrives in {item.availableFrom}</p>
+        <p className="text-body-xs opacity-80">Arrives in {item.availableFrom}</p>
       ) : null}
     </div>
   );

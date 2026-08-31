@@ -18,7 +18,7 @@ export function AppSidebar({ roles, collapsed, onToggle, className }: AppSidebar
   return (
     <aside
       className={cn(
-        "fixed bottom-0 left-0 top-14 z-30 flex flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width] duration-200",
+        "fixed bottom-0 left-0 top-14 z-raised flex flex-col border-r border-thin border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width] duration-medium",
         collapsed ? "w-16" : "w-64",
         className,
       )}
@@ -28,22 +28,22 @@ export function AppSidebar({ roles, collapsed, onToggle, className }: AppSidebar
           items={visibleNavItems(roles)}
           roles={roles}
           collapsed={collapsed}
-          className={collapsed ? "p-2" : "p-3"}
+          className={collapsed ? "p-space-100" : "p-space-150"}
         />
       </ScrollArea>
-      <div className="border-t border-sidebar-border p-2">
+      <div className="border-t border-thin border-sidebar-border p-space-100">
         <button
           type="button"
           onClick={onToggle}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           aria-expanded={!collapsed}
           className={cn(
-            "flex h-9 w-full items-center rounded-md text-sm text-sidebar-muted transition-colors hover:bg-sidebar-border/50 hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-active",
-            collapsed ? "justify-center px-0" : "gap-3 px-3",
+            "flex h-control-md w-full items-center rounded-control text-body-md text-sidebar-muted transition-colors hover:bg-sidebar-border/50 hover:text-sidebar-foreground focus-visible:outline-none focus-visible:ring-thick focus-visible:ring-sidebar-active",
+            collapsed ? "justify-center px-0" : "gap-space-150 px-space-150",
           )}
         >
           <ChevronsLeft
-            className={cn("h-4 w-4 shrink-0 transition-transform", collapsed && "rotate-180")}
+            className={cn("size-icon-small shrink-0 transition-transform", collapsed && "rotate-180")}
             aria-hidden="true"
           />
           {collapsed ? null : <span>Collapse</span>}

@@ -11,6 +11,7 @@ from app.api.v1 import (
     health,
     integrations,
     jobs,
+    loading_sheets,
     notifications,
     reports,
     requests,
@@ -30,6 +31,7 @@ api_router.include_router(requests.router)
 api_router.include_router(documents.router)
 api_router.include_router(transactions.router)
 api_router.include_router(shipments.router)
+api_router.include_router(loading_sheets.router)
 api_router.include_router(exceptions.router)
 api_router.include_router(approvals.router)
 api_router.include_router(integrations.router)
@@ -49,6 +51,7 @@ __all__ = [
     "health",
     "integrations",
     "jobs",
+    "loading_sheets",
     "notifications",
     "reports",
     "requests",

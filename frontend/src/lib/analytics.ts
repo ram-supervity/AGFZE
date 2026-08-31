@@ -132,10 +132,14 @@ export const REPORT_TYPE_LABELS: Record<ReportType, string> = {
   adhoc: "Ad-hoc",
 };
 
+/**
+ * Categorical, not semantic: a report type is a kind of thing, not a state, so these come from
+ * the hue palette rather than from the success/warning/danger families.
+ */
 export const REPORT_TYPE_CHIP: Record<ReportType, string> = {
   daily: "border-border bg-muted text-muted-foreground",
-  monthly: "border-secondary/35 bg-secondary/10 text-secondary",
-  adhoc: "border-accent/35 bg-accent/10 text-accent",
+  monthly: "border-pill-blue-border bg-pill-blue-bg text-pill-blue-text",
+  adhoc: "border-pill-purple-border bg-pill-purple-bg text-pill-purple-text",
 };
 
 export const REPORT_FORMATS = ["pdf", "xlsx"] as const;

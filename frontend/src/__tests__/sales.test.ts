@@ -135,16 +135,16 @@ describe("the quantity meter's semantics", () => {
   it("treats a part-shipped contract as normal rather than as a warning", () => {
     // A live sales contract with more shipments to come is the expected state. Colouring it
     // amber would teach people to ignore amber, so it reads in the confident colour.
-    expect(COVERAGE_TONE.partial).toContain("signal-confident");
+    expect(COVERAGE_TONE.partial).toContain("pill-green");
     expect(COVERAGE_BAR.partial).toContain("signal-confident");
     expect(COVERAGE_LABELS.partial).not.toMatch(/error|breach|problem/i);
   });
 
   it("reserves the blocked colour for an over-invoiced contract alone", () => {
-    expect(COVERAGE_TONE.exceeded).toContain("signal-blocked");
+    expect(COVERAGE_TONE.exceeded).toContain("pill-red");
     expect(COVERAGE_BAR.exceeded).toContain("signal-blocked");
     for (const state of ["partial", "complete", "unknown"] as CoverageState[]) {
-      expect(COVERAGE_TONE[state], state).not.toContain("signal-blocked");
+      expect(COVERAGE_TONE[state], state).not.toContain("pill-red");
     }
   });
 });

@@ -71,21 +71,52 @@ export function RequestQueueTable({ queue }: { queue: RequestQueue }) {
                 </Link>
               </TableCell>
               <TableCell>
-                {request.category ? (
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <ConfidenceBadge
-                      label={labelFor(CATEGORY_LABELS, request.category)}
-                      confidence={request.category_confidence}
-                    />
-                    {request.category_overridden ? (
-                      <Badge variant="muted" className="text-[10px] uppercase tracking-wider">
-                        Corrected
-                      </Badge>
-                    ) : null}
-                  </div>
-                ) : (
-                  <span className="text-sm text-muted-foreground">Not classified yet</span>
-                )}
+                <div className="space-y-1">
+                  {request.category ? (
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <ConfidenceBadge
+                        label={labelFor(CATEGORY_LABELS, request.category)}
+                        confidence={request.category_confidence}
+                      />
+                      {request.deal_direction && request.deal_direction !== "not_trade" ? (
+                        <Badge
+                          variant="outline"
+                          className={
+                            request.deal_direction === "sales"
+                              ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs"
+                              : "border-blue-500/40 bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs"
+                          }
+                        >
+                          {request.deal_direction === "sales" ? "Sales deal" : "Purchase deal"}
+                        </Badge>
+                      ) : null}
+                      {request.category_overridden ? (
+                        <Badge variant="muted" className="text-body-xs uppercase tracking-wider">
+                          Corrected
+                        </Badge>
+                      ) : null}
+                    </div>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">Not classified yet</span>
+                  )}
+                  {request.transaction_id ? (
+                    <div>
+                      <Link
+                        href={
+                          request.transaction_leg_type === "sales" || request.deal_direction === "sales"
+                            ? `/transactions/sales/${request.transaction_id}`
+                            : `/transactions/purchase/${request.transaction_id}`
+                        }
+                        className="inline-flex items-center gap-1 text-xs font-medium text-secondary hover:underline"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <span>
+                          Open {request.transaction_leg_type === "sales" || request.deal_direction === "sales" ? "Sales" : "Purchase"} Workspace →
+                        </span>
+                      </Link>
+                    </div>
+                  ) : null}
+                </div>
               </TableCell>
               <TableCell className="text-sm text-muted-foreground">
                 {labelFor(STREAM_LABELS, request.stream)}
@@ -96,7 +127,7 @@ export function RequestQueueTable({ queue }: { queue: RequestQueue }) {
                   {request.needs_review ? (
                     <Badge
                       variant="outline"
-                      className="border-signal-review/35 bg-signal-review/10 text-signal-review"
+                      className="border-pill-amber-border bg-pill-amber-bg text-pill-amber-text"
                     >
                       Needs review
                     </Badge>

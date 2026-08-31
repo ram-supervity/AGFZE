@@ -43,9 +43,9 @@ export const INTEGRATION_STATUS_LABELS: Record<IntegrationJobStatus, string> = {
 export const INTEGRATION_STATUS_CHIP: Record<IntegrationJobStatus, string> = {
   queued: "border-border bg-muted text-muted-foreground",
   processing: "border-border bg-muted text-muted-foreground",
-  succeeded: "border-signal-confident/35 bg-signal-confident/10 text-signal-confident",
-  failed: "border-signal-blocked/45 bg-signal-blocked/10 text-signal-blocked",
-  awaiting_manual_action: "border-signal-review/35 bg-signal-review/10 text-signal-review",
+  succeeded: "border-pill-green-border bg-pill-green-bg text-pill-green-text",
+  failed: "border-pill-red-border bg-pill-red-bg text-pill-red-text",
+  awaiting_manual_action: "border-pill-amber-border bg-pill-amber-bg text-pill-amber-text",
 };
 
 /** What each state actually means, in the words the screen shows on hover. */

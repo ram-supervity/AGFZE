@@ -243,8 +243,8 @@ export function NewSalesLegForm() {
                           className={cn(
                             "shrink-0",
                             row.has_purchase_leg
-                              ? "border-signal-confident/35 bg-signal-confident/10 text-signal-confident"
-                              : "border-signal-review/35 bg-signal-review/10 text-signal-review",
+                              ? "border-pill-green-border bg-pill-green-bg text-pill-green-text"
+                              : "border-pill-amber-border bg-pill-amber-bg text-pill-amber-text",
                           )}
                         >
                           {deskLabel(row)}
@@ -258,7 +258,7 @@ export function NewSalesLegForm() {
           ) : null}
 
           {needsAcknowledgement ? (
-            <div className="space-y-2 rounded-md border border-signal-review/45 bg-signal-review/10 p-3">
+            <div className="space-y-2 rounded-md border border-pill-amber-border bg-pill-amber-bg p-3">
               <p className="flex items-start gap-2 text-sm font-medium text-foreground">
                 <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
                 Batch {selected?.batch_number} has no purchase leg.

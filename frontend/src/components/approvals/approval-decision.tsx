@@ -174,7 +174,7 @@ export function ApprovalDecisionScreen({
                   </p>
                 </>
               ) : (
-                <p className="rounded-md border border-border bg-surface px-3 py-2.5 text-sm text-muted-foreground">
+                <p className="rounded-medium border-thin border-border bg-elevation-sunken px-3 py-2.5 text-sm text-muted-foreground">
                   {detail.ai_summary.unavailable_reason ??
                     "No summary is available for this transaction."}
                 </p>
@@ -235,9 +235,9 @@ export function ApprovalDecisionScreen({
                     "rounded-md border px-3 py-2 text-sm",
                     rule.passed
                       ? rule.acknowledged
-                        ? "border-signal-review/35 bg-signal-review/5"
-                        : "border-signal-confident/35 bg-signal-confident/5"
-                      : "border-signal-blocked/35 bg-signal-blocked/10",
+                        ? "border-pill-amber-border bg-pill-amber-bg"
+                        : "border-pill-green-border bg-pill-green-bg"
+                      : "border-pill-red-border bg-pill-red-bg",
                   )}
                 >
                   <div className="flex flex-wrap items-center gap-2">
@@ -248,7 +248,7 @@ export function ApprovalDecisionScreen({
                     {rule.acknowledged ? (
                       <Badge
                         variant="outline"
-                        className="border-signal-review/35 bg-signal-review/10 text-signal-review"
+                        className="border-pill-amber-border bg-pill-amber-bg text-pill-amber-text"
                       >
                         Accepted by hand
                       </Badge>

@@ -60,7 +60,7 @@ export function PriceFixationDialog({
         </div>
 
         {leg.customer_fixation_status === "fixed" ? (
-          <p className="rounded-md border border-signal-review/35 bg-signal-review/10 px-3 py-2 text-sm text-foreground">
+          <p className="rounded-md border border-pill-amber-border bg-pill-amber-bg px-3 py-2 text-sm text-foreground">
             This customer has already fixed at{" "}
             {formatMoney(leg.fixation_rate, currency)}
             {leg.fixation_date ? ` on ${formatDateTime(leg.fixation_date)}` : ""}. Recording again

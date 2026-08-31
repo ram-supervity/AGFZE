@@ -101,7 +101,7 @@ export function InstallButton() {
             <li className="flex items-start gap-2.5">
               <span
                 aria-hidden="true"
-                className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border border-accent text-[11px] font-semibold leading-none text-accent"
+                className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border border-accent text-body-xs font-semibold leading-none text-accent"
               >
                 +
               </span>

@@ -16,6 +16,8 @@ import { ApiError, overrideRequestCategory, type RequestDetail } from "@/lib/api
 import {
   BUSINESS_STREAMS,
   CATEGORY_LABELS,
+  DEAL_DIRECTION_LABELS,
+  DEAL_DIRECTIONS,
   REQUEST_CATEGORIES,
   STREAM_LABELS,
   formatConfidence,
@@ -39,6 +41,7 @@ export function CategoryPanel({ detail, canCorrect }: CategoryPanelProps) {
   const [editing, setEditing] = useState(false);
   const [category, setCategory] = useState(detail.category ?? "purchase");
   const [stream, setStream] = useState(detail.stream ?? "");
+  const [dealDirection, setDealDirection] = useState(detail.deal_direction ?? "");
   const [reason, setReason] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -55,6 +58,7 @@ export function CategoryPanel({ detail, canCorrect }: CategoryPanelProps) {
       await overrideRequestCategory(session.accessToken, detail.id, {
         category,
         stream: stream || null,
+        deal_direction: dealDirection || null,
         reason: reason.trim(),
       });
       toast.success("Category corrected.");
@@ -92,6 +96,18 @@ export function CategoryPanel({ detail, canCorrect }: CategoryPanelProps) {
           ) : (
             <Badge variant="muted">Not classified</Badge>
           )}
+          {detail.deal_direction && detail.deal_direction !== "not_trade" ? (
+            <Badge
+              variant="outline"
+              className={
+                detail.deal_direction === "sales"
+                  ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                  : "border-blue-500/40 bg-blue-500/10 text-blue-600 dark:text-blue-400"
+              }
+            >
+              {detail.deal_direction === "sales" ? "Sales deal" : "Purchase deal"}
+            </Badge>
+          ) : null}
           {detail.stream ? (
             <Badge variant="outline">{labelFor(STREAM_LABELS, detail.stream)}</Badge>
           ) : null}
@@ -99,13 +115,20 @@ export function CategoryPanel({ detail, canCorrect }: CategoryPanelProps) {
         </div>
 
         {detail.category_rationale ? (
-          <p className="rounded-md border border-border bg-surface p-3 text-sm leading-relaxed text-muted-foreground">
+          <p className="rounded-medium border-thin border-border bg-elevation-sunken p-3 text-sm leading-relaxed text-muted-foreground">
             {detail.category_rationale}
           </p>
         ) : null}
 
+        {detail.deal_direction_rationale && detail.deal_direction_rationale !== detail.category_rationale ? (
+          <p className="rounded-medium border-thin border-border bg-elevation-sunken p-3 text-xs leading-relaxed text-muted-foreground">
+            <span className="font-semibold text-foreground">Deal direction: </span>
+            {detail.deal_direction_rationale}
+          </p>
+        ) : null}
+
         {detail.category_overridden ? (
-          <dl className="space-y-1.5 rounded-md border border-border bg-surface p-3 text-sm">
+          <dl className="space-y-1.5 rounded-medium border-thin border-border bg-elevation-sunken p-3 text-sm">
             <div className="flex justify-between gap-3">
               <dt className="text-muted-foreground">Original AI category</dt>
               <dd className="text-foreground">
@@ -147,6 +170,22 @@ export function CategoryPanel({ detail, canCorrect }: CategoryPanelProps) {
                 {REQUEST_CATEGORIES.map((value) => (
                   <option key={value} value={value}>
                     {CATEGORY_LABELS[value]}
+                  </option>
+                ))}
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="deal-direction">Deal direction</Label>
+              <Select
+                id="deal-direction"
+                value={dealDirection}
+                onChange={(event) => setDealDirection(event.target.value)}
+              >
+                <option value="">Auto-detected from category</option>
+                {DEAL_DIRECTIONS.map((value) => (
+                  <option key={value} value={value}>
+                    {DEAL_DIRECTION_LABELS[value]}
                   </option>
                 ))}
               </Select>

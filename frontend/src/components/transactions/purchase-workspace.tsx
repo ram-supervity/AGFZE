@@ -255,7 +255,7 @@ export function PurchaseWorkspace({
         {failing > 0 ? (
           <Badge
             variant="outline"
-            className="border-signal-blocked/35 bg-signal-blocked/10 text-signal-blocked"
+            className="border-pill-red-border bg-pill-red-bg text-pill-red-text"
           >
             {failing} check{failing === 1 ? "" : "s"} outstanding
           </Badge>
@@ -263,7 +263,7 @@ export function PurchaseWorkspace({
       </div>
 
       {locked ? (
-        <p className="rounded-md border border-signal-confident/35 bg-signal-confident/10 px-4 py-3 text-sm text-foreground">
+        <p className="rounded-md border border-pill-green-border bg-pill-green-bg px-4 py-3 text-sm text-foreground">
           {lockedNote(detail.status, detail.integration_jobs.length)}
         </p>
       ) : null}
@@ -340,7 +340,7 @@ export function PurchaseWorkspace({
               </div>
             </div>
           ) : (
-            <div className="flex h-full flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-border bg-surface px-6 py-16 text-center">
+            <div className="flex h-full flex-col items-center justify-center gap-3 rounded-medium border-thin border-dashed border-border bg-elevation-sunken px-6 py-16 text-center">
               <p className="text-sm font-medium text-foreground">No documents attached yet</p>
               <p className="max-w-sm text-sm text-muted-foreground">
                 This transaction was registered without a source document, which is a normal
@@ -415,14 +415,14 @@ export function PurchaseWorkspace({
               failing > 0 ? (
                 <Badge
                   variant="outline"
-                  className="border-signal-blocked/35 bg-signal-blocked/10 text-signal-blocked"
+                  className="border-pill-red-border bg-pill-red-bg text-pill-red-text"
                 >
                   {failing} outstanding
                 </Badge>
               ) : (
                 <Badge
                   variant="outline"
-                  className="border-signal-confident/35 bg-signal-confident/10 text-signal-confident"
+                  className="border-pill-green-border bg-pill-green-bg text-pill-green-text"
                 >
                   All checks pass
                 </Badge>
@@ -454,7 +454,7 @@ export function PurchaseWorkspace({
       </div>
 
       {canEdit ? (
-        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card/95 backdrop-blur lg:left-16">
+        <div className="fixed inset-x-0 bottom-0 z-sticky border-t border-thin border-border bg-elevation-default/95 backdrop-blur lg:left-16">
           <div className="mx-auto flex max-w-[100rem] flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
             <p className="min-w-0 flex-1 text-xs text-muted-foreground">
               {locked

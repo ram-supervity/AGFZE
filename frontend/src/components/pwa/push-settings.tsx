@@ -131,14 +131,14 @@ const DESCRIPTION: Record<Status, string> = {
 function StatusBadge({ status }: { status: Status }) {
   if (status === "on") {
     return (
-      <Badge variant="outline" className="border-signal-confident/35 bg-signal-confident/10 text-signal-confident">
+      <Badge variant="outline" className="border-pill-green-border bg-pill-green-bg text-pill-green-text">
         On for this browser
       </Badge>
     );
   }
   if (status === "blocked") {
     return (
-      <Badge variant="outline" className="border-signal-blocked/40 bg-signal-blocked/10 text-signal-blocked">
+      <Badge variant="outline" className="border-pill-red-border bg-pill-red-bg text-pill-red-text">
         Blocked by the browser
       </Badge>
     );

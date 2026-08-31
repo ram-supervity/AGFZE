@@ -34,6 +34,15 @@ export const STREAM_LABELS: Record<BusinessStream, string> = {
   fa: "Finished aluminium",
 };
 
+export const DEAL_DIRECTIONS = ["purchase", "sales", "not_trade"] as const;
+export type DealDirection = (typeof DEAL_DIRECTIONS)[number];
+
+export const DEAL_DIRECTION_LABELS: Record<DealDirection, string> = {
+  purchase: "Purchase",
+  sales: "Sales",
+  not_trade: "Non-trade / FA",
+};
+
 /** The four states this step owns. The rest of the lifecycle arrives from Step 3 onwards. */
 export const REQUEST_STATUSES = [
   "received",
@@ -139,9 +148,9 @@ export const BAND_BORDER: Record<ConfidenceBand, string> = {
 };
 
 export const BAND_CHIP: Record<ConfidenceBand, string> = {
-  confident: "border-signal-confident/35 bg-signal-confident/10 text-signal-confident",
-  review: "border-signal-review/35 bg-signal-review/10 text-signal-review",
-  blocked: "border-signal-blocked/35 bg-signal-blocked/10 text-signal-blocked",
+  confident: "border-pill-green-border bg-pill-green-bg text-pill-green-text",
+  review: "border-pill-amber-border bg-pill-amber-bg text-pill-amber-text",
+  blocked: "border-pill-red-border bg-pill-red-bg text-pill-red-text",
 };
 
 export function formatConfidence(confidence: number | null | undefined): string {

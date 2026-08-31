@@ -25,13 +25,13 @@ export interface MatchOutcomeCardProps {
 }
 
 const TONE: Record<string, string> = {
-  auto_linked: "border-signal-confident/35 bg-signal-confident/10",
-  superseded: "border-signal-confident/35 bg-signal-confident/10",
+  auto_linked: "border-pill-green-border bg-pill-green-bg",
+  superseded: "border-pill-green-border bg-pill-green-bg",
   new_transaction: "border-border bg-surface",
   already_linked: "border-border bg-surface",
-  duplicate_linked: "border-signal-review/35 bg-signal-review/10",
-  suggested: "border-signal-review/35 bg-signal-review/10",
-  no_reference: "border-signal-blocked/35 bg-signal-blocked/10",
+  duplicate_linked: "border-pill-amber-border bg-pill-amber-bg",
+  suggested: "border-pill-amber-border bg-pill-amber-bg",
+  no_reference: "border-pill-red-border bg-pill-red-bg",
   not_applicable: "border-border bg-surface",
 };
 
@@ -103,12 +103,12 @@ export function MatchOutcomeCard({
               {MATCH_OUTCOME_LABELS[current.outcome] ?? current.outcome}
             </p>
             {current.batch_number ? (
-              <Badge variant="muted" className="font-mono text-[11px]">
+              <Badge variant="muted" className="font-mono text-body-xs">
                 {current.batch_number}
               </Badge>
             ) : null}
             {current.score !== null ? (
-              <Badge variant="outline" className="tabular-nums text-[11px]">
+              <Badge variant="outline" className="tabular-nums text-body-xs">
                 score {Math.round(current.score)}
               </Badge>
             ) : null}

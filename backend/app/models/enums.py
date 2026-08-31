@@ -31,6 +31,12 @@ class BusinessStream(str, Enum):
     FA = "fa"
 
 
+class DealDirection(str, Enum):
+    PURCHASE = "purchase"
+    SALES = "sales"
+    NOT_TRADE = "not_trade"
+
+
 class RequestStatus(str, Enum):
     """Step 2 owns exactly these four states.
 
@@ -308,6 +314,62 @@ class DocumentKind(str, Enum):
 SALES_TRIGGER_DOCUMENT_KINDS: tuple[str, ...] = (DocumentKind.BILL_OF_LADING.value,)
 
 
+class PurchaseBundleItem(str, Enum):
+    """The three inbound documents a purchase deal arrives as, and the only three.
+
+    The buying desk receives a supplier's proforma / commercial invoice, the packing list that
+    itemises what is on the truck, and the weighbridge ticket that says what it weighed. Nothing
+    else is expected inbound on a purchase intake - in particular not a purchase contract, which
+    is a document *this* platform writes out of the confirmed figures and would be circular to
+    wait for.
+    """
+
+    INVOICE = "invoice"
+    PACKING_LIST = "packing_list"
+    WEIGHT_SLIP = "weight_slip"
+
+
+# The checklist entries, in the order the desk works them and the screens list them. Every one
+# resolves through the same `document_kinds` mechanism BR-04 already reads: `invoice` is a
+# document *type* in its own right, and the other two are kinds the classifier assigns.
+PURCHASE_BUNDLE_ITEMS: tuple[str, ...] = (
+    PurchaseBundleItem.INVOICE.value,
+    PurchaseBundleItem.PACKING_LIST.value,
+    PurchaseBundleItem.WEIGHT_SLIP.value,
+)
+
+PURCHASE_BUNDLE_LABELS: dict[str, str] = {
+    PurchaseBundleItem.INVOICE.value: "Supplier invoice",
+    PurchaseBundleItem.PACKING_LIST.value: "Packing list",
+    PurchaseBundleItem.WEIGHT_SLIP.value: "Weight slip",
+}
+
+# What must never be *expected* inbound on a purchase intake. The purchase contract and the cost
+# sheet are documents this platform generates from the confirmed figures, so a purchase request
+# carrying one is either a document filed against the wrong deal or a draft that has come back
+# round - either way a person decides, and the pipeline routes it to review rather than counting
+# it towards the bundle.
+PURCHASE_INTAKE_UNEXPECTED_DOCUMENT_TYPES: tuple[str, ...] = (
+    DocumentType.CONTRACT.value,
+    *PURCHASE_GENERATED_DOCUMENT_TYPES,
+    *SALES_GENERATED_DOCUMENT_TYPES,
+)
+
+
+class LoadingSheetSyncStatus(str, Enum):
+    """Where one Loading Sheet row stands with the workbook it eventually belongs in.
+
+    `PENDING` is the honest state of a row held in this platform's own table because no
+    SharePoint/Excel connection is configured, or because the last write attempt has not happened
+    yet. It is drained by the existing integration worker the moment a connection exists, so a
+    deployment that configures the workbook later loses nothing that was recorded before it did.
+    """
+
+    PENDING = "pending"
+    SYNCED = "synced"
+    FAILED = "failed"
+
+
 class BatchNumberSource(str, Enum):
     """Where a transaction's batch number came from, and so whether it may still be corrected.
 
@@ -483,9 +545,12 @@ def _values(enum: type[Enum]) -> tuple[str, ...]:
 REQUEST_SOURCES = _values(RequestSource)
 REQUEST_CATEGORIES = _values(RequestCategory)
 BUSINESS_STREAMS = _values(BusinessStream)
+DEAL_DIRECTIONS = _values(DealDirection)
 REQUEST_STATUSES = _values(RequestStatus)
 DOCUMENT_TYPES = _values(DocumentType)
 DOCUMENT_KINDS = _values(DocumentKind)
+PURCHASE_BUNDLE_ITEM_VALUES = _values(PurchaseBundleItem)
+LOADING_SHEET_SYNC_STATUSES = _values(LoadingSheetSyncStatus)
 BATCH_NUMBER_SOURCES = _values(BatchNumberSource)
 DOCUMENT_SOURCES = _values(DocumentSource)
 PAYMENT_CONDITIONS = _values(PaymentCondition)

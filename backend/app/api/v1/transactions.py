@@ -52,6 +52,9 @@ from app.schemas.transaction import (
     FaTransactionCreate,
     GeneratedDraftRead,
     LinkedPurchaseContext,
+    LoadingSheetStatusRead,
+    PurchaseBundleItemStatusRead,
+    PurchaseBundleStatusRead,
     PurchaseLegRead,
     PurchaseTransactionCreate,
     RuleEvaluationRead,
@@ -73,6 +76,7 @@ from app.services import (
     draft_service,
     extraction_service,
     neo4j_service,
+    purchase_intake,
     request_service,
     sales_service,
     transaction_fields,
@@ -80,7 +84,7 @@ from app.services import (
 )
 from app.services.audit_service import ActorType, record_audit_event
 from app.services.governance import approval_service, thresholds
-from app.services.integration import integration_service
+from app.services.integration import integration_service, loading_sheet
 from app.services.logistics import shipment_service
 from app.services.rules import engine as rule_engine
 from app.services.rules.catalog import RULE_BY_ID
@@ -259,6 +263,12 @@ def _list_item(
     item.has_purchase_leg = leg is not None
     item.has_sales_leg = transaction.sales_leg is not None
     item.has_fa_leg = transaction.fa_leg is not None
+    if item.has_sales_leg and not item.has_purchase_leg:
+        item.deal_direction = "sales"
+    elif item.has_purchase_leg:
+        item.deal_direction = "purchase"
+    elif item.has_fa_leg:
+        item.deal_direction = "not_trade"
     item.is_b2b = bool(leg.is_b2b) if leg else False
     item.b2b_partner_name = leg.b2b_partner_name if leg else None
     # Real data from Step 6. Null still means "no shipment record exists", which is a different
@@ -614,6 +624,33 @@ async def _detail(
             row for row in detail.fields if row.owner == transaction_fields.FA_EXTRA
         ]
         detail.fa_field_schema = await _fa_schema(session)
+
+    # Where this batch stands with the Loading Sheet, and how its purchase bundle looks. Both are
+    # additive fields on an existing response rather than endpoints of their own: a preparing
+    # desk asking "did this reach the Loading Sheet?" is asking about their transaction.
+    if transaction.purchase_leg is not None:
+        row = await loading_sheet.row_for_transaction(session, transaction.id)
+        if row is not None:
+            detail.loading_sheet = LoadingSheetStatusRead.model_validate(row)
+            detail.loading_sheet.workbook_configured = loading_sheet.workbook_configured()
+        bundle = purchase_intake.status_for(documents)
+        detail.purchase_bundle = PurchaseBundleStatusRead(
+            items=[
+                PurchaseBundleItemStatusRead(
+                    item=item.item,
+                    label=item.label,
+                    received=item.received,
+                    confirmed=item.confirmed,
+                    document_id=item.document_id,
+                    filename=item.filename,
+                )
+                for item in bundle.items
+            ],
+            missing=list(bundle.missing),
+            complete=bundle.complete,
+            confirmed=bundle.confirmed,
+            summary=bundle.summary(),
+        )
 
     all_drafts = await _drafts(session, transaction)
     roles = set(user.roles or ())
@@ -1185,7 +1222,6 @@ async def generate_draft(
     the old one. Nothing is overwritten, so the transaction's document history is the full record
     of what was generated and when.
     """
-    transaction = await _load(session, transaction_id, user)
     roles = set(user.roles or ())
     is_admin = PlatformRole.ADMIN.value in roles
     is_sales = PlatformRole.SALES_USER.value in roles
@@ -1196,22 +1232,24 @@ async def generate_draft(
             raise AuthorizationError(
                 "Only users with the Sales role may generate sales draft documents."
             )
-        if transaction.sales_leg is None:
-            raise AuthorizationError(
-                "This transaction has no sales leg to generate sales documents for."
-            )
     elif payload.document_type in PURCHASE_GENERATED_DOCUMENT_TYPES:
         if not (is_admin or is_purchase):
             raise AuthorizationError(
                 "Only users with the Purchase role may generate purchase draft documents."
             )
-        if transaction.purchase_leg is None:
-            raise AuthorizationError(
-                "This transaction has no purchase leg to generate purchase documents for."
-            )
     else:
         raise AuthorizationError(
             f"Document type '{payload.document_type}' is not available for generation."
+        )
+
+    transaction = await _load(session, transaction_id, user)
+    if payload.document_type in SALES_GENERATED_DOCUMENT_TYPES and transaction.sales_leg is None:
+        raise AuthorizationError(
+            "This transaction has no sales leg to generate sales documents for."
+        )
+    if payload.document_type in PURCHASE_GENERATED_DOCUMENT_TYPES and transaction.purchase_leg is None:
+        raise AuthorizationError(
+            "This transaction has no purchase leg to generate purchase documents for."
         )
     if transaction.status in transaction_fields.LOCKED_STATUSES:
         raise ConflictError(

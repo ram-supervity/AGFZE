@@ -97,7 +97,7 @@ export function OnboardingWalkthrough({ roles, completed }: OnboardingWalkthroug
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 8 }}
         transition={{ duration: DURATION, ease: EASE }}
-        className="fixed bottom-4 right-4 z-50 w-[min(24rem,calc(100vw-2rem))] rounded-lg border border-border bg-card p-4 shadow-lg"
+        className="fixed bottom-space-200 right-space-200 z-popover w-[min(24rem,calc(100vw-2rem))] rounded-medium border-thin border-border bg-elevation-overlay p-space-200 shadow-raised"
       >
         <p className="text-xs uppercase tracking-widest text-muted-foreground">
           Getting started · {index + 1} of {steps.length}

@@ -34,8 +34,8 @@ export const PRIORITY_LABELS: Record<ExceptionPriority, string> = {
 
 export const PRIORITY_CHIP: Record<ExceptionPriority, string> = {
   low: "border-border bg-muted text-muted-foreground",
-  medium: "border-signal-review/35 bg-signal-review/10 text-signal-review",
-  high: "border-signal-blocked/35 bg-signal-blocked/10 text-signal-blocked",
+  medium: "border-pill-amber-border bg-pill-amber-bg text-pill-amber-text",
+  high: "border-pill-red-border bg-pill-red-bg text-pill-red-text",
 };
 
 export const APPROVAL_DECISIONS = [
@@ -55,10 +55,10 @@ export const DECISION_LABELS: Record<ApprovalDecision, string> = {
 };
 
 export const DECISION_CHIP: Record<ApprovalDecision, string> = {
-  pending: "border-signal-review/35 bg-signal-review/10 text-signal-review",
-  approved: "border-signal-confident/35 bg-signal-confident/10 text-signal-confident",
-  rejected: "border-signal-blocked/35 bg-signal-blocked/10 text-signal-blocked",
-  changes_requested: "border-signal-review/35 bg-signal-review/10 text-signal-review",
+  pending: "border-pill-amber-border bg-pill-amber-bg text-pill-amber-text",
+  approved: "border-pill-green-border bg-pill-green-bg text-pill-green-text",
+  rejected: "border-pill-red-border bg-pill-red-bg text-pill-red-text",
+  changes_requested: "border-pill-amber-border bg-pill-amber-bg text-pill-amber-text",
 };
 
 /** The two decisions that send a transaction back, and therefore need a stated reason. */
@@ -77,9 +77,9 @@ export const RISK_LABELS: Record<string, string> = {
 };
 
 export const RISK_CHIP: Record<string, string> = {
-  clean: "border-signal-confident/35 bg-signal-confident/10 text-signal-confident",
-  watch: "border-signal-review/35 bg-signal-review/10 text-signal-review",
-  elevated: "border-signal-blocked/35 bg-signal-blocked/10 text-signal-blocked",
+  clean: "border-pill-green-border bg-pill-green-bg text-pill-green-text",
+  watch: "border-pill-amber-border bg-pill-amber-bg text-pill-amber-text",
+  elevated: "border-pill-red-border bg-pill-red-bg text-pill-red-text",
 };
 
 /**
@@ -122,8 +122,8 @@ export function ageBand(hours: number, thresholdHours: number): AgeBand {
 
 export const AGE_CHIP: Record<AgeBand, string> = {
   fresh: "border-border bg-muted text-muted-foreground",
-  warm: "border-signal-review/35 bg-signal-review/10 text-signal-review",
-  breached: "border-signal-blocked/35 bg-signal-blocked/10 text-signal-blocked",
+  warm: "border-pill-amber-border bg-pill-amber-bg text-pill-amber-text",
+  breached: "border-pill-red-border bg-pill-red-bg text-pill-red-text",
 };
 
 /** Whole hours below a day, then whole days. An exception's age is read at a glance or not at all. */

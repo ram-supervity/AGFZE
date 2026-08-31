@@ -217,7 +217,7 @@ export function ManualUpdateForm({ shipment, saving, onSave }: ManualUpdateFormP
         </div>
       </div>
 
-      <fieldset className="space-y-3 rounded-md border border-border bg-surface p-4">
+      <fieldset className="space-y-3 rounded-medium border-thin border-border bg-elevation-sunken p-4">
         <legend className="px-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
           Bill of lading
         </legend>

@@ -14,28 +14,32 @@ export function Providers({ children, session }: ProvidersProps) {
   return (
     <SessionProvider session={session}>
       {children}
+      {/* Toasts sit on the top layer of the CCDS stacking scale - above modals and popovers,
+          because a confirmation that a dialog covered is a confirmation nobody got. */}
       <Toaster
         position="top-right"
+        containerStyle={{ zIndex: 700 }}
         toastOptions={{
           duration: 5000,
           style: {
-            background: "hsl(var(--card))",
-            color: "hsl(var(--card-foreground))",
-            border: "1px solid hsl(var(--border))",
+            background: "hsl(var(--elevation-surface-overlay))",
+            color: "hsl(var(--color-text-default))",
+            border: "1px solid hsl(var(--color-border-default))",
             borderRadius: "var(--radius)",
-            fontSize: "0.875rem",
-            boxShadow: "0 8px 24px -12px hsl(var(--primary) / 0.35)",
+            fontSize: "14px",
+            lineHeight: "20px",
+            boxShadow: "var(--shadow-raised)",
           },
           success: {
             iconTheme: {
-              primary: "hsl(var(--secondary))",
-              secondary: "hsl(var(--secondary-foreground))",
+              primary: "hsl(var(--color-background-success-bold))",
+              secondary: "hsl(var(--color-text-inverse))",
             },
           },
           error: {
             iconTheme: {
-              primary: "hsl(var(--destructive))",
-              secondary: "hsl(var(--destructive-foreground))",
+              primary: "hsl(var(--color-background-danger-bold))",
+              secondary: "hsl(var(--color-text-inverse))",
             },
           },
         }}

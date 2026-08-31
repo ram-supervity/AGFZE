@@ -186,7 +186,7 @@ describe("DashboardView", () => {
   it("shows a real zero rather than dropping the tile", () => {
     // An absent tile and an empty queue look identical, and only one of them means anything.
     const { getByText } = render(<DashboardView summary={summary()} stream="" />);
-    const tile = getByText("Approved without an exception").closest("div.rounded-lg") as HTMLElement;
+    const tile = getByText("Approved without an exception").closest("div.rounded-medium") as HTMLElement;
     expect(within(tile).getByText("0%")).toBeInTheDocument();
   });
 

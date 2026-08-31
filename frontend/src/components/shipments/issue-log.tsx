@@ -62,7 +62,7 @@ export function IssueLog({
           {issues.map((issue) => (
             <li
               key={issue.id}
-              className="space-y-1.5 rounded-md border border-border bg-surface px-3 py-2.5"
+              className="space-y-1.5 rounded-medium border-thin border-border bg-elevation-sunken px-3 py-2.5"
             >
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="muted">
@@ -75,7 +75,7 @@ export function IssueLog({
                 {issue.resolved_at ? (
                   <Badge
                     variant="outline"
-                    className="border-signal-confident/35 bg-signal-confident/10 text-signal-confident"
+                    className="border-pill-green-border bg-pill-green-bg text-pill-green-text"
                   >
                     Resolved
                   </Badge>

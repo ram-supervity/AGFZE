@@ -361,6 +361,42 @@ def draft_bl_rule_exception_mapping() -> list[dict[str, Any]]:
     ]
 
 
+def purchase_bundle_rule_exception_mappings() -> list[dict[str, Any]]:
+    """PR-01's two routing rows, and the whole of what routing its failures required.
+
+    Both belong to the buying desk, because both are answered by going back to the supplier: a
+    missing weight slip is chased, and a contract that turned up on an intake is filed against
+    the deal it actually belongs to. Neither is a finance or a logistics question.
+
+    The purity failure is `unmatched_reference` rather than a category of its own: a document on
+    a purchase intake that a purchase intake never carries is, precisely, a document nobody has
+    established the deal for.
+    """
+    return [
+        _mapping(
+            RuleId.PR_01,
+            CheckKey.PURCHASE_BUNDLE_COMPLETE,
+            ExceptionCategory.MISSING_MANDATORY_DOCUMENT.value,
+            PlatformRole.PURCHASE_USER.value,
+            ExceptionPriority.HIGH.value,
+            "A purchase deal arrives as three documents - the supplier's invoice, the packing "
+            "list and the weight slip. One of them has not arrived, so nothing is generated for "
+            "this deal and no Loading Sheet row is written until it does.",
+        ),
+        _mapping(
+            RuleId.PR_01,
+            CheckKey.PURCHASE_BUNDLE_PURITY,
+            ExceptionCategory.UNMATCHED_REFERENCE.value,
+            PlatformRole.PURCHASE_USER.value,
+            ExceptionPriority.MEDIUM.value,
+            "Something a purchase bundle never carries arrived on a purchase intake. The "
+            "purchase contract in particular is written by this platform out of the confirmed "
+            "figures, so one received inbound belongs to another deal or is a draft come back "
+            "round, and a person establishes which.",
+        ),
+    ]
+
+
 def obl_weight_rule_exception_mappings() -> list[dict[str, Any]]:
     """LG-01's single routing row, and the whole of what routing its failures required.
 

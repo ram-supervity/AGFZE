@@ -4,6 +4,7 @@ import { CloudOff, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { Alert } from "@/components/ui/alert";
 import { useOfflineState } from "@/hooks/use-offline-state";
 import { relativeAge } from "@/lib/notifications";
 import { cn } from "@/lib/utils";
@@ -43,17 +44,26 @@ export function OfflineBanner() {
   const age = cachedAt && now ? relativeAge(cachedAt, now) : null;
 
   return (
-    <div
+    <Alert
+      variant={online ? "warning" : "neutral"}
+      icon={CloudOff}
       role="status"
       aria-live="polite"
-      className={cn(
-        "mb-4 flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-md border px-3.5 py-2.5 text-sm",
-        online
-          ? "border-signal-review/35 bg-signal-review/10 text-foreground"
-          : "border-border bg-muted text-foreground",
-      )}
+      className="mb-space-200 flex-wrap items-center gap-x-space-150 gap-y-space-050"
+      action={
+        <button
+          type="button"
+          onClick={() => {
+            setRetrying(true);
+            router.refresh();
+          }}
+          className="inline-flex items-center gap-space-075 rounded-control px-space-100 py-space-050 text-body-sm font-medium text-text-brand transition-colors hover:bg-elevation-hovered focus-visible:outline-none focus-visible:ring-thick focus-visible:ring-ring"
+        >
+          <RefreshCw aria-hidden="true" className={cn("h-3.5 w-3.5", retrying && "animate-spin")} />
+          Try again
+        </button>
+      }
     >
-      <CloudOff aria-hidden="true" className="h-4 w-4 shrink-0 text-muted-foreground" />
       {online ? (
         <span>
           You&rsquo;re viewing cached data{age ? ` from ${age}` : ""} - reconnect to update.
@@ -65,17 +75,6 @@ export function OfflineBanner() {
           you reconnect.
         </span>
       )}
-      <button
-        type="button"
-        onClick={() => {
-          setRetrying(true);
-          router.refresh();
-        }}
-        className="ml-auto inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-secondary hover:bg-background/60"
-      >
-        <RefreshCw aria-hidden="true" className={cn("h-3.5 w-3.5", retrying && "animate-spin")} />
-        Try again
-      </button>
-    </div>
+    </Alert>
   );
 }

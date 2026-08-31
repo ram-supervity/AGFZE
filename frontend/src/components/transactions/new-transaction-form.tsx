@@ -210,9 +210,9 @@ export function NewTransactionForm({ commodities }: { commodities: CommodityCode
               >
                 <span
                   className={cn(
-                    "flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-medium",
+                    "flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-body-xs font-medium",
                     done
-                      ? "bg-signal-confident/15 text-signal-confident"
+                      ? "bg-pill-green-bg text-pill-green-text"
                       : "bg-muted text-muted-foreground",
                   )}
                 >

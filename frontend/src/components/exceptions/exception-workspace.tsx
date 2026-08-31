@@ -135,7 +135,7 @@ export function ExceptionWorkspace({ initial, fields, commodities }: ExceptionWo
         {detail.escalated ? (
           <Badge
             variant="outline"
-            className="border-signal-blocked/35 bg-signal-blocked/10 text-signal-blocked"
+            className="border-pill-red-border bg-pill-red-bg text-pill-red-text"
           >
             Escalated to HOD
           </Badge>
@@ -143,7 +143,7 @@ export function ExceptionWorkspace({ initial, fields, commodities }: ExceptionWo
         {detail.resolved_at ? (
           <Badge
             variant="outline"
-            className="border-signal-confident/35 bg-signal-confident/10 text-signal-confident"
+            className="border-pill-green-border bg-pill-green-bg text-pill-green-text"
           >
             Resolved {formatDateTime(detail.resolved_at)}
           </Badge>
@@ -187,8 +187,8 @@ export function ExceptionWorkspace({ initial, fields, commodities }: ExceptionWo
                   className={cn(
                     "rounded-md border px-3 py-2.5 text-sm",
                     detail.current_evaluation.passed
-                      ? "border-signal-confident/35 bg-signal-confident/10"
-                      : "border-signal-blocked/35 bg-signal-blocked/10",
+                      ? "border-pill-green-border bg-pill-green-bg"
+                      : "border-pill-red-border bg-pill-red-bg",
                   )}
                 >
                   <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
@@ -209,7 +209,7 @@ export function ExceptionWorkspace({ initial, fields, commodities }: ExceptionWo
               </CardHeader>
               <CardContent className="space-y-4 pt-0">
                 {detail.resolve_blocked_reason ? (
-                  <p className="rounded-md border border-signal-review/35 bg-signal-review/10 px-3 py-2 text-sm text-foreground">
+                  <p className="rounded-md border border-pill-amber-border bg-pill-amber-bg px-3 py-2 text-sm text-foreground">
                     {detail.resolve_blocked_reason}
                   </p>
                 ) : null}
@@ -235,7 +235,7 @@ export function ExceptionWorkspace({ initial, fields, commodities }: ExceptionWo
                 </div>
 
                 {detail.transaction_id && editable.length > 0 ? (
-                  <div className="space-y-3 rounded-md border border-border bg-surface p-3">
+                  <div className="space-y-3 rounded-medium border-thin border-border bg-elevation-sunken p-3">
                     <div className="space-y-1.5">
                       <Label htmlFor="exc-field">
                         Correct a field on the transaction (optional)

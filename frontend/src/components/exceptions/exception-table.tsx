@@ -65,14 +65,14 @@ export function ExceptionTable({ queue }: { queue: ExceptionQueue }) {
                       {row.exception_label ?? row.exception_type}
                     </span>
                     {row.rule_id ? (
-                      <Badge variant="muted" className="font-mono text-[10px]">
+                      <Badge variant="muted" className="font-mono text-body-xs">
                         {row.rule_id}
                       </Badge>
                     ) : null}
                     {row.escalated ? (
                       <Badge
                         variant="outline"
-                        className="border-signal-blocked/35 bg-signal-blocked/10 text-signal-blocked"
+                        className="border-pill-red-border bg-pill-red-bg text-pill-red-text"
                       >
                         Escalated to HOD
                       </Badge>

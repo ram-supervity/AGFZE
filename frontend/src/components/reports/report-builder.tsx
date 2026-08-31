@@ -140,7 +140,7 @@ export function ReportBuilder() {
   return (
     <div className="space-y-5">
       <form
-        className="grid gap-4 rounded-lg border border-border bg-card p-5 sm:grid-cols-2 xl:grid-cols-3"
+        className="grid gap-4 rounded-medium border-thin border-border bg-elevation-default shadow-raised p-5 sm:grid-cols-2 xl:grid-cols-3"
         onSubmit={(event) => {
           event.preventDefault();
           void submit();
@@ -265,7 +265,7 @@ export function ReportBuilder() {
         </div>
       ) : null}
 
-      <p className="rounded-md border border-border bg-surface px-4 py-3 text-xs leading-relaxed text-muted-foreground">
+      <p className="rounded-medium border-thin border-border bg-elevation-sunken px-4 py-3 text-xs leading-relaxed text-muted-foreground">
         {note ??
           "The report is generated from the records themselves and stored in the platform. It is not sent to anybody - this platform has no outbound email or notification yet. Every generation produces a new report; an earlier one is never overwritten."}
       </p>

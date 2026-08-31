@@ -123,7 +123,10 @@ export function GenerateDraftPanel({
   }
 
   return (
-    <section className="space-y-4 rounded-lg border border-border bg-card p-4" aria-label="Generate draft">
+    <section
+      className="space-y-space-200 rounded-medium border-thin border-border bg-elevation-default p-space-200 shadow-raised"
+      aria-label="Generate draft"
+    >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <h2 className="text-sm font-semibold text-foreground">{title}</h2>
@@ -164,7 +167,9 @@ export function GenerateDraftPanel({
             {documentNotes[documentType]}
           </p>
         </div>
-        <Button onClick={generate} disabled={!canGenerate || running}>
+        {/* The one AI-forward action on this panel, and the only place the brand gradient
+            appears here - the design system reserves the gradient-text treatment for exactly this. */}
+        <Button variant="ai" onClick={generate} disabled={!canGenerate || running}>
           {running ? "Generating…" : relevantDrafts.length > 0 ? "Generate again" : "Generate draft"}
         </Button>
         {relevantDrafts.length > 0 ? (
@@ -175,7 +180,7 @@ export function GenerateDraftPanel({
       </div>
 
       {!canGenerate && blocker ? (
-        <p className="rounded-md border border-signal-review/35 bg-signal-review/10 px-3 py-2 text-sm text-foreground">
+        <p className="rounded-md border border-pill-amber-border bg-pill-amber-bg px-3 py-2 text-sm text-foreground">
           {blocker}
         </p>
       ) : null}
@@ -194,7 +199,7 @@ export function GenerateDraftPanel({
       ) : null}
 
       {latest ? (
-        <div className="space-y-2 rounded-md border border-border bg-surface p-3">
+        <div className="space-y-2 rounded-medium border-thin border-border bg-elevation-sunken p-3">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div className="flex min-w-0 items-start gap-2.5">
               <FileText

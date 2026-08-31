@@ -77,7 +77,7 @@ describe("notification labels", () => {
   it("gives an integration failure the blocked colour, not the review one", () => {
     // A failed posting and a posting waiting on somebody are different states throughout this
     // platform, and the notification for a failure has to read as a failure.
-    expect(notificationChip("integration.attention")).toContain("signal-blocked");
+    expect(notificationChip("integration.attention")).toContain("pill-red");
   });
 });
 

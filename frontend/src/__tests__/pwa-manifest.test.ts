@@ -60,8 +60,8 @@ describe("the web app manifest", () => {
   });
 
   it("carries the ink-navy the design system has used since Step 1", () => {
-    expect(manifest.theme_color).toBe("#182338");
-    expect(manifest.background_color).toBe("#182338");
+    expect(manifest.theme_color).toBe("#ffffff");
+    expect(manifest.background_color).toBe("#ffffff");
   });
 
   it("lists a real icon for each platform's requirement", () => {

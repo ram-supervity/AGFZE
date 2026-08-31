@@ -121,10 +121,17 @@ def comparable_text(values: dict[str, str | None]) -> str:
 def is_purchase_document(document: Document) -> bool:
     """Whether this document belongs to the purchase pipeline this step matches.
 
-    Category is the primary signal. A scrap-stream invoice or contract whose request was never
-    given a category still counts: the desk classified the stream by hand at upload time, and
-    refusing to match it would leave real work stranded with no explanation.
+    Deal direction is the primary signal where present. A document identified as a purchase
+    document triggers the purchase pipeline. Pure shipping paperwork inherits the direction
+    of the deal it evidences.
     """
+    if is_fa_document(document):
+        return False
+    if document.deal_direction == "purchase":
+        return True
+    if document.deal_direction == "sales" or document.deal_direction == "not_trade":
+        return False
+
     request = document.request
     if request is None:
         return False

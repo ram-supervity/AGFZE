@@ -45,9 +45,12 @@ from app.models.enums import (
     DRAFT_BL_DOCUMENT_TYPES,
     FINAL_BL_DOCUMENT_TYPES,
     SALES_TRIGGER_DOCUMENT_KINDS,
+    BatchNumberSource,
+    DealDirection,
     DocumentType,
     FixationStatus,
     MatchMethod,
+    PriceBasis,
     RequestCategory,
     TransactionStatus,
 )
@@ -105,22 +108,11 @@ class Attachment:
 
 
 def is_sales_document(document: Document) -> bool:
-    """Whether this document is one the sales workflow triggers off.
-
-    Type is the primary signal, because a bill of lading is a bill of lading whatever the mail it
-    arrived on was classified as. A document whose request was explicitly categorised sales
-    counts too, so a shipping confirmation that the classifier typed loosely is not stranded.
-
-    `shipping_document` is the one type that needs a second look, and getting it wrong costs a
-    whole deal. It is the classifier's catch-all for the shipment family, so a packing list, a
-    certificate of origin and a mill test certificate all land on it - and every one of those
-    arrives in the *supplier's* pack, beside the provisional invoice, weeks before there is a
-    sale to trigger. Sending them down the sales route left them attached to nothing: they never
-    joined the purchase batch, so BR-04 could not see them and reported a pack as incomplete
-    while four fifths of it sat one table away. The document's own kind settles it - a bill of
-    lading starts sales work, supporting paperwork does not - and a document whose kind could
-    not be established keeps the old behaviour rather than being reassigned on a guess.
-    """
+    """Whether this document is one the sales workflow triggers off."""
+    if document.deal_direction == "sales":
+        return True
+    if document.deal_direction == "purchase":
+        return False
     if document.document_type in SUPPORTING_PACK_TYPES:
         kinds = tuple(document.document_kinds or ())
         if kinds and not set(kinds).intersection(SALES_TRIGGER_DOCUMENT_KINDS):
@@ -755,3 +747,313 @@ async def require_sales_leg(transaction: TradeTransaction) -> SalesLeg:
             code="sales_leg_absent",
         )
     return transaction.sales_leg
+
+
+def _to_decimal(val: str | None) -> Decimal | None:
+    if val is None:
+        return None
+    try:
+        return Decimal(str(val).strip().replace(",", ""))
+    except Exception:
+        return None
+
+
+async def create_sales_transaction(
+    session: AsyncSession,
+    *,
+    request_id: UUID | None,
+    stream: str = "scrap",
+    batch_number: str | None = None,
+    values: dict[str, str | None],
+    match_method: str = MatchMethod.NEW_BATCH.value,
+    match_score: float | None = None,
+    match_rationale: str | None = None,
+    created_by_id: UUID | None = None,
+    document: Document | None = None,
+) -> TradeTransaction:
+    """Create a standalone TradeTransaction carrying a SalesLeg when no purchase counterpart exists."""
+    stated = (batch_number or values.get("batch_number") or "").strip()
+    number = stated or await transaction_service.next_batch_number(session)
+    batch_source = (
+        BatchNumberSource.DOCUMENT.value if stated else BatchNumberSource.ALLOCATED.value
+    )
+
+    commodity_code, needs_review = await transaction_service.resolve_commodity(
+        session, values.get("commodity_code") or values.get("commodity")
+    )
+    price_basis, lme = transaction_service.infer_price_basis(values)
+
+    transaction = TradeTransaction(
+        transaction_code=number,
+        batch_number=number,
+        batch_number_source=batch_source,
+        stream=stream,
+        status=TransactionStatus.MATCHED.value,
+        commodity_code=commodity_code,
+        extracted_commodity_value=(values.get("commodity_code") or values.get("commodity") or None),
+        commodity_needs_review=needs_review,
+        quantity_mt=_to_decimal(values.get("quantity") or values.get("contracted_quantity")),
+        price_basis=price_basis,
+        lme_percentage=lme,
+        currency=(values.get("currency") or "USD").strip().upper()[:3] or "USD",
+        request_id=request_id or (document.request_id if document else None),
+        match_method=match_method,
+        match_score=Decimal(str(round(match_score, 2))) if match_score is not None else None,
+        match_rationale=match_rationale,
+        created_by_id=created_by_id,
+        field_overrides={},
+    )
+    session.add(transaction)
+    await session.flush()
+
+    customer_name = (
+        values.get("customer_name")
+        or values.get("buyer")
+        or values.get("counterparty")
+        or (document.filename if document else "Customer")
+    )
+    territory = (document.territory if document else None) or values.get("territory") or "other"
+    sales_contract_no = (
+        values.get("sales_contract_no")
+        or values.get("contract_number")
+        or values.get("contract_reference")
+        or number
+    )
+    payment_condition = values.get("payment_condition") or "CAD"
+    fixation_status = (
+        FixationStatus.FIXED.value
+        if values.get("fixation_rate") or price_basis == PriceBasis.FIXED.value
+        else FixationStatus.UNFIXED.value
+    )
+
+    leg = SalesLeg(
+        transaction_id=transaction.id,
+        customer_name=customer_name.strip(),
+        territory=territory,
+        sales_contract_no=sales_contract_no.strip(),
+        contracted_quantity_mt=_to_decimal(values.get("contracted_quantity") or values.get("quantity")),
+        sales_invoice_number=values.get("sales_invoice_number") or values.get("invoice_number"),
+        bl_reference=values.get("bl_reference") or values.get("bl_number"),
+        payment_condition=payment_condition,
+        customer_fixation_status=fixation_status,
+        fixation_rate=_to_decimal(values.get("fixation_rate") or values.get("rate")),
+        fixation_date=transaction_service._parse_date(values.get("fixation_date")),
+        port_of_discharge=values.get("port_of_discharge"),
+        inland_container_depot=values.get("inland_container_depot"),
+        extracted_commodity_value=values.get("commodity_code") or values.get("commodity"),
+    )
+    session.add(leg)
+    await session.flush()
+
+    transaction.sales_leg = leg
+    transaction.purchase_leg = None
+    transaction.fa_leg = None
+    transaction_service._mark_empty_collections(transaction)
+    await session.flush()
+
+    if document is not None:
+        await matching_service.link_document(
+            session,
+            transaction,
+            document,
+            method=match_method,
+            score=match_score,
+            rationale=match_rationale or f"Sales document opened new batch {transaction.batch_number}.",
+            actor_id=created_by_id,
+        )
+
+    matching_service._record_duplicate_outcome(
+        session,
+        transaction.id,
+        passed=True,
+        message="No earlier copy of this document exists, so it opens a new sales batch.",
+        actual="no duplicate found",
+    )
+    await matching_service.ensure_containers(
+        session, transaction, values, document=document, actor_id=created_by_id
+    )
+
+    if transaction.commodity_needs_review:
+        await record_audit_event(
+            session,
+            event_type=transaction_service.AuditEvent.TRANSACTION_COMMODITY_UNRESOLVED,
+            entity_type="trade_transaction",
+            entity_id=transaction.id,
+            actor_id=created_by_id,
+            actor_type=ActorType.AGENT,
+            metadata={
+                "batch_number": transaction.batch_number,
+                "extracted_value": transaction.extracted_commodity_value,
+            },
+        )
+
+    await record_audit_event(
+        session,
+        event_type=transaction_service.AuditEvent.TRANSACTION_CREATED,
+        entity_type="trade_transaction",
+        entity_id=transaction.id,
+        actor_id=created_by_id,
+        actor_type=ActorType.USER if created_by_id else ActorType.AGENT,
+        metadata={
+            "batch_number": transaction.batch_number,
+            "origin": "document_match",
+            "document_id": str(document.id) if document else None,
+            "match_method": match_method,
+            "stream": stream,
+            "leg": "sales",
+        },
+    )
+
+    await record_audit_event(
+        session,
+        event_type=AuditEvent.SALES_LEG_ATTACHED,
+        entity_type="trade_transaction",
+        entity_id=transaction.id,
+        actor_id=created_by_id,
+        actor_type=ActorType.USER if created_by_id else ActorType.AGENT,
+        metadata={
+            "batch_number": transaction.batch_number,
+            "attachment": Attachment.NO_PURCHASE_ACKNOWLEDGED,
+            "customer_name": leg.customer_name,
+            "territory": leg.territory,
+            "sales_contract_no": leg.sales_contract_no,
+            "document_id": str(document.id) if document else None,
+            "standalone_sale": True,
+        },
+    )
+
+    await rule_engine.run_validation(session, transaction)
+    await propagate_coverage(session, transaction, actor_id=created_by_id)
+    return transaction
+
+
+async def on_sales_extraction_confirmed(
+    session: AsyncSession,
+    document: Document,
+    *,
+    actor_id: UUID | None = None,
+) -> matching_service.MatchResult:
+    """Invoked when a sales document extraction is confirmed."""
+    document = await matching_service._reload(session, document.id)
+    values = matching_service.document_values(document)
+
+    if document.transaction_id is not None:
+        transaction = await transaction_service.get_transaction(session, document.transaction_id)
+        return matching_service.MatchResult(
+            outcome=matching_service.Outcome.ALREADY_LINKED,
+            message=f"Already linked to batch {transaction.batch_number}."
+            if transaction
+            else "Already linked to a transaction.",
+            transaction_id=document.transaction_id,
+            batch_number=transaction.batch_number if transaction else None,
+        )
+
+    duplicate, basis = await matching_service.find_duplicate(session, document, values)
+    if duplicate is not None and duplicate.transaction_id is not None:
+        transaction = await transaction_service.get_transaction(session, duplicate.transaction_id)
+        await matching_service.link_document(
+            session,
+            transaction,
+            document,
+            method=MatchMethod.DUPLICATE_LINK.value,
+            score=None,
+            rationale=f"Duplicate of {duplicate.filename} (matched on {basis}).",
+            actor_id=actor_id,
+        )
+        matching_service._record_duplicate_outcome(
+            session,
+            transaction.id,
+            passed=True,
+            message=f"Duplicate of {duplicate.filename}",
+            actual=f"linked to {transaction.batch_number}",
+        )
+        await matching_service.ensure_containers(
+            session, transaction, values, document=document, actor_id=actor_id
+        )
+        await rule_engine.run_validation(session, transaction)
+        return matching_service.MatchResult(
+            outcome=matching_service.Outcome.DUPLICATE_LINKED,
+            message=f"Duplicate of {duplicate.filename}",
+            transaction_id=transaction.id,
+            batch_number=transaction.batch_number,
+        )
+
+    match = await evaluate_attachment(session, document)
+    if match.outcome == matching_service.Outcome.AUTO_LINKED and match.transaction_id is not None:
+        transaction = await transaction_service.get_transaction(session, match.transaction_id)
+        if transaction.sales_leg is None:
+            await attach_sales_leg(
+                session,
+                transaction,
+                SalesLegInput(
+                    customer_name=values.get("customer_name") or values.get("buyer") or values.get("counterparty") or "Customer",
+                    territory=document.territory or "other",
+                    sales_contract_no=values.get("sales_contract_no") or values.get("contract_number") or values.get("contract_reference") or transaction.batch_number,
+                    payment_condition=values.get("payment_condition") or "CAD",
+                    contracted_quantity_mt=_to_decimal(values.get("contracted_quantity") or values.get("quantity")),
+                    sales_invoice_number=values.get("sales_invoice_number") or values.get("invoice_number"),
+                    bl_reference=values.get("bl_reference") or values.get("bl_number"),
+                    port_of_discharge=values.get("port_of_discharge"),
+                    inland_container_depot=values.get("inland_container_depot"),
+                    customer_fixation_status=FixationStatus.FIXED.value if values.get("fixation_rate") else FixationStatus.UNFIXED.value,
+                    fixation_rate=_to_decimal(values.get("fixation_rate") or values.get("rate")),
+                    fixation_date=transaction_service._parse_date(values.get("fixation_date")),
+                    quantity_mt=_to_decimal(values.get("quantity")),
+                ),
+                actor_id=actor_id or UUID("00000000-0000-0000-0000-000000000000"),
+                attachment=Attachment.AUTO_MATCHED,
+                document=document,
+                match_score=match.score,
+            )
+        else:
+            await matching_service.link_document(
+                session,
+                transaction,
+                document,
+                method=match.method or MatchMethod.FUZZY_AUTO.value,
+                score=match.score,
+                rationale=match.message,
+                actor_id=actor_id,
+            )
+            await matching_service.ensure_containers(
+                session, transaction, values, document=document, actor_id=actor_id
+            )
+            await rule_engine.run_validation(session, transaction)
+        return matching_service.MatchResult(
+            outcome=matching_service.Outcome.AUTO_LINKED,
+            message=match.message,
+            transaction_id=transaction.id,
+            batch_number=transaction.batch_number,
+            score=match.score,
+        )
+
+    if match.outcome == matching_service.Outcome.SUGGESTED:
+        return matching_service.MatchResult(
+            outcome=matching_service.Outcome.SUGGESTED,
+            message=match.message,
+            transaction_id=match.transaction_id,
+            batch_number=match.batch_number,
+            score=match.score,
+            candidates=match.candidates,
+        )
+
+    # No purchase match exists -> create standalone sales transaction!
+    transaction = await create_sales_transaction(
+        session,
+        request_id=document.request_id,
+        stream=(document.request.stream if document.request else None) or "scrap",
+        batch_number=values.get("batch_number"),
+        values=values,
+        match_method=match.method or MatchMethod.NEW_BATCH.value,
+        match_score=match.score,
+        match_rationale=match.message,
+        created_by_id=actor_id,
+        document=document,
+    )
+    return matching_service.MatchResult(
+        outcome=matching_service.Outcome.NEW_TRANSACTION,
+        message=f"No open purchase batch matched, so batch {transaction.batch_number} was created with a sales leg.",
+        transaction_id=transaction.id,
+        batch_number=transaction.batch_number,
+        score=match.score,
+    )

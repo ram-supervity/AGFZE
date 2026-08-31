@@ -29,6 +29,7 @@ from sqlalchemy import select
 
 from app.models.enums import LME_LINKED_PRICE_BASES, RuleSeverity
 from app.models.intake import Document
+from app.services.purchase_intake import pack_entry_present
 from app.services.rules.catalog import CheckKey, RuleId
 from app.services.rules.registry import (
     RuleContext,
@@ -124,20 +125,12 @@ def _pack_entry_present(entry: str, documents: list[Document]) -> Document | Non
     vocabulary still resolves, and because an uploader's hint deserves to count. It is last on
     purpose: a supplier who names a scan `IMG_0042.pdf` is not thereby short of a document, and a
     checklist that could only be satisfied by a helpful filename was never really being checked.
+
+    The three signals themselves live in `purchase_intake` now that the buying desk's own bundle
+    is judged by them too. One matcher, so a territory pack and a purchase bundle can never come
+    to disagree about what "present" means.
     """
-    needle = entry.strip().lower()
-    compact = needle.replace("_", "")
-    for document in documents:
-        if needle in (document.document_kinds or ()):
-            return document
-        if document.document_type == needle or document.document_type_hint == needle:
-            return document
-        haystack = document.filename.lower()
-        if needle.replace("_", " ") in haystack or compact in haystack.replace(" ", "").replace(
-            "_", ""
-        ).replace("-", ""):
-            return document
-    return None
+    return pack_entry_present(entry, documents)
 
 
 @register(RuleId.BR_04)
@@ -583,11 +576,13 @@ def similarity(left: str, right: str) -> float:
     return float(fuzz.token_set_ratio(left, right))
 
 
-# Registering the sales, shipment and invoice-dating modules' evaluators. The import is the
-# entire integration: BR-07's real body, SL-01, BR-03 and IV-01 land in the same registry, keyed
-# the same way, and the orchestrator walks them without knowing any of them exists.
+# Registering the sales, shipment, invoice-dating and purchase-intake modules' evaluators. The
+# import is the entire integration: BR-07's real body, SL-01, BR-03, IV-01 and PR-01 land in the
+# same registry, keyed the same way, and the orchestrator walks them without knowing any of them
+# exists.
 from app.services.rules import (  # noqa: E402,F401
     invoice_evaluators,
     logistics_evaluators,
+    purchase_evaluators,
     sales_evaluators,
 )

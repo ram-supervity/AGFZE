@@ -1,5 +1,6 @@
 import { TriangleAlert } from "lucide-react";
 
+import { Alert } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
 
 /**
@@ -15,19 +16,14 @@ export const AI_DISCLAIMER_TEXT =
 
 export function AiDisclaimer({ className }: { className?: string }) {
   return (
-    <aside
+    <Alert
+      variant="warning"
+      icon={TriangleAlert}
       role="note"
       aria-label="AI accuracy notice"
-      className={cn(
-        "flex items-start gap-3 rounded-md border border-signal-review/35 bg-signal-review/10 px-4 py-3",
-        className,
-      )}
+      className={cn(className)}
     >
-      <TriangleAlert
-        aria-hidden="true"
-        className="mt-0.5 h-4 w-4 shrink-0 text-signal-review"
-      />
-      <p className="text-sm leading-relaxed text-foreground">{AI_DISCLAIMER_TEXT}</p>
-    </aside>
+      {AI_DISCLAIMER_TEXT}
+    </Alert>
   );
 }

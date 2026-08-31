@@ -12,13 +12,13 @@ describe("ConfidenceBadge", () => {
 
   it("tints itself from the traffic-light triad", () => {
     const confident = render(<ConfidenceBadge label="Invoice" confidence={0.95} />);
-    expect(confident.container.innerHTML).toContain("signal-confident");
+    expect(confident.container.innerHTML).toContain("pill-green");
 
     const review = render(<ConfidenceBadge label="Invoice" confidence={0.78} />);
-    expect(review.container.innerHTML).toContain("signal-review");
+    expect(review.container.innerHTML).toContain("pill-amber");
 
     const blocked = render(<ConfidenceBadge label="Invoice" confidence={0.4} />);
-    expect(blocked.container.innerHTML).toContain("signal-blocked");
+    expect(blocked.container.innerHTML).toContain("pill-red");
   });
 
   it("says there is no score rather than implying a low one", () => {

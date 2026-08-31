@@ -68,7 +68,7 @@ export function ManualCompletionDialog({
         </div>
 
         {job?.manual_instruction ? (
-          <p className="rounded-md border border-border bg-surface px-3 py-2 text-sm text-muted-foreground">
+          <p className="rounded-medium border-thin border-border bg-elevation-sunken px-3 py-2 text-sm text-muted-foreground">
             {job.manual_instruction}
           </p>
         ) : null}

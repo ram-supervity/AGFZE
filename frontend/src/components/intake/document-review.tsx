@@ -190,7 +190,7 @@ export function DocumentReview({
         {confirmed ? (
           <Badge
             variant="outline"
-            className="border-signal-confident/35 bg-signal-confident/10 text-signal-confident"
+            className="border-pill-green-border bg-pill-green-bg text-pill-green-text"
           >
             Confirmed {formatDateTime(detail.confirmed_at)}
             {detail.confirmed_by_name ? ` by ${detail.confirmed_by_name}` : ""}
@@ -199,7 +199,7 @@ export function DocumentReview({
         {unresolved > 0 ? (
           <Badge
             variant="outline"
-            className="border-signal-review/35 bg-signal-review/10 text-signal-review"
+            className="border-pill-amber-border bg-pill-amber-bg text-pill-amber-text"
           >
             {unresolved} conflicting field{unresolved === 1 ? "" : "s"}
           </Badge>
@@ -207,7 +207,7 @@ export function DocumentReview({
       </div>
 
       {jobProgress !== null ? (
-        <div className="space-y-1.5 rounded-md border border-border bg-surface p-4">
+        <div className="space-y-1.5 rounded-medium border-thin border-border bg-elevation-sunken p-4">
           <p className="text-sm text-foreground">
             Re-running extraction against the new document type&apos;s schema…
           </p>
@@ -228,7 +228,7 @@ export function DocumentReview({
       ) : null}
 
       {detail.extraction_error ? (
-        <p className="rounded-md border border-signal-blocked/35 bg-signal-blocked/10 px-4 py-3 text-sm text-foreground">
+        <p className="rounded-md border border-pill-red-border bg-pill-red-bg px-4 py-3 text-sm text-foreground">
           {detail.extraction_error}
         </p>
       ) : null}
@@ -293,7 +293,7 @@ export function DocumentReview({
           )}
 
           {detail.mandatory_documents.length > 0 ? (
-            <section className="space-y-2 rounded-md border border-border bg-surface p-4">
+            <section className="space-y-2 rounded-medium border-thin border-border bg-elevation-sunken p-4">
               <h2 className="text-sm font-semibold text-foreground">
                 Document pack for {labelFor(TERRITORY_LABELS, detail.territory)}
               </h2>

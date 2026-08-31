@@ -58,13 +58,13 @@ export function MatchingPanel({ detail }: { detail: TransactionDetail }) {
       </dl>
 
       {detail.match_rationale ? (
-        <p className="rounded-md border border-border bg-surface px-3 py-2 text-sm leading-relaxed text-muted-foreground">
+        <p className="rounded-medium border-thin border-border bg-elevation-sunken px-3 py-2 text-sm leading-relaxed text-muted-foreground">
           {detail.match_rationale}
         </p>
       ) : null}
 
       {detail.commodity_needs_review ? (
-        <p className="rounded-md border border-signal-review/35 bg-signal-review/10 px-3 py-2 text-sm text-foreground">
+        <p className="rounded-md border border-pill-amber-border bg-pill-amber-bg px-3 py-2 text-sm text-foreground">
           The grade read from the document
           {detail.extracted_commodity_value
             ? ` - "${detail.extracted_commodity_value}" - `
@@ -88,7 +88,7 @@ export function MatchingPanel({ detail }: { detail: TransactionDetail }) {
               <li key={document.id}>
                 <Link
                   href={`/documents/${document.id}`}
-                  className="flex items-start gap-3 rounded-md border border-border bg-surface px-3 py-2 transition-colors hover:border-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="flex items-start gap-3 rounded-medium border-thin border-border bg-elevation-sunken px-3 py-2 transition-colors hover:border-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <FileText
                     className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground"

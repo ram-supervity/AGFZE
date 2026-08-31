@@ -78,7 +78,7 @@ export function RuleEditDialog({ row, open, onOpenChange, saving, onSave }: Rule
           </DialogDescription>
         </div>
 
-        <dl className="grid grid-cols-2 gap-3 rounded-md border border-border bg-surface px-3 py-2.5 text-sm">
+        <dl className="grid grid-cols-2 gap-3 rounded-medium border-thin border-border bg-elevation-sunken px-3 py-2.5 text-sm">
           <div>
             <dt className="text-xs uppercase tracking-wide text-muted-foreground">Scope</dt>
             <dd className="text-foreground">{scopeLabel(row)}</dd>

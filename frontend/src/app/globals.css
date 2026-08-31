@@ -2,105 +2,403 @@
 @tailwind components;
 @tailwind utilities;
 
+/**
+ * Adani Command Center Design System (CCDS) token layer.
+ *
+ * Three tiers, in the order the design system defines them: primitives (`--ccds-*`) are the raw
+ * ramps and nothing may consume them directly; semantic tokens (`--color-*`, `--elevation-*`,
+ * `--pill-*`) are what components bind to; the shadcn-era aliases at the bottom are kept as thin
+ * pointers at the semantic layer so existing screens keep working without a class rewrite.
+ *
+ * Every value is stored as HSL channels rather than the hex the Figma handoff quotes, because
+ * Tailwind's `/opacity` modifier needs channels to compose against. The hex each one came from is
+ * in the handoff table; do not edit a value here without changing it there too.
+ */
+
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 219 40% 16%;
-    --card: 0 0% 100%;
-    --card-foreground: 219 40% 16%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 219 40% 16%;
-    --primary: 219 40% 16%; /* #182338 ink navy */
-    --primary-foreground: 210 33% 96%;
-    --secondary: 208 31% 35%; /* #3E5C76 steel blue */
-    --secondary-foreground: 0 0% 100%;
-    --accent: 21 52% 43%; /* #A75D35 copper */
-    --accent-foreground: 0 0% 100%;
-    --muted: 214 24% 95%;
-    --muted-foreground: 214 14% 42%;
-    --border: 214 22% 88%;
-    --input: 214 22% 88%;
-    --ring: 21 52% 43%;
-    --destructive: 5 53% 42%; /* #A23B32 */
-    --destructive-foreground: 0 0% 100%;
-    --surface: 214 30% 98%;
-    --surface-foreground: 219 40% 16%;
-    --sidebar: 219 40% 16%;
-    --sidebar-foreground: 210 25% 82%;
-    --sidebar-muted: 214 16% 58%;
-    --sidebar-active: 21 52% 43%;
-    --sidebar-border: 219 32% 24%;
-    --signal-confident: 152 39% 30%; /* #2F6B4F */
-    --signal-review: 42 70% 34%; /* #95701A */
-    --signal-blocked: 5 53% 42%; /* #A23B32 */
-    --radius: 0.375rem; /* 6px */
+    /* ---- Primitives: "Design Tokens" collection. Never referenced from a component. ---- */
+    --ccds-gray-50: 210 20% 98%;
+    --ccds-gray-100: 220 14.3% 95.9%;
+    --ccds-gray-200: 220 13% 91%;
+    --ccds-gray-300: 216 12.2% 83.9%;
+    --ccds-gray-400: 218 10.6% 64.9%;
+    --ccds-gray-500: 220 8.9% 46.1%;
+    --ccds-gray-600: 215 13.8% 34.1%;
+    --ccds-gray-700: 217 19.1% 26.7%;
+    --ccds-gray-800: 215 27.9% 16.9%;
+    --ccds-gray-900: 221 39.3% 11%;
+    --ccds-gray-950: 224 71.4% 4.1%;
+    --ccds-gray-1000: 218 80% 2%;
 
-    /* Chart palette, added with the dashboard in Step 8.
-       Two ramps, and they do different jobs. The categorical slots carry identity - two or three
-       series that are not ordered, assigned in this fixed order and never cycled. The ordinal
-       ramp carries a sequence: the lifecycle phases a transaction moves through, light for the
-       earliest and dark for the last.
-       Both were validated for colour-vision deficiency separation and for contrast against the
-       surface they are drawn on, in this mode and in dark mode separately - the dark values below
-       are their own steps, not an automatic flip. Do not substitute a value here without
-       re-validating the set. The signal triad above stays reserved for confidence and validation
-       state and is never used as a series colour. */
-    --chart-1: 213 68% 50%; /* #2a78d6 */
-    --chart-2: 17 82% 56%; /* #eb6834 */
-    --chart-3: 161 74% 40%; /* #1baf7a */
-    --chart-4: 41 100% 46%; /* #eda100 */
-    --chart-phase-1: 213 76% 67%; /* #6da7ec */
-    --chart-phase-2: 213 77% 56%; /* #3987e5 */
-    --chart-phase-3: 213 68% 44%; /* #256abf */
-    --chart-phase-4: 214 72% 34%; /* #184f95 */
-    --chart-phase-5: 214 78% 23%; /* #0d366b */
-    --chart-grid: 214 22% 88%;
+    --ccds-stone-100: 60 4.8% 95.9%;
+    --ccds-stone-200: 20 5.9% 90%;
+    --ccds-stone-300: 24 5.7% 82.9%;
+    --ccds-stone-400: 27 5.8% 62.9%;
+    --ccds-stone-500: 26 6.1% 44.7%;
+    --ccds-stone-600: 36 6.1% 32.2%;
+    --ccds-stone-700: 33 7.1% 24.9%;
+    --ccds-stone-800: 12 6.5% 15.1%;
+    --ccds-stone-900: 24 9.8% 10%;
+    --ccds-stone-950: 20 14.3% 4.1%;
+
+    /* Purple carries the brand. 600 is the confirmed #4f39f5 the gradient starts on, 500 the
+       confirmed #615fff behind `information-bold`. */
+    --ccds-purple-50: 226 100% 96.7%;
+    --ccds-purple-100: 226 100% 93.9%;
+    --ccds-purple-200: 227 100% 88.8%;
+    --ccds-purple-300: 230 100% 82%;
+    --ccds-purple-400: 235 100% 74.3%;
+    --ccds-purple-500: 241 100% 68.6%;
+    --ccds-purple-600: 247 90.4% 59.2%;
+    --ccds-purple-700: 248 68% 51%;
+    --ccds-purple-800: 246 60.7% 42%;
+    --ccds-purple-900: 243 50.3% 34.7%;
+    --ccds-purple-950: 245 49.5% 20.2%;
+    --ccds-purple-1000: 244 54.7% 14.7%;
+
+    /* Pink 600 is the confirmed #cc3478 the brand gradient ends on. */
+    --ccds-pink-50: 327 73.3% 97.1%;
+    --ccds-pink-100: 334 77.8% 94.7%;
+    --ccds-pink-200: 334 84.6% 89.8%;
+    --ccds-pink-300: 336 85.1% 81.6%;
+    --ccds-pink-400: 336 83.1% 69.8%;
+    --ccds-pink-500: 336 71.6% 58.6%;
+    --ccds-pink-600: 333 59.8% 50.2%;
+    --ccds-pink-700: 333 62.3% 40.6%;
+    --ccds-pink-800: 334 59.5% 33.9%;
+    --ccds-pink-900: 334 55.7% 29.2%;
+    --ccds-pink-950: 334 64.3% 16.5%;
+
+    /* Red 600 is the confirmed #d70000 behind `danger-bold`. */
+    --ccds-red-50: 0 85.7% 97.3%;
+    --ccds-red-100: 0 100% 94.3%;
+    --ccds-red-200: 0 100% 89.4%;
+    --ccds-red-300: 0 100% 81.8%;
+    --ccds-red-400: 359 100% 69.6%;
+    --ccds-red-500: 357 96.3% 57.8%;
+    --ccds-red-600: 0 100% 42.2%;
+    --ccds-red-700: 0 100% 35.1%;
+    --ccds-red-800: 356 91.6% 32.5%;
+    --ccds-red-900: 359 68.8% 30.2%;
+    --ccds-red-950: 359 79.5% 15.3%;
+
+    --ccds-green-50: 138 76.5% 96.7%;
+    --ccds-green-100: 141 84.2% 92.5%;
+    --ccds-green-200: 141 81.8% 84.9%;
+    --ccds-green-300: 143 80.8% 71.4%;
+    --ccds-green-400: 150 95.6% 44.7%;
+    --ccds-green-500: 144 100% 39.4%;
+    --ccds-green-600: 142 100% 32.5%;
+    --ccds-green-700: 145 100% 25.5%;
+    --ccds-green-800: 148 98.1% 20.2%;
+    --ccds-green-900: 145 73.2% 19%;
+    --ccds-green-950: 145 87.8% 9.6%;
+
+    /* Amber 50/800 are the confirmed #fffbeb / #92400e of the "Need Review" status pill. */
+    --ccds-amber-50: 48 100% 96.1%;
+    --ccds-amber-100: 48 96.6% 88.6%;
+    --ccds-amber-200: 48 98.4% 75.9%;
+    --ccds-amber-300: 47 100% 59.4%;
+    --ccds-amber-400: 44 100% 50%;
+    --ccds-amber-500: 36 100% 49.8%;
+    --ccds-amber-600: 30 100% 44.1%;
+    --ccds-amber-700: 25 100% 36.7%;
+    --ccds-amber-800: 23 82.5% 31.4%;
+    --ccds-amber-900: 23 90.7% 25.3%;
+    --ccds-amber-950: 21 97.2% 13.9%;
+
+    --ccds-blue-50: 214 100% 96.9%;
+    --ccds-blue-100: 214 94.6% 92.7%;
+    --ccds-blue-200: 213 100% 87.3%;
+    --ccds-blue-300: 211 100% 77.8%;
+    --ccds-blue-400: 212 100% 65.9%;
+    --ccds-blue-500: 216 100% 58.4%;
+    --ccds-blue-600: 221 97.5% 53.5%;
+    --ccds-blue-700: 225 84% 49%;
+    --ccds-blue-800: 227 76.1% 41%;
+    --ccds-blue-900: 225 67.1% 33.3%;
+    --ccds-blue-950: 227 59.3% 21.2%;
+
+    /* Reserved for charts and dark surfaces, per the ramp's own description. */
+    --ccds-darkblue-300: 213 49% 52.4%;
+    --ccds-darkblue-400: 214 53.1% 44.3%;
+    --ccds-darkblue-500: 216 58.2% 34.7%;
+    --ccds-darkblue-600: 216 60.9% 27.1%;
+    --ccds-darkblue-700: 216 62.4% 19.8%;
+
+    /* ---- Semantic: "Semantic colors" collection. This is what components bind to. ---- */
+    --color-text-default: 224 71.4% 4.1%;
+    --color-text-subtle: 220 8.9% 46.1%;
+    --color-text-inverse: 0 0% 100%;
+    --color-text-brand: 247 90.4% 59.2%;
+    --color-text-danger: 356 91.6% 32.5%;
+    --color-text-success: 148 98.1% 20.2%;
+    --color-text-warning: 23 82.5% 31.4%;
+    --color-link-default: 247 90.4% 59.2%;
+
+    --color-icon-default: 215 13.8% 34.1%;
+    --color-icon-subtle: 218 10.6% 64.9%;
+    --color-icon-inverse: 0 0% 100%;
+    --color-icon-brand: 247 90.4% 59.2%;
+    --color-icon-danger: 0 100% 42.2%;
+    --color-icon-success: 142 100% 32.5%;
+    --color-icon-warning: 30 100% 44.1%;
+
+    --color-border-default: 220 13% 91%;
+    --color-border-bold: 216 12.2% 83.9%;
+    --color-border-brand: 247 90.4% 59.2%;
+    --color-border-danger: 0 100% 89.4%;
+    --color-border-success: 141 81.8% 84.9%;
+    --color-border-warning: 48 98.4% 75.9%;
+
+    --color-background-surface-default: 0 0% 100%;
+    --color-background-neutral: 220 14.3% 95.9%;
+    --color-background-neutral-bold: 220 13% 91%;
+    --color-background-input: 0 0% 100%;
+    --color-background-disabled: 220 14.3% 95.9%;
+    --color-background-selected: 226 100% 96.7%;
+    --color-background-brand-bold: 247 90.4% 59.2%;
+    --color-background-danger: 0 85.7% 97.3%;
+    --color-background-danger-bold: 0 100% 42.2%;
+    --color-background-warning: 48 100% 96.1%;
+    --color-background-warning-bold: 30 100% 44.1%;
+    --color-background-success: 138 76.5% 96.7%;
+    --color-background-success-bold: 142 100% 32.5%;
+    --color-background-information: 226 100% 96.7%;
+    --color-background-information-bold: 241 100% 68.6%;
+    --color-background-discovery: 250 100% 97.6%;
+
+    --elevation-surface-default: 0 0% 100%;
+    --elevation-surface-sunken: 210 20% 98%;
+    --elevation-surface-raised: 0 0% 100%;
+    --elevation-surface-raised-hovered: 210 20% 98%;
+    --elevation-surface-raised-pressed: 220 14.3% 95.9%;
+    --elevation-surface-overlay: 0 0% 100%;
+    --elevation-surface-overlay-hovered: 210 20% 98%;
+    --elevation-surface-overlay-pressed: 220 14.3% 95.9%;
+    --elevation-surface-hovered: 220 14.3% 95.9%;
+    --elevation-surface-pressed: 220 13% 91%;
+
+    /* The thirteen-hue status palette. Categorical only: a hue here means "a different kind of
+       thing", never "worse" or "better" - meaning is carried by the semantic families above. */
+    --pill-purple-bg: 226 100% 96.7%;
+    --pill-purple-text: 246 60.7% 42%;
+    --pill-purple-border: 227 100% 88.8%;
+    --pill-pink-bg: 327 73.3% 97.1%;
+    --pill-pink-text: 334 59.5% 33.9%;
+    --pill-pink-border: 334 84.6% 89.8%;
+    --pill-blue-bg: 214 100% 96.9%;
+    --pill-blue-text: 227 76.1% 41%;
+    --pill-blue-border: 213 100% 87.3%;
+    --pill-sky-bg: 204 100% 97.1%;
+    --pill-sky-text: 201 96.5% 22.4%;
+    --pill-sky-border: 201 97.2% 85.9%;
+    --pill-red-bg: 0 85.7% 97.3%;
+    --pill-red-text: 356 91.6% 32.5%;
+    --pill-red-border: 0 100% 89.4%;
+    --pill-mint-bg: 152 81% 95.9%;
+    --pill-mint-text: 163 88.1% 19.8%;
+    --pill-mint-border: 152 78.4% 80%;
+    --pill-teal-bg: 166 76.5% 96.7%;
+    --pill-teal-text: 177 100% 18.6%;
+    --pill-teal-border: 168 85.8% 77.8%;
+    --pill-cyan-bg: 183 100% 96.3%;
+    --pill-cyan-text: 192 100% 23.5%;
+    --pill-cyan-border: 186 95.8% 81.4%;
+    --pill-rose-bg: 356 100% 97.3%;
+    --pill-rose-text: 356 91.6% 32.5%;
+    --pill-rose-border: 352 100% 90%;
+    --pill-amber-bg: 48 100% 96.1%;
+    --pill-amber-text: 23 82.5% 31.4%;
+    --pill-amber-border: 48 98.4% 75.9%;
+    --pill-green-bg: 138 76.5% 96.7%;
+    --pill-green-text: 148 98.1% 20.2%;
+    --pill-green-border: 141 81.8% 84.9%;
+    --pill-yellow-bg: 55 91.7% 95.3%;
+    --pill-yellow-text: 33 100% 26.9%;
+    --pill-yellow-border: 53 100% 76.1%;
+    --pill-orange-bg: 33 100% 96.5%;
+    --pill-orange-text: 16 82.6% 27.1%;
+    --pill-orange-border: 32 100% 82.9%;
+
+    /* ---- Non-colour foundations ---- */
+    --radius: 0.5rem; /* radius.medium */
+    --radius-control: 0.375rem; /* the button/input/pill override */
+    --brand-gradient: linear-gradient(99.4deg, hsl(var(--ccds-purple-600)) 0%, hsl(var(--ccds-pink-600)) 99.9%);
+    --shadow-raised: 0px 4px 12px 0px rgb(0 0 0 / 0.03);
+    --opacity-hover: 0.08;
+    --opacity-pressed: 0.12;
+    --opacity-disabled: 0.4;
+    --opacity-loading: 0.6;
+    --opacity-scrim: 0.5;
+
+    /* ---- Charts ----
+       Two ramps doing different jobs, both drawn from the status palette so a series colour can
+       never collide with a semantic one. The categorical slots carry identity for unordered
+       series and are assigned in this fixed order, never cycled. The phase ramp carries sequence
+       and is the Dark Blue ramp the design system reserves for exactly that. Both were checked
+       for colour-vision-deficiency separation and for contrast against the surface they sit on,
+       in each mode separately - the dark values are their own steps, not a flip. */
+    --chart-1: 221 97.5% 53.5%;
+    --chart-2: 30 100% 44.1%;
+    --chart-3: 175 100% 29.4%;
+    --chart-4: 333 59.8% 50.2%;
+    --chart-phase-1: 211 100% 77.8%;
+    --chart-phase-2: 213 49% 52.4%;
+    --chart-phase-3: 216 58.2% 34.7%;
+    --chart-phase-4: 216 60.9% 27.1%;
+    --chart-phase-5: 216 62.4% 19.8%;
+    --chart-grid: 220 13% 91%;
+
+    /* ---- Aliases. Pointers at the semantic layer, so screens written against the previous
+       vocabulary keep resolving to CCDS values rather than to a second palette. ---- */
+    --background: var(--color-background-surface-default);
+    --foreground: var(--color-text-default);
+    --card: var(--elevation-surface-default);
+    --card-foreground: var(--color-text-default);
+    --popover: var(--elevation-surface-overlay);
+    --popover-foreground: var(--color-text-default);
+    --primary: var(--color-background-brand-bold);
+    --primary-foreground: var(--color-text-inverse);
+    --secondary: var(--color-background-information-bold);
+    --secondary-foreground: var(--color-text-inverse);
+    --accent: var(--color-text-brand);
+    --accent-foreground: var(--color-text-inverse);
+    --muted: var(--color-background-neutral);
+    --muted-foreground: var(--color-text-subtle);
+    --border: var(--color-border-default);
+    --input: var(--color-border-default);
+    --ring: var(--color-border-brand);
+    --destructive: var(--color-background-danger-bold);
+    --destructive-foreground: var(--color-text-inverse);
+    --surface: var(--elevation-surface-sunken);
+    --surface-foreground: var(--color-text-default);
+
+    /* The Menu Bar is a light panel in CCDS, not a dark rail: it reads as a surface of the same
+       workbench as the detail pane beside it. */
+    --sidebar: var(--elevation-surface-default);
+    --sidebar-foreground: var(--color-text-default);
+    --sidebar-muted: var(--color-text-subtle);
+    --sidebar-active: var(--color-border-brand);
+    --sidebar-border: var(--color-border-default);
+
+    /* The confidence triad: green at or above 0.9, amber from 0.7, red below. Semantic meaning
+       only - never decoration, and never a chart series. */
+    --signal-confident: var(--color-text-success);
+    --signal-review: var(--color-text-warning);
+    --signal-blocked: var(--color-background-danger-bold);
   }
 
-  /* The signal triad (--signal-confident / --signal-review / --signal-blocked) carries the
-     confidence banding introduced with intake: green at or above 0.9, amber from 0.7, red
-     below 0.7. Use it only for confidence and validation state, never for decoration. */
-
+  /* Dark is an extension of the system rather than something the Figma file publishes: the
+     semantic names are identical and only their bound values move, which is what keeps a single
+     component definition correct in both. */
   .dark {
-    --background: 219 32% 10%;
-    --foreground: 210 25% 92%;
-    --card: 219 30% 13%;
-    --card-foreground: 210 25% 92%;
-    --popover: 219 30% 13%;
-    --popover-foreground: 210 25% 92%;
-    --primary: 210 25% 92%;
-    --primary-foreground: 219 40% 16%;
-    --secondary: 208 28% 46%;
-    --secondary-foreground: 219 40% 12%;
-    --accent: 21 56% 55%;
-    --accent-foreground: 219 40% 12%;
-    --muted: 219 26% 18%;
-    --muted-foreground: 214 14% 66%;
-    --border: 219 24% 22%;
-    --input: 219 24% 22%;
-    --ring: 21 56% 55%;
-    --destructive: 5 55% 55%;
-    --destructive-foreground: 219 40% 12%;
-    --surface: 219 30% 13%;
-    --surface-foreground: 210 25% 92%;
-    --sidebar: 219 36% 12%;
-    --sidebar-foreground: 210 22% 80%;
-    --sidebar-muted: 214 14% 55%;
-    --sidebar-active: 21 56% 55%;
-    --sidebar-border: 219 26% 20%;
-    --signal-confident: 152 34% 45%;
-    --signal-review: 42 62% 50%;
-    --signal-blocked: 5 55% 58%;
-    --chart-1: 213 77% 56%; /* #3987e5 */
-    --chart-2: 17 71% 50%; /* #d95926 */
-    --chart-3: 161 73% 36%; /* #199e70 */
-    --chart-4: 39 100% 39%; /* #c98500 */
-    --chart-phase-1: 213 71% 39%; /* #1c5cab */
-    --chart-phase-2: 213 68% 50%; /* #2a78d6 */
-    --chart-phase-3: 213 76% 62%; /* #5598e7 */
-    --chart-phase-4: 213 74% 73%; /* #86b6ef */
-    --chart-phase-5: 213 76% 84%; /* #b7d3f6 */
-    --chart-grid: 219 24% 26%;
+    --color-text-default: 210 20% 98%;
+    --color-text-subtle: 218 10.6% 64.9%;
+    --color-text-inverse: 224 71.4% 4.1%;
+    --color-text-brand: 230 100% 82%;
+    --color-text-danger: 0 100% 81.8%;
+    --color-text-success: 143 80.8% 71.4%;
+    --color-text-warning: 47 100% 59.4%;
+    --color-link-default: 230 100% 82%;
+
+    --color-icon-default: 216 12.2% 83.9%;
+    --color-icon-subtle: 220 8.9% 46.1%;
+    --color-icon-inverse: 224 71.4% 4.1%;
+    --color-icon-brand: 230 100% 82%;
+    --color-icon-danger: 359 100% 69.6%;
+    --color-icon-success: 150 95.6% 44.7%;
+    --color-icon-warning: 44 100% 50%;
+
+    --color-border-default: 215 27.9% 16.9%;
+    --color-border-bold: 217 19.1% 26.7%;
+    --color-border-brand: 235 100% 74.3%;
+    --color-border-danger: 356 91.6% 32.5%;
+    --color-border-success: 148 98.1% 20.2%;
+    --color-border-warning: 23 82.5% 31.4%;
+
+    --color-background-surface-default: 224 71.4% 4.1%;
+    --color-background-neutral: 221 39.3% 11%;
+    --color-background-neutral-bold: 215 27.9% 16.9%;
+    --color-background-input: 221 39.3% 11%;
+    --color-background-disabled: 215 27.9% 16.9%;
+    --color-background-selected: 245 49.5% 20.2%;
+    --color-background-brand-bold: 241 100% 68.6%;
+    --color-background-danger: 359 79.5% 15.3%;
+    --color-background-danger-bold: 357 96.3% 57.8%;
+    --color-background-warning: 21 97.2% 13.9%;
+    --color-background-warning-bold: 44 100% 50%;
+    --color-background-success: 145 87.8% 9.6%;
+    --color-background-success-bold: 144 100% 39.4%;
+    --color-background-information: 245 49.5% 20.2%;
+    --color-background-information-bold: 241 100% 68.6%;
+    --color-background-discovery: 245 49.5% 20.2%;
+
+    --elevation-surface-default: 221 39.3% 11%;
+    --elevation-surface-sunken: 218 80% 2%;
+    --elevation-surface-raised: 215 27.9% 16.9%;
+    --elevation-surface-raised-hovered: 217 19.1% 26.7%;
+    --elevation-surface-raised-pressed: 215 13.8% 34.1%;
+    --elevation-surface-overlay: 215 27.9% 16.9%;
+    --elevation-surface-overlay-hovered: 217 19.1% 26.7%;
+    --elevation-surface-overlay-pressed: 215 13.8% 34.1%;
+    --elevation-surface-hovered: 215 27.9% 16.9%;
+    --elevation-surface-pressed: 217 19.1% 26.7%;
+
+    --pill-purple-bg: 245 49.5% 20.2%;
+    --pill-purple-text: 230 100% 82%;
+    --pill-purple-border: 246 60.7% 42%;
+    --pill-pink-bg: 334 64.3% 16.5%;
+    --pill-pink-text: 336 85.1% 81.6%;
+    --pill-pink-border: 334 59.5% 33.9%;
+    --pill-blue-bg: 227 59.3% 21.2%;
+    --pill-blue-text: 211 100% 77.8%;
+    --pill-blue-border: 227 76.1% 41%;
+    --pill-sky-bg: 203 87.3% 15.5%;
+    --pill-sky-text: 199 100% 72.7%;
+    --pill-sky-border: 201 100% 27.1%;
+    --pill-red-bg: 359 79.5% 15.3%;
+    --pill-red-text: 0 100% 81.8%;
+    --pill-red-border: 356 91.6% 32.5%;
+    --pill-mint-bg: 163 87.8% 9.6%;
+    --pill-mint-text: 158 76% 64.1%;
+    --pill-mint-border: 163 88.1% 19.8%;
+    --pill-teal-bg: 179 91.8% 9.6%;
+    --pill-teal-text: 172 81.4% 60%;
+    --pill-teal-border: 177 100% 18.6%;
+    --pill-cyan-bg: 197 86.5% 14.5%;
+    --pill-cyan-text: 187 97.7% 65.9%;
+    --pill-cyan-border: 192 100% 23.5%;
+    --pill-rose-bg: 342 94.9% 15.5%;
+    --pill-rose-text: 352 100% 81.6%;
+    --pill-rose-border: 356 91.6% 32.5%;
+    --pill-amber-bg: 21 97.2% 13.9%;
+    --pill-amber-text: 47 100% 59.4%;
+    --pill-amber-border: 23 82.5% 31.4%;
+    --pill-green-bg: 145 87.8% 9.6%;
+    --pill-green-text: 143 80.8% 71.4%;
+    --pill-green-border: 148 98.1% 20.2%;
+    --pill-yellow-bg: 27 88.7% 13.9%;
+    --pill-yellow-text: 51 100% 56.3%;
+    --pill-yellow-border: 33 100% 26.9%;
+    --pill-orange-bg: 13 83.8% 14.5%;
+    --pill-orange-text: 31 100% 70.8%;
+    --pill-orange-border: 16 82.6% 27.1%;
+
+    --brand-gradient: linear-gradient(99.4deg, hsl(var(--ccds-purple-500)) 0%, hsl(var(--ccds-pink-500)) 99.9%);
+    --shadow-raised: 0px 4px 12px 0px rgb(0 0 0 / 0.4);
+
+    --chart-1: 212 100% 65.9%;
+    --chart-2: 44 100% 50%;
+    --chart-3: 172 81.4% 60%;
+    --chart-4: 336 83.1% 69.8%;
+    --chart-phase-1: 216 62.4% 19.8%;
+    --chart-phase-2: 216 60.9% 27.1%;
+    --chart-phase-3: 216 58.2% 34.7%;
+    --chart-phase-4: 213 49% 52.4%;
+    --chart-phase-5: 211 100% 77.8%;
+    --chart-grid: 215 27.9% 16.9%;
   }
 
   * {
@@ -113,13 +411,38 @@
 
   body {
     @apply bg-background text-foreground;
-    /* Inter's contextual alternates and disambiguated glyphs keep long reference ids legible. */
-    font-feature-settings: "cv11", "ss01", "calt";
+    /* Funnel Display is the system's single product typeface; contextual alternates keep long
+       reference ids legible where they run together. */
+    font-feature-settings: "calt";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
+  /* Two pixels of `color/border/brand`, offset from the control edge, and only for keyboard
+     users - a mouse click must not draw a ring. */
   :focus-visible {
     @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer utilities {
+  /* The AI treatment: the brand gradient poured into the glyphs rather than behind them. Used
+     only on AI-forward actions and labels, never as decoration. */
+  .text-brand-gradient {
+    background-image: var(--brand-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
 }

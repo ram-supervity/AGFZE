@@ -18,7 +18,7 @@ export function AttachmentGrid({ documents }: { documents: DocumentSummary[] }) 
         <li key={document.id}>
           <Link
             href={`/documents/${document.id}`}
-            className="flex h-full flex-col overflow-hidden rounded-lg border border-border bg-card transition-colors hover:border-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="flex h-full flex-col overflow-hidden rounded-medium border-thin border-border bg-elevation-default shadow-raised transition-colors hover:border-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <div className="flex h-36 items-center justify-center overflow-hidden border-b border-border bg-surface">
               {document.thumbnail_url ? (
@@ -52,7 +52,7 @@ export function AttachmentGrid({ documents }: { documents: DocumentSummary[] }) 
                 {document.transaction_id ? (
                   <Badge
                     variant="outline"
-                    className="border-signal-confident/35 bg-signal-confident/10 text-signal-confident"
+                    className="border-pill-green-border bg-pill-green-bg text-pill-green-text"
                   >
                     Matched to a batch
                   </Badge>

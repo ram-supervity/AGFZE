@@ -113,7 +113,7 @@ export function DocumentTypeDialog({
               {fields.map((field, index) => (
                 <li
                   key={index}
-                  className="grid gap-2 rounded-md border border-border bg-surface p-2.5 sm:grid-cols-[1fr_1fr_7rem_5rem_2.5rem]"
+                  className="grid gap-2 rounded-medium border-thin border-border bg-elevation-sunken p-2.5 sm:grid-cols-[1fr_1fr_7rem_5rem_2.5rem]"
                 >
                   <Input
                     aria-label={`Field ${index + 1} name`}

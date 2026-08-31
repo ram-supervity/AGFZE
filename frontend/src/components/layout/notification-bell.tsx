@@ -110,7 +110,7 @@ export function NotificationBell() {
           {unread > 0 ? (
             <span
               aria-hidden="true"
-              className="absolute -right-0.5 -top-0.5 inline-flex min-w-[1.05rem] items-center justify-center rounded-full bg-signal-blocked px-1 text-[10px] font-semibold leading-4 text-white"
+              className="absolute -right-0.5 -top-0.5 inline-flex min-w-[1.05rem] items-center justify-center rounded-full bg-danger-bold px-1 text-body-xs font-semibold leading-4 text-text-inverse"
             >
               {badgeCount(unread)}
             </span>
@@ -153,7 +153,7 @@ export function NotificationBell() {
                     <span className="flex items-center gap-2">
                       <Badge
                         variant="outline"
-                        className={cn("px-1.5 py-0 text-[10px]", notificationChip(row.notification_type))}
+                        className={cn("px-1.5 py-0 text-body-xs", notificationChip(row.notification_type))}
                       >
                         {notificationLabel(row.notification_type)}
                       </Badge>
@@ -163,7 +163,7 @@ export function NotificationBell() {
                           className="h-1.5 w-1.5 rounded-full bg-signal-blocked"
                         />
                       )}
-                      <span className="ml-auto text-[11px] text-muted-foreground">
+                      <span className="ml-auto text-body-xs text-muted-foreground">
                         {now ? relativeAge(row.created_at, now) : ""}
                       </span>
                     </span>

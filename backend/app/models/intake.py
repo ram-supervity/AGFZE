@@ -24,6 +24,7 @@ from app.db.base import Base, utcnow
 from app.db.types import GUID, JSONBType
 from app.models.enums import (
     BUSINESS_STREAMS,
+    DEAL_DIRECTIONS,
     DOCUMENT_SOURCES,
     DOCUMENT_TYPES,
     EXTRACTION_STATUSES,
@@ -76,6 +77,10 @@ class Request(Base):
             name="request_stream_valid",
         ),
         CheckConstraint(
+            f"deal_direction IS NULL OR deal_direction IN ({sql_in_list(DEAL_DIRECTIONS)})",
+            name="request_deal_direction_valid",
+        ),
+        CheckConstraint(
             f"status IN ({sql_in_list(REQUEST_STATUSES)})", name="request_status_valid"
         ),
         Index("ix_requests_status_created_at", "status", "created_at"),
@@ -90,6 +95,7 @@ class Request(Base):
     category: Mapped[str | None] = mapped_column(String(32), index=True)
     category_confidence: Mapped[float | None] = mapped_column(Float, index=True)
     category_rationale: Mapped[str | None] = mapped_column(Text)
+    deal_direction: Mapped[str | None] = mapped_column(String(32), index=True)
     # The AI's first answer survives every correction; nothing overwrites it.
     original_category: Mapped[str | None] = mapped_column(String(32))
     category_overridden: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
@@ -141,6 +147,10 @@ class Document(Base):
             name="document_extraction_status_valid",
         ),
         CheckConstraint(
+            f"deal_direction IS NULL OR deal_direction IN ({sql_in_list(DEAL_DIRECTIONS)})",
+            name="document_deal_direction_valid",
+        ),
+        CheckConstraint(
             f"source IN ({sql_in_list(DOCUMENT_SOURCES)})", name="document_source_valid"
         ),
         # A generated draft has no request behind it, so the pairing that must always hold is
@@ -174,6 +184,9 @@ class Document(Base):
     content_type: Mapped[str] = mapped_column(String(128))
     byte_size: Mapped[int] = mapped_column(Integer)
     document_type: Mapped[str | None] = mapped_column(String(32), index=True)
+    deal_direction: Mapped[str | None] = mapped_column(String(32), index=True)
+    deal_direction_confidence: Mapped[float | None] = mapped_column(Float, index=True)
+    deal_direction_rationale: Mapped[str | None] = mapped_column(Text)
     # The specific paperwork this document is, in the vocabulary BR-04's checklists are written
     # in. A list rather than a column because one document can genuinely be two entries on a
     # checklist - a mill certificate printing its own assay table is both the mill test

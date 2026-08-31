@@ -42,7 +42,7 @@ export function IntegrationPanel({ jobs, transactionId, canManage }: Integration
 
   return (
     <section
-      className="space-y-3 rounded-lg border border-border bg-card p-4"
+      className="space-y-3 rounded-medium border-thin border-border bg-elevation-default shadow-raised p-4"
       aria-label="Downstream integration"
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -71,7 +71,7 @@ export function IntegrationPanel({ jobs, transactionId, canManage }: Integration
         {jobs.map((job) => (
           <li
             key={job.id}
-            className="space-y-1.5 rounded-md border border-border bg-surface px-3 py-2.5"
+            className="space-y-1.5 rounded-medium border-thin border-border bg-elevation-sunken px-3 py-2.5"
           >
             <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
               {job.target_label ??

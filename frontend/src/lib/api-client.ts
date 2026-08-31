@@ -70,6 +70,9 @@ export interface DocumentSummary {
   content_type: string;
   byte_size: number;
   document_type: string | null;
+  deal_direction?: string | null;
+  deal_direction_confidence?: number | null;
+  deal_direction_rationale?: string | null;
   territory: string | null;
   page_count: number | null;
   extraction_status: string;
@@ -88,6 +91,7 @@ export interface RequestSummary {
   category: string | null;
   category_confidence: number | null;
   category_overridden: boolean;
+  deal_direction?: string | null;
   stream: string | null;
   status: string;
   needs_review: boolean;
@@ -96,6 +100,8 @@ export interface RequestSummary {
   subject: string | null;
   sender_address: string | null;
   document_count: number;
+  transaction_id?: string | null;
+  transaction_leg_type?: "purchase" | "sales" | "fa" | null;
 }
 
 export interface RequestDetail extends RequestSummary {
@@ -105,6 +111,8 @@ export interface RequestDetail extends RequestSummary {
   category_overridden_at: string | null;
   original_stream: string | null;
   classification_error: string | null;
+  deal_direction_confidence?: number | null;
+  deal_direction_rationale?: string | null;
   email: EmailMessage | null;
   documents: DocumentSummary[];
 }
@@ -162,6 +170,8 @@ export interface DocumentListItem {
   request_code: string | null;
   filename: string;
   document_type: string | null;
+  deal_direction?: string | null;
+  deal_direction_confidence?: number | null;
   territory: string | null;
   extraction_status: string;
   classification_confidence: number | null;
@@ -184,6 +194,7 @@ export interface DocumentDetail extends DocumentListItem {
   content_type: string;
   content_hash: string;
   classification_rationale: string | null;
+  deal_direction_rationale?: string | null;
   original_document_type: string | null;
   document_type_hint: string | null;
   extraction_error: string | null;
@@ -417,6 +428,7 @@ export interface TransactionListItem {
   has_purchase_leg: boolean;
   has_sales_leg: boolean;
   has_fa_leg: boolean;
+  deal_direction?: string | null;
   /**
    * A joint B2B purchase, and the partner it is shared with. The tag only - no profit split,
    * shared expense or loss allocation is modelled anywhere yet.
@@ -895,7 +907,7 @@ export async function withdrawRequestReply(
 export async function overrideRequestCategory(
   accessToken: string,
   id: string,
-  body: { category: string; stream?: string | null; reason: string },
+  body: { category: string; stream?: string | null; deal_direction?: string | null; reason: string },
 ): Promise<RequestDetail> {
   return unwrap(
     await apiFetch<RequestDetail>(`/requests/${id}/category`, {
@@ -937,7 +949,13 @@ export async function correctDocumentFields(
 export async function reclassifyDocument(
   accessToken: string,
   id: string,
-  body: { document_type: string; territory?: string | null; reason: string },
+  body: {
+    document_type: string;
+    territory?: string | null;
+    deal_direction?: string | null;
+    document_kinds?: string[] | null;
+    reason: string;
+  },
 ): Promise<{ document_id: string; job_id: string }> {
   return unwrap(
     await apiFetch<{ document_id: string; job_id: string }>(`/documents/${id}/reclassify`, {

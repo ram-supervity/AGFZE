@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Funnel_Display } from "next/font/google";
 import type { ReactNode } from "react";
 
 import { Providers } from "@/components/providers";
@@ -7,10 +7,15 @@ import { ServiceWorkerRegistrar } from "@/components/pwa/service-worker-registra
 
 import "./globals.css";
 
-const inter = Inter({
+/**
+ * The one product typeface. The design system resolves every named text style through a single
+ * `font-family/heading` variable bound to Funnel Display, so there is no second family to load
+ * and no separate body face to keep in step with it.
+ */
+const funnelDisplay = Funnel_Display({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-inter",
+  variable: "--font-funnel-display",
 });
 
 /**
@@ -57,23 +62,24 @@ export const metadata: Metadata = {
     // What iOS writes under the home-screen icon, which truncates past a dozen characters -
     // so it is the wordmark, exactly as the compact brand mark shows it.
     title: "AGFZE",
-    // Ink navy behind the status bar, matching the header the app opens onto.
-    statusBarStyle: "black-translucent",
+    // The record header the app opens onto is a light surface, so the status bar sits on it
+    // rather than over it.
+    statusBarStyle: "default",
   },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  // The ink navy of the design system, and the same value the web app manifest declares.
-  themeColor: "#182338",
+  // `color/background/Surface-default`, and the same value the web app manifest declares.
+  themeColor: "#ffffff",
   // An installed app draws into the safe area on a notched device rather than letterboxing.
   viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning className={inter.variable}>
+    <html lang="en" suppressHydrationWarning className={funnelDisplay.variable}>
       <body className="min-h-screen bg-background font-sans text-foreground">
         <Providers>
           {/* Production builds only, and it unregisters itself under `npm run dev`. */}

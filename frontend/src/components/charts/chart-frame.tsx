@@ -39,14 +39,14 @@ export function ChartFrame({
 }: ChartFrameProps) {
   return (
     <section
-      className={cn("rounded-lg border border-border bg-card p-5", className)}
+      className={cn("rounded-medium border-thin border-border bg-elevation-default p-space-300 shadow-raised", className)}
       aria-label={title}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 space-y-1">
-          <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+          <h3 className="text-h5 font-semibold text-foreground">{title}</h3>
           {description ? (
-            <p className="text-xs leading-relaxed text-muted-foreground">{description}</p>
+            <p className="text-body-xs leading-relaxed text-muted-foreground">{description}</p>
           ) : null}
         </div>
         {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
@@ -54,9 +54,9 @@ export function ChartFrame({
 
       <div className="mt-4">
         {isEmpty ? (
-          <div className="flex flex-col items-center justify-center gap-2 rounded-md border border-dashed border-border bg-surface px-4 py-10 text-center">
+          <div className="flex flex-col items-center justify-center gap-space-100 rounded-medium border-thin border-dashed border-border bg-elevation-sunken px-space-200 py-space-500 text-center">
             {EmptyIcon ? (
-              <EmptyIcon className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+              <EmptyIcon className="size-icon-medium text-icon-subtle" aria-hidden="true" />
             ) : null}
             <p className="text-sm text-muted-foreground">
               {emptyMessage ?? "Nothing has happened in this period yet."}

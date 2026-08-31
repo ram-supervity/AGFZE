@@ -146,7 +146,7 @@ export function TransactionTable({ list, sortBy, sortDir }: TransactionTableProp
                   {row.failing_rule_count > 0 ? (
                     <Badge
                       variant="outline"
-                      className="border-signal-blocked/35 bg-signal-blocked/10 text-signal-blocked"
+                      className="border-pill-red-border bg-pill-red-bg text-pill-red-text"
                     >
                       {row.failing_rule_count} check
                       {row.failing_rule_count === 1 ? "" : "s"} outstanding
@@ -179,7 +179,7 @@ export function TransactionTable({ list, sortBy, sortDir }: TransactionTableProp
                     {row.shipment_stale ? (
                       <Badge
                         variant="outline"
-                        className="border-signal-review/35 bg-signal-review/10 text-signal-review"
+                        className="border-pill-amber-border bg-pill-amber-bg text-pill-amber-text"
                         title="Nobody has established where this cargo is for longer than the configured threshold."
                       >
                         Not checked recently

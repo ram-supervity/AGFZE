@@ -24,10 +24,10 @@ export const NOTIFICATION_LABELS: Record<NotificationType, string> = {
 };
 
 export const NOTIFICATION_CHIP: Record<NotificationType, string> = {
-  "exception.opened": "border-signal-review/35 bg-signal-review/10 text-signal-review",
+  "exception.opened": "border-pill-amber-border bg-pill-amber-bg text-pill-amber-text",
   "approval.requested": "border-border bg-muted text-muted-foreground",
-  "approval.decided": "border-signal-confident/35 bg-signal-confident/10 text-signal-confident",
-  "integration.attention": "border-signal-blocked/45 bg-signal-blocked/10 text-signal-blocked",
+  "approval.decided": "border-pill-green-border bg-pill-green-bg text-pill-green-text",
+  "integration.attention": "border-pill-red-border bg-pill-red-bg text-pill-red-text",
   "report.ready": "border-border bg-muted text-muted-foreground",
 };
 

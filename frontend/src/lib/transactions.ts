@@ -46,14 +46,14 @@ export const TRANSACTION_STATUS_CHIP: Record<TransactionStatus, string> = {
   classified: "border-border bg-muted text-muted-foreground",
   extraction_pending: "border-border bg-muted text-muted-foreground",
   extracted: "border-border bg-muted text-muted-foreground",
-  matched: "border-signal-review/35 bg-signal-review/10 text-signal-review",
-  validation_pending: "border-signal-review/35 bg-signal-review/10 text-signal-review",
-  approval_pending: "border-signal-confident/35 bg-signal-confident/10 text-signal-confident",
-  approved: "border-signal-confident/35 bg-signal-confident/10 text-signal-confident",
+  matched: "border-pill-amber-border bg-pill-amber-bg text-pill-amber-text",
+  validation_pending: "border-pill-amber-border bg-pill-amber-bg text-pill-amber-text",
+  approval_pending: "border-pill-green-border bg-pill-green-bg text-pill-green-text",
+  approved: "border-pill-green-border bg-pill-green-bg text-pill-green-text",
   // Amber, not green: the deal is approved but its postings are not all resolved, and the board
   // should not read as finished while somebody still owes a system a posting.
-  integration_pending: "border-signal-review/35 bg-signal-review/10 text-signal-review",
-  committed: "border-signal-confident/45 bg-signal-confident/15 text-signal-confident",
+  integration_pending: "border-pill-amber-border bg-pill-amber-bg text-pill-amber-text",
+  committed: "border-pill-green-border bg-pill-green-bg text-pill-green-text",
 };
 
 /** The states in which a transaction's figures are no longer editable by its preparing desk. */
@@ -236,10 +236,10 @@ export const COVERAGE_LABELS: Record<CoverageState, string> = {
 };
 
 export const COVERAGE_TONE: Record<CoverageState, string> = {
-  partial: "border-signal-confident/35 bg-signal-confident/10 text-signal-confident",
-  complete: "border-signal-confident/35 bg-signal-confident/10 text-signal-confident",
-  exceeded: "border-signal-blocked/45 bg-signal-blocked/10 text-signal-blocked",
-  unknown: "border-signal-review/35 bg-signal-review/10 text-signal-review",
+  partial: "border-pill-green-border bg-pill-green-bg text-pill-green-text",
+  complete: "border-pill-green-border bg-pill-green-bg text-pill-green-text",
+  exceeded: "border-pill-red-border bg-pill-red-bg text-pill-red-text",
+  unknown: "border-pill-amber-border bg-pill-amber-bg text-pill-amber-text",
 };
 
 export const COVERAGE_BAR: Record<CoverageState, string> = {

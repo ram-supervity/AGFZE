@@ -20,9 +20,14 @@ from app.core.config import settings
 from app.core.logging import get_logger
 from app.db.base import utcnow
 from app.db.session import AsyncSessionLocal
-from app.models.enums import DocumentType, ExtractionStatus, RequestStatus
+from app.models.enums import DocumentType, ExtractionStatus, RequestCategory, RequestStatus
 from app.models.intake import Document, ExtractedField, Request
-from app.services import classification_service, extraction_service, job_service
+from app.services import (
+    classification_service,
+    extraction_service,
+    job_service,
+    purchase_intake,
+)
 from app.services.audit_service import ActorType, record_audit_event
 from app.services.file_intake import IMAGE, PDF, detect_type, storage_key
 from app.services.gemini_service import AIServiceError, ImagePart
@@ -225,6 +230,9 @@ async def process_document(
         if document.document_type_hint and outcome.needs_review:
             chosen = document.document_type_hint
         document.document_type = chosen
+        document.deal_direction = outcome.deal_direction
+        document.deal_direction_confidence = outcome.deal_direction_confidence
+        document.deal_direction_rationale = outcome.deal_direction_rationale
         document.classification_confidence = outcome.confidence
         document.classification_rationale = outcome.rationale
         document.territory = document.territory or outcome.territory
@@ -243,6 +251,9 @@ async def process_document(
             actor_type=ActorType.AGENT,
             metadata={
                 "document_type": chosen,
+                "deal_direction": outcome.deal_direction,
+                "deal_direction_confidence": outcome.deal_direction_confidence,
+                "deal_direction_rationale": outcome.deal_direction_rationale,
                 "document_kinds": list(document.document_kinds or ()),
                 "confidence": outcome.confidence,
                 "territory": document.territory,
@@ -331,13 +342,22 @@ async def _raise_low_confidence_case(
     second case on top of the first.
     """
     classification = document.classification_confidence
+    dir_conf = document.deal_direction_confidence
     weak_classification = classification is not None and classification < threshold
-    if not doubtful and not weak_classification:
+    weak_direction = (
+        document.deal_direction is not None
+        and document.deal_direction != "not_trade"
+        and dir_conf is not None
+        and dir_conf < threshold
+    )
+    if not doubtful and not weak_classification and not weak_direction:
         return
 
     scores = [item.confidence for item in doubtful if item.confidence is not None]
     if weak_classification and classification is not None:
         scores.append(classification)
+    if weak_direction and dir_conf is not None:
+        scores.append(dir_conf)
 
     await governance_hooks.record_low_confidence(
         session,
@@ -395,6 +415,56 @@ async def process_request(
                     session, job_id, 10 + int(85 * index / max(total, 1))
                 )
                 await session.commit()
+
+        # Reconcile request category and document deal direction
+        threshold = settings.CONFIDENCE_THRESHOLD_DEFAULT
+        trade_directions = {
+            doc.deal_direction for doc in documents if doc.deal_direction in ("purchase", "sales")
+        }
+
+        if len(trade_directions) == 1:
+            settled_direction = next(iter(trade_directions))
+            request.deal_direction = settled_direction
+            if request.category == RequestCategory.PURCHASE.value and settled_direction != "purchase":
+                request.needs_review = True
+            elif request.category == RequestCategory.SALES.value and settled_direction != "sales":
+                request.needs_review = True
+            elif not request.category:
+                if settled_direction == "purchase":
+                    request.category = RequestCategory.PURCHASE.value
+                    request.original_category = request.original_category or RequestCategory.PURCHASE.value
+                elif settled_direction == "sales":
+                    request.category = RequestCategory.SALES.value
+                    request.original_category = request.original_category or RequestCategory.SALES.value
+        elif len(trade_directions) > 1:
+            request.deal_direction = None
+            request.needs_review = True
+        else:
+            if any(doc.deal_direction == "not_trade" for doc in documents):
+                request.deal_direction = "not_trade"
+
+        if request.category_confidence is not None and request.category_confidence < threshold:
+            request.needs_review = True
+        if request.classification_error is not None:
+            request.needs_review = True
+
+        for doc in documents:
+            if (
+                doc.deal_direction in ("purchase", "sales")
+                and (doc.deal_direction_confidence is None or doc.deal_direction_confidence < threshold)
+            ):
+                doc.needs_review = True
+                request.needs_review = True
+            if doc.extraction_status == ExtractionStatus.FAILED.value:
+                request.needs_review = True
+
+        # The buying desk's own completeness and purity check, on exactly the intakes it is
+        # about. A purchase deal arrives as three documents; anything short of that, or anything
+        # a purchase bundle never carries, flags the request and opens the ordinary case through
+        # the ordinary hook. It is deliberately run after per-document classification, because
+        # the kinds it reads are what classification has just assigned.
+        if purchase_intake.is_purchase_request(request):
+            await purchase_intake.evaluate_request(session, request, list(documents))
 
         request.status = RequestStatus.EXTRACTED.value
         request.needs_review = request.needs_review or any(

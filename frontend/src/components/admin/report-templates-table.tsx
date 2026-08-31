@@ -69,7 +69,7 @@ export function ReportTemplatesTable({ data }: ReportTemplatesTableProps) {
 
   return (
     <div className="space-y-4">
-      <p className="rounded-md border border-border bg-surface px-4 py-3 text-sm leading-relaxed text-muted-foreground">
+      <p className="rounded-medium border-thin border-border bg-elevation-sunken px-4 py-3 text-sm leading-relaxed text-muted-foreground">
         Structure only. No figure is reachable from this screen: every number a report prints is
         computed from the governed transaction, exception, approval, shipment and posting tables at
         the moment the report is generated, and each one still carries the filtered query that

@@ -21,7 +21,7 @@ export interface AppHeaderProps {
   onOpenNav: () => void;
 }
 
-const BADGE = "border-primary-foreground/25 bg-primary-foreground/10 text-primary-foreground";
+const BADGE = "border-border bg-muted text-muted-foreground";
 
 export function AppHeader({ roles, userName, userEmail, section, onOpenNav }: AppHeaderProps) {
   const ordered = normaliseRoles(roles);
@@ -29,23 +29,23 @@ export function AppHeader({ roles, userName, userEmail, section, onOpenNav }: Ap
   const extra = ordered.length - 1;
 
   return (
-    <header className="fixed inset-x-0 top-0 z-40 flex h-14 items-center gap-2 border-b border-primary-foreground/15 bg-primary px-3 text-primary-foreground sm:gap-3 sm:px-4">
+    <header className="fixed inset-x-0 top-0 z-sticky flex h-14 items-center gap-space-100 border-b border-thin border-border bg-elevation-default px-space-150 text-foreground sm:gap-space-150 sm:px-space-200">
       <Button
         variant="ghost"
-        size="icon"
+        size="icon-md"
         onClick={onOpenNav}
         aria-label="Open navigation"
-        className="-ml-1 h-9 w-9 shrink-0 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground lg:hidden"
+        className="-ml-1 shrink-0 lg:hidden"
       >
         <Menu aria-hidden="true" />
       </Button>
       <BrandMark variant="compact" className="shrink-0" />
-      <Separator orientation="vertical" className="h-6 bg-primary-foreground/20" />
-      <span className="truncate text-sm font-medium">{section}</span>
+      <Separator orientation="vertical" className="h-space-300 bg-border" />
+      <span className="truncate text-body-md font-medium">{section}</span>
       <CommandPalette />
-      <div className="ml-auto flex items-center gap-2 sm:gap-3">
+      <div className="ml-auto flex items-center gap-space-100 sm:gap-space-150">
         {primary ? (
-          <div className="hidden items-center gap-1.5 sm:flex">
+          <div className="hidden items-center gap-space-075 sm:flex">
             <Badge variant="outline" className={cn(BADGE, "font-medium")}>
               {ROLE_LABELS[primary]}
             </Badge>
@@ -57,7 +57,7 @@ export function AppHeader({ roles, userName, userEmail, section, onOpenNav }: Ap
                   </Badge>
                 </TooltipTrigger>
                 <TooltipContent align="end">
-                  <ul className="space-y-0.5 text-xs">
+                  <ul className="space-y-0.5 text-body-xs">
                     {ordered.map((role) => (
                       <li key={role}>{ROLE_LABELS[role]}</li>
                     ))}

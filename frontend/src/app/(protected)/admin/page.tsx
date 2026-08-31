@@ -55,7 +55,7 @@ export default async function AdminPage() {
         ))}
       </ul>
 
-      <p className="rounded-md border border-border bg-surface px-4 py-3 text-sm leading-relaxed text-muted-foreground">
+      <p className="rounded-medium border-thin border-border bg-elevation-sunken px-4 py-3 text-sm leading-relaxed text-muted-foreground">
         The tracker, SAP and document-store endpoints are not edited here. They are infrastructure
         configuration, set per deployment through the environment, so changing where an approved
         transaction is posted goes through a release rather than a form.

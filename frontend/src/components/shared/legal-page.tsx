@@ -10,7 +10,7 @@ export interface LegalPageProps {
 }
 
 const PROSE = cn(
-  "mt-8 text-[15px] text-foreground [&>*+*]:mt-4",
+  "mt-8 text-body-lg text-foreground [&>*+*]:mt-4",
   "[&_section]:space-y-3",
   "[&_h2]:mt-10 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:tracking-tight [&_h2]:text-foreground",
   "[&_h3]:mt-6 [&_h3]:text-xs [&_h3]:font-semibold [&_h3]:uppercase [&_h3]:tracking-[0.14em] [&_h3]:text-muted-foreground",

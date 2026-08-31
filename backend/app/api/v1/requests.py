@@ -12,7 +12,7 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import selectinload
 
 from app.core.config import settings
@@ -20,9 +20,15 @@ from app.core.dependencies import CurrentUser, DbSession, require_roles
 from app.core.errors import NotFoundError
 from app.core.roles import PlatformRole
 from app.db.base import utcnow
-from app.models.enums import BUSINESS_STREAMS, REQUEST_CATEGORIES, REQUEST_STATUSES
+from app.models.enums import (
+    BUSINESS_STREAMS,
+    REQUEST_CATEGORIES,
+    REQUEST_STATUSES,
+    RequestCategory,
+)
 from app.models.identity import User
 from app.models.intake import Document, EmailReplyDraft, Request
+from app.models.transactions import TradeTransaction
 from app.schemas.common import ResponseEnvelope
 from app.schemas.intake import (
     CategoryOverrideRequest,
@@ -31,12 +37,19 @@ from app.schemas.intake import (
     Page,
     ReplyComposeRequest,
     ReplyDraftList,
+    PurchaseBundleItemSummary,
+    PurchaseBundleSummary,
     ReplyDraftRead,
     RequestDetail,
     RequestQueue,
     RequestSummary,
 )
-from app.services import document_service, email_reply_service, request_service
+from app.services import (
+    document_service,
+    email_reply_service,
+    purchase_intake,
+    request_service,
+)
 from app.services.audit_service import ActorType, record_audit_event
 from app.services.storage import get_storage_service
 
@@ -65,12 +78,24 @@ async def _thumbnail(document: Document) -> str | None:
     return await get_storage_service().get_signed_url(refs[0])
 
 
-def _summary(request: Request, document_count: int) -> RequestSummary:
+def _summary(
+    request: Request,
+    document_count: int,
+    txn: TradeTransaction | None = None,
+) -> RequestSummary:
     summary = RequestSummary.model_validate(request)
     summary.document_count = document_count
     if request.email_message is not None:
         summary.subject = request.email_message.subject
         summary.sender_address = request.email_message.sender_address
+    if txn is not None:
+        summary.transaction_id = txn.id
+        if txn.sales_leg is not None and txn.purchase_leg is None:
+            summary.transaction_leg_type = "sales"
+        elif txn.purchase_leg is not None:
+            summary.transaction_leg_type = "purchase"
+        elif txn.fa_leg is not None:
+            summary.transaction_leg_type = "fa"
     return summary
 
 
@@ -117,19 +142,36 @@ async def list_requests(
         )
     ).all()
 
+    request_ids = [row.id for row in rows]
     counts = dict(
         (
             await session.execute(
                 select(Document.request_id, func.count(Document.id))
-                .where(Document.request_id.in_([row.id for row in rows] or [None]))
+                .where(Document.request_id.in_(request_ids or [None]))
                 .group_by(Document.request_id)
             )
         ).all()
     )
 
+    txns = (
+        await session.scalars(
+            select(TradeTransaction)
+            .where(TradeTransaction.request_id.in_(request_ids or [None]))
+            .options(
+                selectinload(TradeTransaction.purchase_leg),
+                selectinload(TradeTransaction.sales_leg),
+                selectinload(TradeTransaction.fa_leg),
+            )
+        )
+    ).all()
+    txn_by_request: dict[UUID, TradeTransaction] = {t.request_id: t for t in txns if t.request_id}
+
     return ResponseEnvelope[RequestQueue](
         data=RequestQueue(
-            items=[_summary(row, int(counts.get(row.id, 0))) for row in rows],
+            items=[
+                _summary(row, int(counts.get(row.id, 0)), txn_by_request.get(row.id))
+                for row in rows
+            ],
             page=Page(
                 page=page,
                 page_size=page_size,
@@ -158,6 +200,23 @@ async def read_request(
     if request is None:
         raise NotFoundError("Request not found.")
 
+    txn = await session.scalar(
+        select(TradeTransaction)
+        .where(
+            or_(
+                TradeTransaction.request_id == request_id,
+                TradeTransaction.id.in_(
+                    [doc.transaction_id for doc in request.documents if doc.transaction_id] or [None]
+                ),
+            )
+        )
+        .options(
+            selectinload(TradeTransaction.purchase_leg),
+            selectinload(TradeTransaction.sales_leg),
+            selectinload(TradeTransaction.fa_leg),
+        )
+    )
+
     documents: list[DocumentSummary] = []
     for document in request.documents:
         summary = DocumentSummary.model_validate(document)
@@ -167,12 +226,60 @@ async def read_request(
     detail = RequestDetail.model_validate(request)
     detail.document_count = len(documents)
     detail.documents = documents
+    if txn is not None:
+        detail.transaction_id = txn.id
+        if txn.sales_leg is not None and txn.purchase_leg is None:
+            detail.transaction_leg_type = "sales"
+        elif txn.purchase_leg is not None:
+            detail.transaction_leg_type = "purchase"
+        elif txn.fa_leg is not None:
+            detail.transaction_leg_type = "fa"
+
+    # The three-document bundle, on the intakes it is about and nowhere else. Computed rather
+    # than stored: it is a reading of what is attached right now, and a stored copy would go
+    # stale the moment a document was reclassified.
+    if purchase_intake.is_purchase_request(request):
+        detail.purchase_bundle = _bundle_summary(
+            purchase_intake.status_for(list(request.documents))
+        )
+
     if request.email_message is not None:
         detail.email = EmailMessageRead.model_validate(request.email_message)
         detail.subject = request.email_message.subject
         detail.sender_address = request.email_message.sender_address
 
     return ResponseEnvelope[RequestDetail](data=detail)
+
+
+def _bundle_summary(status: purchase_intake.BundleStatus) -> PurchaseBundleSummary:
+    return PurchaseBundleSummary(
+        items=[
+            PurchaseBundleItemSummary(
+                item=row.item,
+                label=row.label,
+                received=row.received,
+                confirmed=row.confirmed,
+                document_id=row.document_id,
+                filename=row.filename,
+            )
+            for row in status.items
+        ],
+        missing=list(status.missing),
+        complete=status.complete,
+        confirmed=status.confirmed,
+        unexpected=[
+            PurchaseBundleItemSummary(
+                item=row.document_type or "unknown",
+                label=(row.document_type or "unknown").replace("_", " ").title(),
+                received=True,
+                confirmed=row.confirmed_at is not None,
+                document_id=row.id,
+                filename=row.filename,
+            )
+            for row in status.unexpected
+        ],
+        summary=status.summary(),
+    )
 
 
 @router.patch(
@@ -190,6 +297,7 @@ async def override_category(
 
     previous_category = request.category
     previous_stream = request.stream
+    previous_direction = request.deal_direction
     # The AI's first answer is captured once and then never rewritten, override or not.
     if request.original_category is None:
         request.original_category = previous_category
@@ -199,6 +307,21 @@ async def override_category(
     request.category = payload.category
     if payload.stream is not None:
         request.stream = payload.stream
+    if payload.deal_direction is not None:
+        request.deal_direction = payload.deal_direction
+    elif payload.category == RequestCategory.PURCHASE.value:
+        request.deal_direction = "purchase"
+    elif payload.category == RequestCategory.SALES.value:
+        request.deal_direction = "sales"
+
+    # Propagate deal direction to child documents if set
+    if request.deal_direction:
+        docs = (
+            await session.scalars(select(Document).where(Document.request_id == request_id))
+        ).all()
+        for doc in docs:
+            doc.deal_direction = request.deal_direction
+
     request.category_overridden = True
     request.category_override_reason = payload.reason
     request.category_overridden_by_id = user.id
@@ -219,6 +342,8 @@ async def override_category(
             "new_category": payload.category,
             "previous_stream": previous_stream,
             "new_stream": request.stream,
+            "previous_deal_direction": previous_direction,
+            "new_deal_direction": request.deal_direction,
             "original_ai_category": request.original_category,
             "reason": payload.reason,
         },

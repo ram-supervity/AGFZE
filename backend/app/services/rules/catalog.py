@@ -47,6 +47,12 @@ class RuleId:
     # *contract*, never against the shipping document. It carries its own namespace rather than
     # being appended to a numbering it is not part of.
     LG_01 = "LG-01"
+    # A fourth, and the same reasoning once more. The buying desk's intake bundle - proforma
+    # invoice, packing list, weight slip - is a property of how a purchase deal *arrives*, not of
+    # the destination territory's export pack that BR-04 checks. It carries its own namespace
+    # rather than being folded into BR-04, whose checklist is configured per territory and would
+    # start demanding a weighbridge ticket of a sales pack the moment it was.
+    PR_01 = "PR-01"
 
 
 @dataclass(frozen=True)
@@ -140,6 +146,13 @@ RULE_CATALOG: tuple[RuleDefinition, ...] = (
         "must stay within the quantity that contract actually covers.",
     ),
     RuleDefinition(
+        RuleId.PR_01,
+        "Purchase intake bundle",
+        "A purchase deal arrives as exactly three inbound documents - the supplier's invoice, "
+        "the packing list and the weight slip. Anything missing, and anything else on the "
+        "intake, is routed to a person rather than carried forward.",
+    ),
+    RuleDefinition(
         RuleId.LG_01,
         "Invoiced weight against the bill of lading",
         "The weight an invoice bills for and the weight the bill of lading states must agree "
@@ -188,3 +201,8 @@ class CheckKey:
     # BR-03's single check: how many *other* transactions may hold a container this one quotes.
     # A batch spanning several containers of its own is not what this counts.
     CONTAINER_CROSS_TRANSACTION = "container_cross_transaction"
+    # PR-01 carries two checks because it makes two separate statements about one intake: that
+    # all three expected documents are there, and that nothing the platform generates itself has
+    # been counted as an inbound one. Collapsing them would hide which of the two failed.
+    PURCHASE_BUNDLE_COMPLETE = "purchase_bundle_complete"
+    PURCHASE_BUNDLE_PURITY = "purchase_bundle_purity"

@@ -90,7 +90,7 @@ export function ReplyPanel({ requestId, replies, canCompose }: ReplyPanelProps) 
         {replies.recipient_address && !replies.outbound_enabled ? (
           <p
             role="note"
-            className="rounded-md border border-signal-review/35 bg-signal-review/10 px-3 py-2 text-sm leading-relaxed text-foreground"
+            className="rounded-md border border-pill-amber-border bg-pill-amber-bg px-3 py-2 text-sm leading-relaxed text-foreground"
           >
             Sending from the shared mailbox is not enabled on this deployment. A reply can still be
             drafted and read here; it cannot leave until AGFZE IT grants the mailbox send
@@ -101,7 +101,7 @@ export function ReplyPanel({ requestId, replies, canCompose }: ReplyPanelProps) 
         {replies.items.length > 0 ? (
           <ul className="space-y-3">
             {replies.items.map((draft) => (
-              <li key={draft.id} className="rounded-md border border-border bg-surface p-3">
+              <li key={draft.id} className="rounded-medium border-thin border-border bg-elevation-sunken p-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <Badge variant={draft.status === "sent" ? "secondary" : "muted"}>
                     {STATUS_LABELS[draft.status] ?? draft.status}

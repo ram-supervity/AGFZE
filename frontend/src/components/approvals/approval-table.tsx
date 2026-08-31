@@ -165,7 +165,7 @@ export function ApprovalTable({ queue, canDecide }: ApprovalTableProps) {
       </div>
 
       {canDecide && eligible.length === 0 && queue.items.length > 0 ? (
-        <p className="rounded-md border border-border bg-surface px-3 py-2 text-xs text-muted-foreground">
+        <p className="rounded-medium border-thin border-border bg-elevation-sunken px-3 py-2 text-xs text-muted-foreground">
           None of these qualifies for a batch decision. That is reserved for the lowest risk tier:
           under {formatMoney(queue.bulk_value_ceiling, "USD")}, with nothing acknowledged by hand
           and no exception in its history. Everything else is decided one at a time.
@@ -239,7 +239,7 @@ export function ApprovalTable({ queue, canDecide }: ApprovalTableProps) {
                 <TableCell className="whitespace-nowrap text-right tabular-nums">
                   {formatMoney(row.value, row.currency)}
                   {row.requires_confirmation ? (
-                    <p className="text-[10px] uppercase tracking-wider text-signal-review">
+                    <p className="text-body-xs uppercase tracking-wider text-signal-review">
                       Confirmation required
                     </p>
                   ) : null}
@@ -292,7 +292,7 @@ export function ApprovalTable({ queue, canDecide }: ApprovalTableProps) {
             trail on its own - exactly as if you had opened them one at a time. Approving moves
             them to Approved and does nothing else.
           </DialogDescription>
-          <ul className="max-h-72 space-y-1.5 overflow-y-auto rounded-md border border-border bg-surface p-3">
+          <ul className="max-h-72 space-y-1.5 overflow-y-auto rounded-medium border-thin border-border bg-elevation-sunken p-3">
             {chosen.map((row) => (
               <li key={row.id} className="flex items-center justify-between gap-3 text-sm">
                 <span className="font-mono text-secondary">{row.batch_number}</span>

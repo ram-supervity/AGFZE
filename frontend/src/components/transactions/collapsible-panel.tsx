@@ -29,7 +29,7 @@ export function CollapsiblePanel({
   const regionId = useId();
 
   return (
-    <section className="overflow-hidden rounded-lg border border-border bg-card">
+    <section className="overflow-hidden rounded-medium border-thin border-border bg-elevation-default shadow-raised">
       <button
         type="button"
         aria-expanded={open}

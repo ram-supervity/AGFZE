@@ -30,7 +30,7 @@ from app.core.logging import get_logger
 from app.db.session import AsyncSessionLocal
 from app.services.analytics import retention
 from app.services.analytics import schedule as report_schedule
-from app.services.integration import integration_service
+from app.services.integration import integration_service, loading_sheet
 
 logger = get_logger(__name__)
 
@@ -61,6 +61,27 @@ async def scheduled_reports_once() -> report_schedule.ScheduleResult:
         except Exception:
             await session.rollback()
             raise
+
+
+async def loading_sheet_once() -> int:
+    """Drain the Loading Sheet rows held here into the configured workbook, in their own session.
+
+    Separate from the three sessions below for the same reason they are separate from each other:
+    a row that could not be written must not roll back a retry that succeeded a moment earlier.
+
+    Does nothing at all where no workbook is configured, which is not a failure state - the rows
+    keep waiting, and the write happens the day a connection appears.
+    """
+    async with AsyncSessionLocal() as session:
+        try:
+            written = await loading_sheet.drain(
+                session, limit=max(1, settings.INTEGRATION_SWEEP_BATCH_SIZE)
+            )
+            await session.commit()
+        except Exception:
+            await session.rollback()
+            raise
+    return written
 
 
 async def retention_once() -> retention.RetentionResult:
@@ -94,6 +115,9 @@ async def run_worker(stop: asyncio.Event) -> None:
             # Logged plainly at startup so an operator can see, without reading any code, which
             # of the three targets this deployment can actually post to.
             "configured_targets": integration_service.configured_targets(),
+            # Logged plainly beside them: whether this deployment can write a Loading Sheet row
+            # into a workbook at all, or is holding every row in its own table until it can.
+            "loading_sheet_workbook": loading_sheet.workbook_configured(),
         },
     )
 
@@ -130,6 +154,14 @@ async def run_worker(stop: asyncio.Event) -> None:
                     )
             except Exception:
                 logger.exception("scheduled_report_iteration_failed")
+
+        if loading_sheet.workbook_configured():
+            try:
+                written = await loading_sheet_once()
+                if written:
+                    logger.info("loading_sheet_drain_complete", extra={"rows_written": written})
+            except Exception:
+                logger.exception("loading_sheet_drain_failed")
 
         if retention.should_run():
             try:

@@ -216,7 +216,7 @@ MATRIX: tuple[Endpoint, ...] = (
         "POST",
         f"{PREFIX}/transactions/{ANY_ID}/generate-draft",
         frozenset({SALES, ADMIN}),
-        body={"document_type": "sales_invoice"},
+        body={"document_type": "draft_invoice"},
     ),
     Endpoint("PATCH", f"{PREFIX}/transactions/{ANY_ID}/fields", PREPARING, body={"fields": []}),
     Endpoint(

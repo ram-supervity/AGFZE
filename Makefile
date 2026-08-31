@@ -14,6 +14,7 @@ help: ## Show this help
 setup: ## First run: env files, images, infrastructure, schema, seeded logins
 	@[ -f backend/.env ] || cp backend/.env.example backend/.env
 	@[ -f frontend/.env ] || cp frontend/.env.example frontend/.env
+	@chmod 644 .env backend/.env frontend/.env 2>/dev/null || true
 	# Before the build, not after: the public key is inlined into the browser bundle at build
 	# time, so a pair generated later would need another build to reach the browser.
 	@$(MAKE) --no-print-directory vapid-ensure
@@ -120,9 +121,10 @@ vapid-ensure: ## Generate a VAPID pair on first setup and write it everywhere it
 	@if grep -qs '^$(KEY)=' '$(FILE)'; then \
 		tmp=$$(mktemp); \
 		KEY='$(KEY)' VALUE='$(VALUE)' awk -F= 'BEGIN{k=ENVIRON["KEY"]; v=ENVIRON["VALUE"]} \
-			$$1==k {print k "=" v; next} {print}' '$(FILE)' > "$$tmp" && mv "$$tmp" '$(FILE)'; \
+			$$1==k {print k "=" v; next} {print}' '$(FILE)' > "$$tmp" && chmod 644 "$$tmp" && mv "$$tmp" '$(FILE)'; \
 	else \
 		printf '%s=%s\n' '$(KEY)' '$(VALUE)' >> '$(FILE)'; \
+		chmod 644 '$(FILE)' 2>/dev/null || true; \
 	fi
 
 icons: ## Regenerate the PWA icon set from the brand mark

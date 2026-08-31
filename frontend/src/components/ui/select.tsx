@@ -5,7 +5,9 @@ import { cn } from "@/lib/utils"
 
 /**
  * A styled native <select>. The platform control brings keyboard behaviour, screen-reader
- * semantics and mobile pickers for free, which a custom listbox would have to re-earn.
+ * semantics and mobile pickers for free, which a custom listbox would have to re-earn. Its shell
+ * is the Input's, deliberately: a select and a text field are the same control height, radius and
+ * border in this system, and only the trailing chevron tells them apart.
  */
 const Select = React.forwardRef<HTMLSelectElement, React.SelectHTMLAttributes<HTMLSelectElement>>(
   ({ className, children, ...props }, ref) => (
@@ -13,7 +15,7 @@ const Select = React.forwardRef<HTMLSelectElement, React.SelectHTMLAttributes<HT
       <select
         ref={ref}
         className={cn(
-          "h-9 w-full appearance-none rounded-md border border-input bg-background pl-3 pr-8 text-sm text-foreground shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50",
+          "h-control-md w-full appearance-none rounded-control border-thin border-border bg-background-input pl-space-150 pr-space-400 text-body-md text-foreground transition-colors hover:border-border-bold focus-visible:border-border-brand focus-visible:outline-none focus-visible:ring-thick focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:bg-muted disabled:opacity-disabled",
           className,
         )}
         {...props}
@@ -22,7 +24,7 @@ const Select = React.forwardRef<HTMLSelectElement, React.SelectHTMLAttributes<HT
       </select>
       <ChevronDown
         aria-hidden="true"
-        className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+        className="pointer-events-none absolute right-space-100 top-1/2 size-icon-small -translate-y-1/2 text-icon-subtle"
       />
     </div>
   ),

@@ -104,14 +104,14 @@ export function DocumentTable({ list }: { list: DocumentList }) {
                   {document.confirmed_at ? (
                     <Badge
                       variant="outline"
-                      className="border-signal-confident/35 bg-signal-confident/10 text-signal-confident"
+                      className="border-pill-green-border bg-pill-green-bg text-pill-green-text"
                     >
                       Confirmed
                     </Badge>
                   ) : document.needs_review ? (
                     <Badge
                       variant="outline"
-                      className="border-signal-review/35 bg-signal-review/10 text-signal-review"
+                      className="border-pill-amber-border bg-pill-amber-bg text-pill-amber-text"
                     >
                       Needs review
                     </Badge>
@@ -140,7 +140,7 @@ export function DocumentTable({ list }: { list: DocumentList }) {
       </Table>
 
       {hovered?.thumbnail_url ? (
-        <div className="pointer-events-none fixed bottom-6 right-6 z-40 hidden w-56 overflow-hidden rounded-lg border border-border bg-card shadow-lg lg:block">
+        <div className="pointer-events-none fixed bottom-space-300 right-space-300 z-raised hidden w-56 overflow-hidden rounded-medium border-thin border-border bg-elevation-overlay shadow-raised lg:block">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={hovered.thumbnail_url}

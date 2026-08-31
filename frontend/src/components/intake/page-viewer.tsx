@@ -32,7 +32,7 @@ export function PageViewer({ filename, pageUrls, sourceUrl, contentType }: PageV
 
   if (pageUrls.length === 0) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-border bg-surface px-6 py-16 text-center">
+      <div className="flex h-full flex-col items-center justify-center gap-4 rounded-medium border-thin border-dashed border-border bg-elevation-sunken px-6 py-16 text-center">
         <FileText className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
         <div className="space-y-1.5">
           <p className="text-sm font-medium text-foreground">No page preview for this file</p>
@@ -54,7 +54,7 @@ export function PageViewer({ filename, pageUrls, sourceUrl, contentType }: PageV
   }
 
   return (
-    <div className="flex h-full flex-col rounded-lg border border-border bg-card">
+    <div className="flex h-full flex-col rounded-medium border-thin border-border bg-elevation-default shadow-raised">
       <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-2">
         <p className="truncate text-sm font-medium text-foreground">
           {pageUrls.length} page{pageUrls.length === 1 ? "" : "s"}
@@ -100,7 +100,7 @@ export function PageViewer({ filename, pageUrls, sourceUrl, contentType }: PageV
                     className="w-full"
                     loading={index === 0 ? "eager" : "lazy"}
                   />
-                  <span className="absolute left-2 top-2 rounded bg-primary/85 px-1.5 py-0.5 text-[10px] font-medium text-primary-foreground">
+                  <span className="absolute left-2 top-2 rounded bg-primary/85 px-1.5 py-0.5 text-body-xs font-medium text-primary-foreground">
                     Page {index + 1}
                   </span>
                   <span className="absolute right-2 top-2 rounded bg-primary/85 p-1 text-primary-foreground opacity-0 transition-opacity group-hover:opacity-100">
@@ -115,7 +115,7 @@ export function PageViewer({ filename, pageUrls, sourceUrl, contentType }: PageV
                 <DialogDescription className="sr-only">
                   Full-size view of page {index + 1}.
                 </DialogDescription>
-                <div className="min-h-0 flex-1 overflow-auto rounded-md border border-border bg-surface">
+                <div className="min-h-0 flex-1 overflow-auto rounded-medium border-thin border-border bg-elevation-sunken">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={url} alt={`Page ${index + 1} of ${filename}`} className="w-full" />
                 </div>

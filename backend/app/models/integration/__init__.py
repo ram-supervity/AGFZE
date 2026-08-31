@@ -6,6 +6,7 @@ to `trade_transactions` through their own foreign key, exactly as every module s
 """
 
 from app.models.integration.jobs import IntegrationJob
+from app.models.integration.loading_sheet import LoadingSheetRow
 from app.models.integration.packs import DocumentPack
 
-__all__ = ["DocumentPack", "IntegrationJob"]
+__all__ = ["DocumentPack", "IntegrationJob", "LoadingSheetRow"]

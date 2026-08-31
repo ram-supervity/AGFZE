@@ -163,7 +163,7 @@ export function AnalyticsWorkspace({ trends, filters }: AnalyticsWorkspaceProps)
       </div>
 
       {exported ? (
-        <p className="rounded-md border border-border bg-surface px-4 py-2 text-xs text-muted-foreground">
+        <p className="rounded-medium border-thin border-border bg-elevation-sunken px-4 py-2 text-xs text-muted-foreground">
           The chart data was downloaded as a CSV to this device. Nothing was sent anywhere - an
           export is a file on your machine, and the platform never mails one out.
         </p>
@@ -273,7 +273,7 @@ export function AnalyticsWorkspace({ trends, filters }: AnalyticsWorkspaceProps)
         </ChartFrame>
       </div>
 
-      <section className="rounded-lg border border-border bg-card p-5">
+      <section className="rounded-medium border-thin border-border bg-elevation-default shadow-raised p-5">
         <h3 className="text-sm font-semibold text-foreground">The numbers behind the charts</h3>
         <p className="mt-1 text-xs text-muted-foreground">
           The same series, as a table. Every chart on this page has one, so no figure depends on
@@ -308,7 +308,7 @@ export function AnalyticsWorkspace({ trends, filters }: AnalyticsWorkspaceProps)
 
 function Stat({ label, value, note }: { label: string; value: string; note: string }) {
   return (
-    <div className="rounded-lg border border-border bg-card p-4">
+    <div className="rounded-medium border-thin border-border bg-elevation-default shadow-raised p-4">
       <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
         {label}
       </p>

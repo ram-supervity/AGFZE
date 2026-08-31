@@ -18,10 +18,10 @@ export const SHIPMENT_STATUS_LABELS: Record<ShipmentStatus, string> = {
 
 /** The platform's traffic-light triad, used here exactly as validation and confidence use it. */
 export const SHIPMENT_STATUS_CHIP: Record<ShipmentStatus, string> = {
-  on_schedule: "border-signal-confident/35 bg-signal-confident/10 text-signal-confident",
-  delayed: "border-signal-review/35 bg-signal-review/10 text-signal-review",
-  arrived: "border-signal-confident/35 bg-signal-confident/10 text-signal-confident",
-  exception: "border-signal-blocked/45 bg-signal-blocked/10 text-signal-blocked",
+  on_schedule: "border-pill-green-border bg-pill-green-bg text-pill-green-text",
+  delayed: "border-pill-amber-border bg-pill-amber-bg text-pill-amber-text",
+  arrived: "border-pill-green-border bg-pill-green-bg text-pill-green-text",
+  exception: "border-pill-red-border bg-pill-red-bg text-pill-red-text",
 };
 
 /** Mirrors the backend `ShipmentMilestone` vocabulary, in the order cargo actually moves. */
@@ -107,7 +107,7 @@ export function stalenessLabel(hours: number, lastCheckedAt: string | null): str
 
 export function stalenessTone(isStale: boolean, lastCheckedAt: string | null): string {
   if (!lastCheckedAt || isStale) {
-    return "border-signal-review/35 bg-signal-review/10 text-signal-review";
+    return "border-pill-amber-border bg-pill-amber-bg text-pill-amber-text";
   }
   return "border-border bg-muted text-muted-foreground";
 }

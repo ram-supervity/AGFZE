@@ -118,7 +118,7 @@ export function QuantityMeter({ coverage }: QuantityMeterProps) {
         className={cn(
           "rounded-md border px-3 py-2 text-sm leading-relaxed",
           state === "exceeded"
-            ? "border-signal-blocked/45 bg-signal-blocked/10 text-foreground"
+            ? "border-pill-red-border bg-pill-red-bg text-foreground"
             : "border-border bg-surface text-muted-foreground",
         )}
       >

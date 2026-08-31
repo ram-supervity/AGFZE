@@ -126,12 +126,12 @@ export function NotificationCentre({ data, unreadOnly }: NotificationCentreProps
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge
                     variant="outline"
-                    className={cn("px-1.5 py-0 text-[10px]", notificationChip(row.notification_type))}
+                    className={cn("px-1.5 py-0 text-body-xs", notificationChip(row.notification_type))}
                   >
                     {notificationLabel(row.notification_type)}
                   </Badge>
                   {row.is_read ? null : (
-                    <Badge variant="secondary" className="px-1.5 py-0 text-[10px]">
+                    <Badge variant="secondary" className="px-1.5 py-0 text-body-xs">
                       Unread
                     </Badge>
                   )}

@@ -50,8 +50,8 @@ describe("the integration vocabulary", () => {
     expect(INTEGRATION_STATUS_LABELS.awaiting_manual_action).not.toBe(
       INTEGRATION_STATUS_LABELS.failed,
     );
-    expect(INTEGRATION_STATUS_CHIP.failed).toContain("signal-blocked");
-    expect(INTEGRATION_STATUS_CHIP.awaiting_manual_action).toContain("signal-review");
+    expect(INTEGRATION_STATUS_CHIP.failed).toContain("pill-red");
+    expect(INTEGRATION_STATUS_CHIP.awaiting_manual_action).toContain("pill-amber");
   });
 });
 

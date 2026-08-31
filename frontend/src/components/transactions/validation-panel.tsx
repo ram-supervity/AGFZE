@@ -22,12 +22,12 @@ export interface ValidationPanelProps {
 function tone(rule: RuleEvaluation): string {
   if (rule.passed) {
     return rule.acknowledged
-      ? "border-signal-review/35 bg-signal-review/5"
-      : "border-signal-confident/35 bg-signal-confident/5";
+      ? "border-pill-amber-border bg-pill-amber-bg"
+      : "border-pill-green-border bg-pill-green-bg";
   }
   return rule.severity === "acknowledgeable"
-    ? "border-signal-review/45 bg-signal-review/10"
-    : "border-signal-blocked/45 bg-signal-blocked/10";
+    ? "border-pill-amber-border bg-pill-amber-bg"
+    : "border-pill-red-border bg-pill-red-bg";
 }
 
 function Icon({ rule }: { rule: RuleEvaluation }) {
@@ -91,14 +91,14 @@ export function ValidationPanel({
                     {rule.title ?? rule.check_key?.replace(/_/g, " ") ?? "Check"}
                   </span>
                   {rule.check_key ? (
-                    <Badge variant="muted" className="text-[10px] uppercase tracking-wider">
+                    <Badge variant="muted" className="text-body-xs uppercase tracking-wider">
                       {rule.check_key.replace(/_/g, " ")}
                     </Badge>
                   ) : null}
                   {rule.acknowledged ? (
                     <Badge
                       variant="outline"
-                      className="border-signal-review/35 bg-signal-review/10 text-signal-review"
+                      className="border-pill-amber-border bg-pill-amber-bg text-pill-amber-text"
                     >
                       Acknowledged
                     </Badge>

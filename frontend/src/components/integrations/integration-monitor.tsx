@@ -237,7 +237,7 @@ export function IntegrationMonitor({ queue, filters }: IntegrationMonitorProps) 
       </div>
 
       {filters.transactionId ? (
-        <div className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-surface px-4 py-2.5 text-sm">
+        <div className="flex flex-wrap items-center gap-2 rounded-medium border-thin border-border bg-elevation-sunken px-4 py-2.5 text-sm">
           <span className="text-muted-foreground">
             Showing one transaction&apos;s jobs
             {queue.items[0]?.batch_number ? ` - ${queue.items[0].batch_number}` : ""}.
@@ -312,7 +312,7 @@ export function IntegrationMonitor({ queue, filters }: IntegrationMonitorProps) 
                   {job.status === "failed" && job.failure_reason ? (
                     <p
                       role="alert"
-                      className="mt-1.5 max-w-[22rem] rounded-md border border-signal-blocked/35 bg-signal-blocked/10 px-2 py-1.5 text-xs text-signal-blocked"
+                      className="mt-1.5 max-w-[22rem] rounded-md border border-pill-red-border bg-pill-red-bg px-2 py-1.5 text-xs text-signal-blocked"
                     >
                       <TriangleAlert
                         className="mr-1 inline h-3 w-3 align-[-2px]"

@@ -142,7 +142,7 @@ export function ShipmentDashboard({ list, filters }: ShipmentDashboardProps) {
         onViewChange={setView}
       />
 
-      <p className="rounded-md border border-border bg-surface px-4 py-3 text-sm text-muted-foreground">
+      <p className="rounded-medium border-thin border-border bg-elevation-sunken px-4 py-3 text-sm text-muted-foreground">
         {trackingModeNote(list.carrier_adapters_available)}
       </p>
 
@@ -293,7 +293,7 @@ function ReviewFlag({ reason }: { reason: string | null }) {
         <span tabIndex={0}>
           <Badge
             variant="outline"
-            className="border-signal-review/35 bg-signal-review/10 text-signal-review"
+            className="border-pill-amber-border bg-pill-amber-bg text-pill-amber-text"
           >
             <TriangleAlert className="mr-1 h-3 w-3" aria-hidden="true" />
             Needs a look
@@ -320,7 +320,7 @@ function ShipmentCard({
   onRefresh: () => void;
 }) {
   return (
-    <article className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4">
+    <article className="flex flex-col gap-3 rounded-medium border-thin border-border bg-elevation-default shadow-raised p-4">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <Link

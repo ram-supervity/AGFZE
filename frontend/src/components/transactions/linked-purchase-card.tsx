@@ -34,7 +34,7 @@ export function LinkedPurchaseCard({ detail, linked }: LinkedPurchaseCardProps) 
     <section
       className={cn(
         "space-y-3 rounded-lg border bg-card p-4",
-        mismatch ? "border-signal-blocked/45 bg-signal-blocked/5" : "border-border",
+        mismatch ? "border-pill-red-border bg-pill-red-bg" : "border-border",
       )}
       aria-label="Linked purchase leg"
     >
@@ -48,7 +48,7 @@ export function LinkedPurchaseCard({ detail, linked }: LinkedPurchaseCardProps) 
         {mismatch ? (
           <Badge
             variant="outline"
-            className="border-signal-blocked/45 bg-signal-blocked/10 text-signal-blocked"
+            className="border-pill-red-border bg-pill-red-bg text-pill-red-text"
           >
             <TriangleAlert className="mr-1 h-3 w-3" aria-hidden="true" />
             Commodity code mismatch
@@ -56,7 +56,7 @@ export function LinkedPurchaseCard({ detail, linked }: LinkedPurchaseCardProps) 
         ) : (
           <Badge
             variant="outline"
-            className="border-signal-confident/35 bg-signal-confident/10 text-signal-confident"
+            className="border-pill-green-border bg-pill-green-bg text-pill-green-text"
           >
             <CircleCheck className="mr-1 h-3 w-3" aria-hidden="true" />
             Codes agree
@@ -68,7 +68,7 @@ export function LinkedPurchaseCard({ detail, linked }: LinkedPurchaseCardProps) 
         className={cn(
           "rounded-md border px-3 py-2.5",
           mismatch
-            ? "border-signal-blocked/45 bg-signal-blocked/10"
+            ? "border-pill-red-border bg-pill-red-bg"
             : "border-border bg-surface",
         )}
       >
@@ -115,7 +115,7 @@ export function LinkedPurchaseCard({ detail, linked }: LinkedPurchaseCardProps) 
           />
         </dl>
       ) : (
-        <p className="rounded-md border border-signal-review/35 bg-signal-review/10 px-3 py-2 text-sm text-foreground">
+        <p className="rounded-md border border-pill-amber-border bg-pill-amber-bg px-3 py-2 text-sm text-foreground">
           This transaction carries no purchase leg. The sales leg was attached with an explicit
           acknowledgement that no purchase counterpart exists for this cargo yet.
         </p>

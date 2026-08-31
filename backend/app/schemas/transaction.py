@@ -242,6 +242,7 @@ class TransactionListItem(BaseModel):
     has_purchase_leg: bool = False
     has_sales_leg: bool = False
     has_fa_leg: bool = False
+    deal_direction: str | None = None
     # A joint B2B purchase, and the partner it is shared with. The tag only; no profit split,
     # shared expense or loss allocation is modelled anywhere yet - see PurchaseLeg.is_b2b.
     is_b2b: bool = False
@@ -288,6 +289,44 @@ class MatchOutcomeRead(BaseModel):
     needs_user_decision: bool = False
 
 
+class PurchaseBundleItemStatusRead(BaseModel):
+    item: str
+    label: str
+    received: bool
+    confirmed: bool
+    document_id: UUID | None = None
+    filename: str | None = None
+
+
+class PurchaseBundleStatusRead(BaseModel):
+    items: list[PurchaseBundleItemStatusRead] = Field(default_factory=list)
+    missing: list[str] = Field(default_factory=list)
+    complete: bool = False
+    confirmed: bool = False
+    summary: str = ""
+
+
+class LoadingSheetStatusRead(BaseModel):
+    """The chip the purchase workspace shows beside the generated drafts.
+
+    `written` is what the platform can honestly claim on its own; `synced` is only ever set once
+    a Graph write genuinely returned a row, so the two are never collapsed into one reassuring
+    word.
+    """
+
+    model_config = ConfigDict(from_attributes=True)
+
+    batch_number: str
+    sync_status: str
+    external_reference: str | None = None
+    sync_error: str | None = None
+    synced_at: datetime | None = None
+    updated_at: datetime
+    # False on every deployment that has not been given a workbook, so the screen can say the row
+    # is held here on purpose rather than rendering `pending` as a failure.
+    workbook_configured: bool = False
+
+
 class TransactionDetail(TransactionListItem):
     request_id: UUID
     request_code: str | None = None
@@ -329,6 +368,13 @@ class TransactionDetail(TransactionListItem):
     linked_purchase: LinkedPurchaseContext | None = None
     contract_coverage: ContractCoverageRead | None = None
     generated_drafts: list[GeneratedDraftRead] = Field(default_factory=list)
+    # Where this batch stands with the Loading Sheet: whether a row exists, and whether it has
+    # actually reached AGFZE's workbook or is still held here waiting for a connection. Null on
+    # every transaction that has not reached a confirmed purchase bundle.
+    loading_sheet: LoadingSheetStatusRead | None = None
+    # The three inbound documents a purchase deal arrives as, received / pending per document.
+    # Null on a sales or FA transaction rather than an empty bundle.
+    purchase_bundle: PurchaseBundleStatusRead | None = None
     # True when BR-07's draft check passes: a draft or original B/L, or a recorded reference.
     can_generate_draft: bool = False
     draft_blocker: str | None = None

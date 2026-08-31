@@ -14,11 +14,13 @@ from pydantic import BaseModel, Field
 from app.core.config import settings
 from app.models.enums import (
     BUSINESS_STREAMS,
+    DEAL_DIRECTIONS,
     DOCUMENT_KINDS,
     DOCUMENT_TYPES,
     INBOUND_DOCUMENT_TYPES,
     REQUEST_CATEGORIES,
     TERRITORIES,
+    DealDirection,
     DocumentType,
 )
 from app.services.gemini_service import (
@@ -62,6 +64,9 @@ CLASSIFY_DOCUMENT_SCHEMA = {
         "confidence": {"type": "number"},
         "rationale": {"type": "string"},
         "territory": {"type": "string", "nullable": True, "enum": list(TERRITORIES)},
+        "deal_direction": {"type": "string", "enum": list(DEAL_DIRECTIONS)},
+        "deal_direction_confidence": {"type": "number"},
+        "deal_direction_rationale": {"type": "string"},
         "document_kinds": {
             "type": "array",
             "items": {"type": "string", "enum": list(DOCUMENT_KINDS)},
@@ -71,7 +76,14 @@ CLASSIFY_DOCUMENT_SCHEMA = {
             ),
         },
     },
-    "required": ["document_type", "confidence", "rationale"],
+    "required": [
+        "document_type",
+        "confidence",
+        "rationale",
+        "deal_direction",
+        "deal_direction_confidence",
+        "deal_direction_rationale",
+    ],
 }
 
 # What each kind means, in the words the checklists use. Rendered into the prompt so the
@@ -107,10 +119,23 @@ class DocumentClassification(BaseModel):
     confidence: float = Field(ge=0.0, le=1.0)
     rationale: str = Field(min_length=1, max_length=600)
     territory: str | None = None
+    deal_direction: str = Field(
+        default=DealDirection.NOT_TRADE.value,
+        pattern="^(" + "|".join(DEAL_DIRECTIONS) + ")$",
+    )
+    deal_direction_confidence: float = Field(default=1.0, ge=0.0, le=1.0)
+    deal_direction_rationale: str = Field(default="", max_length=600)
     document_kinds: list[str] = Field(default_factory=list)
 
     def normalised_territory(self) -> str | None:
         return self.territory if self.territory in TERRITORIES else None
+
+    def normalised_deal_direction(self) -> str:
+        return (
+            self.deal_direction
+            if self.deal_direction in DEAL_DIRECTIONS
+            else DealDirection.NOT_TRADE.value
+        )
 
     def normalised_kinds(self) -> list[str]:
         """Keep only known kinds, de-duplicated, in the order the model reported them.
@@ -208,12 +233,15 @@ class DocumentClassificationOutcome:
     needs_review: bool
     error: str | None = None
     kinds: tuple[str, ...] = ()
+    deal_direction: str | None = None
+    deal_direction_confidence: float | None = None
+    deal_direction_rationale: str | None = None
 
 
 def _document_prompt(filename: str, text: str, has_images: bool) -> str:
     header = "\n".join(
         [
-            "Identify what kind of trade document this is.",
+            "Identify what kind of trade document this is, and determine its deal direction.",
             "",
             "Types:",
             "invoice            - a commercial, provisional or proforma invoice",
@@ -227,7 +255,15 @@ def _document_prompt(filename: str, text: str, has_images: bool) -> str:
             "fa_document        - paperwork belonging to the finished aluminium desk",
             "unknown            - none of the above, or too illegible to tell",
             "",
-            "Rules:",
+            "Deal Direction Rules (must return deal_direction: purchase | sales | not_trade):",
+            "- AGFZE is the BUYER (we pay the counterparty) on supplier offers/quotations, purchase contracts and purchase confirmations, supplier proforma/commercial/provisional invoices and supplier debit notes -> purchase",
+            "- AGFZE is the SELLER (we bill the counterparty) on customer enquiries, sales contracts and sales confirmations, proforma or commercial invoices issued BY AGFZE TO a customer, and sales-related bank/collection paper -> sales",
+            "- Purely shipping paperwork (bill of lading, draft BL, packing list, certificate of origin, inspection/chemical/mill certificates, weight slips, freight certificates) takes the direction of the deal it evidences and must never flip it. (If evidencing a purchase/inbound cargo -> purchase; if evidencing a sale/outbound cargo -> sales)",
+            "- Paperwork belonging to the finished aluminium desk (FA) or non-trade paperwork (approvals, internal trackers, informational notices) -> not_trade",
+            "",
+            "Report deal_direction as one of purchase, sales, not_trade, with deal_direction_confidence (between 0.0 and 1.0) and deal_direction_rationale (one clear sentence).",
+            "",
+            "Composite Document Rules:",
             "- Where a file is a composite packet containing multiple documents (for example an invoice followed by supporting contracts, cost sheets or bill of lading), classify it by the primary document presented on the opening pages (e.g. invoice if the leading document is an invoice).",
             "- A provisional, proforma or commercial invoice should be classified as invoice.",
             "",
@@ -273,7 +309,16 @@ async def classify_document(
             territory=None,
             needs_review=True,
             error=exc.reason,
+            deal_direction=None,
+            deal_direction_confidence=None,
+            deal_direction_rationale=None,
         )
+
+    direction = result.normalised_deal_direction()
+    dir_conf = result.deal_direction_confidence
+    dir_weak = (
+        direction != DealDirection.NOT_TRADE.value and below_threshold(dir_conf)
+    )
 
     return DocumentClassificationOutcome(
         document_type=result.document_type,
@@ -281,6 +326,22 @@ async def classify_document(
         rationale=result.rationale,
         territory=result.normalised_territory(),
         needs_review=below_threshold(result.confidence)
-        or result.document_type == DocumentType.UNKNOWN.value,
+        or result.document_type == DocumentType.UNKNOWN.value
+        or dir_weak,
         kinds=tuple(result.normalised_kinds()),
+        deal_direction=direction,
+        deal_direction_confidence=dir_conf,
+        deal_direction_rationale=result.deal_direction_rationale,
+    )
+
+
+async def classify_deal_direction(
+    *, filename: str, text: str, images: list[ImagePart] | None = None
+) -> tuple[str, float | None, str | None]:
+    """Evaluate the deal direction for a document."""
+    outcome = await classify_document(filename=filename, text=text, images=images)
+    return (
+        outcome.deal_direction or DealDirection.NOT_TRADE.value,
+        outcome.deal_direction_confidence,
+        outcome.deal_direction_rationale,
     )

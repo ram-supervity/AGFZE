@@ -4,29 +4,55 @@ import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * The CCDS Button.
+ *
+ * Four styles, five sizes, five content arrangements - and the five states are left to the
+ * browser rather than modelled as a prop, because hover, press and focus are the user's to
+ * decide and only `disabled` is ours. Hover and press are the opacity-overlay mechanism the
+ * design system recommends for anything new: one tint, composed over whatever fill the style
+ * already has, so a new style never needs a hand-picked hover colour.
+ *
+ * `primary` is the brand gradient and there is at most one of it per view. `ai` is the same
+ * gradient poured into the glyphs instead - reserved for AI-forward actions, nothing else.
+ */
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "relative inline-flex items-center justify-center gap-space-075 whitespace-nowrap rounded-control font-medium transition-colors after:pointer-events-none after:absolute after:inset-0 after:rounded-control after:bg-foreground after:opacity-0 after:transition-opacity hover:after:opacity-hover active:after:opacity-pressed focus-visible:outline-none focus-visible:ring-thick focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-disabled disabled:after:opacity-0 [&_svg]:pointer-events-none [&_svg]:size-icon-small [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/90",
-        accent: "bg-accent text-accent-foreground hover:bg-accent/90",
-        outline: "border border-input bg-background text-foreground hover:bg-muted",
-        ghost: "text-foreground hover:bg-muted",
-        link: "text-secondary underline-offset-4 hover:underline",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        primary: "bg-brand-gradient text-text-inverse",
+        secondary: "bg-information-bold text-text-inverse",
+        tertiary: "border-thin border-border bg-muted text-foreground",
+        danger: "bg-danger-bold text-text-inverse",
+        ai: "border-thin border-brand-bold bg-transparent text-brand-gradient",
+        ghost: "text-foreground",
+        link: "text-text-link underline-offset-4 after:hidden hover:underline",
+        // Retained names, pointed at the style the design system defines for that intent, so
+        // there is one button and not two.
+        default: "bg-brand-gradient text-text-inverse",
+        outline: "border-thin border-border bg-muted text-foreground",
+        accent: "bg-information-bold text-text-inverse",
+        destructive: "bg-danger-bold text-text-inverse",
       },
       size: {
-        sm: "h-8 px-3 text-xs",
-        default: "h-9 px-4 py-2",
-        lg: "h-11 px-6",
-        icon: "h-9 w-9",
+        xs: "h-6 px-space-100 text-body-sm",
+        sm: "h-[26px] px-space-150 text-body-sm",
+        md: "h-8 px-space-200 text-label-lg",
+        lg: "h-[38px] px-space-250 text-label-lg",
+        xl: "h-[42px] px-space-300 text-label-lg",
+        "icon-xs": "h-5 w-5",
+        "icon-sm": "h-[26px] w-[26px]",
+        "icon-md": "h-control-md w-control-md",
+        "icon-lg": "h-control-lg w-control-lg",
+        "icon-xl": "h-12 w-12",
+        default: "h-8 px-space-200 text-label-lg",
+        icon: "h-control-md w-control-md",
       },
     },
     defaultVariants: {
-      variant: "default",
-      size: "default",
+      variant: "primary",
+      size: "md",
     },
   },
 )

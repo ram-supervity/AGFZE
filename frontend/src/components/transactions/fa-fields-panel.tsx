@@ -142,7 +142,7 @@ function SchemaField({
   }
 
   return (
-    <div className="space-y-1.5 rounded-md border border-border bg-surface px-3 py-2.5">
+    <div className="space-y-1.5 rounded-medium border-thin border-border bg-elevation-sunken px-3 py-2.5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <Label htmlFor={inputId}>
           {definition.label}

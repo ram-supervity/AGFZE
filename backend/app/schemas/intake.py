@@ -7,7 +7,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from app.models.enums import BUSINESS_STREAMS, REQUEST_CATEGORIES
+from app.models.enums import BUSINESS_STREAMS, DEAL_DIRECTIONS, REQUEST_CATEGORIES
 
 
 class EmailMessageRead(BaseModel):
@@ -31,6 +31,9 @@ class DocumentSummary(BaseModel):
     content_type: str
     byte_size: int
     document_type: str | None
+    deal_direction: str | None = None
+    deal_direction_confidence: float | None = None
+    deal_direction_rationale: str | None = None
     territory: str | None
     page_count: int | None
     extraction_status: str
@@ -51,6 +54,7 @@ class RequestSummary(BaseModel):
     category: str | None
     category_confidence: float | None
     category_overridden: bool
+    deal_direction: str | None = None
     stream: str | None
     status: str
     needs_review: bool
@@ -59,6 +63,30 @@ class RequestSummary(BaseModel):
     subject: str | None = None
     sender_address: str | None = None
     document_count: int = 0
+    transaction_id: UUID | None = None
+    transaction_leg_type: str | None = None
+
+
+class PurchaseBundleItemSummary(BaseModel):
+    """One expected purchase document, and whether the intake has it yet."""
+
+    item: str
+    label: str
+    received: bool
+    confirmed: bool
+    document_id: UUID | None = None
+    filename: str | None = None
+
+
+class PurchaseBundleSummary(BaseModel):
+    """The three-document purchase bundle, as the inbox shows it: received / pending per item."""
+
+    items: list[PurchaseBundleItemSummary] = Field(default_factory=list)
+    missing: list[str] = Field(default_factory=list)
+    complete: bool = False
+    confirmed: bool = False
+    unexpected: list[PurchaseBundleItemSummary] = Field(default_factory=list)
+    summary: str = ""
 
 
 class RequestDetail(RequestSummary):
@@ -68,13 +96,19 @@ class RequestDetail(RequestSummary):
     category_overridden_at: datetime | None = None
     original_stream: str | None = None
     classification_error: str | None = None
+    deal_direction_confidence: float | None = None
+    deal_direction_rationale: str | None = None
     email: EmailMessageRead | None = None
     documents: list[DocumentSummary] = Field(default_factory=list)
+    # Present only on a purchase intake. A sales or FA request carries None rather than an empty
+    # bundle, so no screen can read "nothing received" off a request the bundle is not about.
+    purchase_bundle: PurchaseBundleSummary | None = None
 
 
 class CategoryOverrideRequest(BaseModel):
     category: str
     stream: str | None = None
+    deal_direction: str | None = None
     reason: str = Field(min_length=5, max_length=1000)
 
     @field_validator("category")
@@ -89,6 +123,13 @@ class CategoryOverrideRequest(BaseModel):
     def _known_stream(cls, value: str | None) -> str | None:
         if value is not None and value not in BUSINESS_STREAMS:
             raise ValueError(f"Stream must be one of: {', '.join(BUSINESS_STREAMS)}")
+        return value
+
+    @field_validator("deal_direction")
+    @classmethod
+    def _known_direction(cls, value: str | None) -> str | None:
+        if value is not None and value not in DEAL_DIRECTIONS:
+            raise ValueError(f"Deal direction must be one of: {', '.join(DEAL_DIRECTIONS)}")
         return value
 
     @field_validator("reason")

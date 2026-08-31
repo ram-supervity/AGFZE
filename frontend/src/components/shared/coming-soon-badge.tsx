@@ -5,7 +5,7 @@ export function ComingSoonBadge({ className }: { className?: string }) {
   return (
     <Badge
       variant="muted"
-      className={cn("shrink-0 px-1.5 py-0 text-[10px] uppercase tracking-[0.12em]", className)}
+      className={cn("shrink-0 px-space-075 py-0 text-body-xs uppercase tracking-[0.12em]", className)}
     >
       Coming soon
     </Badge>

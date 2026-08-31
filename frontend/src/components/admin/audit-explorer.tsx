@@ -37,8 +37,8 @@ export interface AuditExplorerProps {
 
 const ACTOR_TYPE_CHIP: Record<string, string> = {
   user: "border-border bg-muted text-muted-foreground",
-  system: "border-secondary/35 bg-secondary/10 text-secondary",
-  agent: "border-signal-review/35 bg-signal-review/10 text-signal-review",
+  system: "border-pill-blue-border bg-pill-blue-bg text-pill-blue-text",
+  agent: "border-pill-amber-border bg-pill-amber-bg text-pill-amber-text",
 };
 
 /**
@@ -245,7 +245,7 @@ export function AuditExplorer({ data, filters }: AuditExplorerProps) {
                     {actorLabel(row.actor_type, row.actor_name, null)}
                     <Badge
                       variant="outline"
-                      className={`ml-1.5 px-1.5 py-0 text-[10px] ${ACTOR_TYPE_CHIP[row.actor_type] ?? ""}`}
+                      className={`ml-1.5 px-1.5 py-0 text-body-xs ${ACTOR_TYPE_CHIP[row.actor_type] ?? ""}`}
                     >
                       {row.actor_type}
                     </Badge>
