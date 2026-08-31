@@ -27,6 +27,7 @@ from app.core.logging import get_logger
 from app.db.base import utcnow
 from app.models.configuration import RuleConfiguration
 from app.models.enums import (
+    BatchNumberSource,
     BusinessStream,
     DocumentType,
     InvoiceStatus,
@@ -558,6 +559,70 @@ async def link_document(
     )
 
 
+async def adopt_stated_batch_number(
+    session: AsyncSession,
+    transaction: TradeTransaction,
+    values: dict[str, str | None],
+    *,
+    actor_id: UUID | None,
+) -> str | None:
+    """Take the counterparty's own batch reference over a placeholder the platform allocated.
+
+    A pack does not arrive in a helpful order. A purchase contract quotes a contract number and
+    no batch, so the transaction it opens is given a number off the platform's sequence to have
+    an identity at all. The invoice, the packing list and the certificates that follow all quote
+    the real batch - and before this existed, the invoice would fuzzy-match onto the placeholder
+    and leave it in place, and then the packing list, matching strictly on batch number, would
+    find nothing and open a *second* transaction for the same physical container.
+
+    That is the split BR-13 exists to prevent, and BR-03 caught it downstream every time: one
+    container on two batches, a hard block, and a deal that could not be submitted at all.
+
+    Adoption is deliberately narrow. It happens only where the transaction's number is a
+    placeholder, only where a document states one, and never where another transaction already
+    holds the stated reference - that case is a genuine collision for a person to look at, not
+    something to resolve by moving a number. `transaction_code` is left exactly as it was: it is
+    the platform's own permanent handle on this record, and rewriting it would change the
+    identity of a row that other systems have already been told about.
+
+    Returns the adopted number, or None where nothing was adopted.
+    """
+    stated = (values.get("batch_number") or "").strip()
+    if not stated or stated == transaction.batch_number:
+        return None
+    if transaction.batch_number_source != BatchNumberSource.ALLOCATED.value:
+        return None
+
+    clash = await session.scalar(
+        select(TradeTransaction.id)
+        .where(TradeTransaction.batch_number == stated)
+        .where(TradeTransaction.id != transaction.id)
+    )
+    if clash is not None:
+        return None
+
+    placeholder = transaction.batch_number
+    transaction.batch_number = stated[:32]
+    transaction.batch_number_source = BatchNumberSource.DOCUMENT.value
+    transaction.updated_at = utcnow()
+    await session.flush()
+
+    await record_audit_event(
+        session,
+        event_type=transaction_service.AuditEvent.TRANSACTION_BATCH_NUMBER_ADOPTED,
+        entity_type="trade_transaction",
+        entity_id=transaction.id,
+        actor_id=actor_id,
+        actor_type=ActorType.USER if actor_id else ActorType.AGENT,
+        metadata={
+            "allocated_batch_number": placeholder,
+            "adopted_batch_number": transaction.batch_number,
+            "transaction_code": transaction.transaction_code,
+        },
+    )
+    return transaction.batch_number
+
+
 def _enrich_leg(transaction: TradeTransaction, values: dict[str, str | None]) -> None:
     """Fill in what the leg does not know yet, without overwriting what it does.
 
@@ -839,6 +904,7 @@ async def apply_match(
     if result.outcome in (Outcome.NOT_APPLICABLE, Outcome.NO_REFERENCE, Outcome.ALREADY_LINKED):
         if result.outcome == Outcome.ALREADY_LINKED and result.transaction_id:
             transaction = await transaction_service.get_transaction(session, result.transaction_id)
+            await adopt_stated_batch_number(session, transaction, values, actor_id=actor_id)
             superseded = await apply_supersession(
                 session, transaction, document, values, actor_id=actor_id
             )
@@ -870,6 +936,7 @@ async def apply_match(
             rationale=result.message,
             actor_id=actor_id,
         )
+        await adopt_stated_batch_number(session, transaction, values, actor_id=actor_id)
         _record_duplicate_outcome(
             session,
             transaction.id,
@@ -892,6 +959,7 @@ async def apply_match(
             rationale=result.message,
             actor_id=actor_id,
         )
+        await adopt_stated_batch_number(session, transaction, values, actor_id=actor_id)
         superseded = await apply_supersession(
             session, transaction, document, values, actor_id=actor_id
         )

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import io
 import json
+import uuid
 
 import pytest
 from sqlalchemy import select
@@ -27,6 +28,7 @@ from app.models.identity import User
 from app.models.intake import Document
 from app.services import draft_service
 from app.services.gemini_service import AIServiceError
+from app.services.templates import house_style
 from app.services.templates.renderer import ClauseDirective, TemplateRenderError, render_template
 from app.services.templates.sales_templates import (
     SALES_CONTRACT_TEMPLATE,
@@ -70,15 +72,15 @@ def model_reply(monkeypatch: pytest.MonkeyPatch):
 
 @pytest.fixture
 async def sales_user(db_session: AsyncSession) -> User:
+    uid = uuid.uuid4().hex[:8]
     user = User(
-        subject_id="draft-user",
-        email="sales.user@agfze.test",
+        subject_id=f"draft-user-{uid}",
+        email=f"sales.user.{uid}@agfze.test",
         display_name="Sales User",
         roles=["sales_user"],
     )
     db_session.add(user)
     await db_session.flush()
-    await db_session.commit()
     return user
 
 
@@ -151,7 +153,7 @@ def test_territory_selects_content_not_a_separate_template() -> None:
     assert territory_reference(None).strip()
     assert territory_reference("atlantis") == territory_reference(Territory.OTHER.value)
     # And there is exactly one template file per document type, not one per territory.
-    assert len(TEMPLATES_BY_TYPE) == 4
+    assert len(TEMPLATES_BY_TYPE) == 6
 
 
 def test_the_renderer_refuses_to_delete_a_required_clause() -> None:
@@ -659,3 +661,264 @@ async def test_the_exemption_still_requires_a_sales_leg(db_session, storage_root
         await draft_service.assert_generation_permitted(
             db_session, transaction, document_type=DocumentType.DRAFT_PERFORMA_INVOICE.value
         )
+
+
+async def test_purchase_contract_and_cost_sheet_permitted_with_purchase_data(
+    db_session, storage_root
+) -> None:
+    """Purchase contract and cost sheet drafts are permitted on purchase transactions."""
+    from app.models.enums import DocumentType
+    from app.services import draft_service
+    from tests.utils.transactions import make_transaction
+
+    transaction = await make_transaction(
+        db_session,
+        batch_number="I2626-PO-1",
+        supplier_name="Apex Scrap Corp",
+        quantity="25.000",
+        rate="4800.00",
+    )
+    await db_session.commit()
+
+    for doc_type in (
+        DocumentType.DRAFT_PURCHASE_CONTRACT.value,
+        DocumentType.DRAFT_COST_SHEET.value,
+    ):
+        await draft_service.assert_generation_permitted(
+            db_session, transaction, document_type=doc_type
+        )
+
+
+async def test_purchase_draft_refused_when_required_data_missing(
+    db_session, storage_root
+) -> None:
+    """Missing supplier or required figures blocks draft generation with a clear message."""
+    from app.models.enums import DocumentType
+    from app.services import draft_service
+    from tests.utils.transactions import make_transaction
+
+    transaction = await make_transaction(
+        db_session,
+        batch_number="I2626-PO-2",
+        supplier_name="Apex Scrap Corp",
+    )
+    # Clear quantity and rate
+    transaction.quantity_mt = None
+    transaction.purchase_leg.rate = None
+    transaction.purchase_leg.amount = None
+    transaction.price_basis = None
+    await db_session.commit()
+
+    with pytest.raises(draft_service.DraftNotPermittedError) as exc:
+        await draft_service.assert_generation_permitted(
+            db_session,
+            transaction,
+            document_type=DocumentType.DRAFT_PURCHASE_CONTRACT.value,
+        )
+    assert "missing from the purchase transaction" in str(exc.value)
+
+
+async def test_api_role_restrictions_for_draft_generation(
+    patched_jwks, client, db_session: AsyncSession, signed_in, storage_root
+) -> None:
+    """Verify strict backend role-based access for draft generation."""
+    from tests.utils.transactions import make_transaction
+
+    tx = await make_transaction(
+        db_session,
+        batch_number="I2626-PO-API",
+        supplier_name="Apex Scrap Corp",
+        quantity="20.000",
+        rate="5000.00",
+    )
+    await db_session.commit()
+
+    _, purchase_headers = await signed_in(
+        "purch-api-1", "purch.api@agfze.test", "Purchase User", ["purchase_user"]
+    )
+    _, sales_headers = await signed_in(
+        "sales-api-1", "sales.api@agfze.test", "Sales User", ["sales_user"]
+    )
+    _, other_headers = await signed_in(
+        "fa-api-1", "fa.api@agfze.test", "FA User", ["fa_user"]
+    )
+
+    # 1. Purchase user can generate purchase contract
+    res = await client.post(
+        f"/api/v1/transactions/{tx.id}/generate-draft",
+        headers=purchase_headers,
+        json={"document_type": DocumentType.DRAFT_PURCHASE_CONTRACT.value},
+    )
+    assert res.status_code == 202
+
+    # 2. Purchase user can generate cost sheet
+    res = await client.post(
+        f"/api/v1/transactions/{tx.id}/generate-draft",
+        headers=purchase_headers,
+        json={"document_type": DocumentType.DRAFT_COST_SHEET.value},
+    )
+    assert res.status_code == 202
+
+    # 3. Purchase user forbidden from generating sales contract
+    res = await client.post(
+        f"/api/v1/transactions/{tx.id}/generate-draft",
+        headers=purchase_headers,
+        json={"document_type": DocumentType.DRAFT_CONTRACT.value},
+    )
+    assert res.status_code == 403
+
+    # 4. Sales user forbidden from generating purchase contract
+    res = await client.post(
+        f"/api/v1/transactions/{tx.id}/generate-draft",
+        headers=sales_headers,
+        json={"document_type": DocumentType.DRAFT_PURCHASE_CONTRACT.value},
+    )
+    assert res.status_code == 403
+
+    # 5. Other role (fa_user) forbidden from generating purchase contract
+    res = await client.post(
+        f"/api/v1/transactions/{tx.id}/generate-draft",
+        headers=other_headers,
+        json={"document_type": DocumentType.DRAFT_PURCHASE_CONTRACT.value},
+    )
+    assert res.status_code == 403
+
+    # 6. Disallowed document types are rejected with validation error (422)
+    res = await client.post(
+        f"/api/v1/transactions/{tx.id}/generate-draft",
+        headers=purchase_headers,
+        json={"document_type": DocumentType.DRAFT_PERFORMA_INVOICE.value},
+    )
+    assert res.status_code == 422
+
+
+
+# --- the AGFZE house style -----------------------------------------------------------------------
+#
+# These lock the page down against the approved reference documents. They are deliberately about
+# geometry and letterhead rather than wording: a draft that carries the right commercial terms on
+# a page that does not look like AGFZE paper is not a document the desk can put in front of a
+# counterparty, and nothing else in this file would notice.
+
+
+def _docx(template) -> "object":
+    from docx import Document as DocxDocument
+
+    ensure_template_files()
+    return DocxDocument(io.BytesIO(template_path(template).read_bytes()))
+
+
+@pytest.mark.parametrize("template", sorted(TEMPLATES_BY_TYPE.values(), key=lambda t: t.filename))
+def test_every_template_is_laid_out_on_the_reference_page(template) -> None:
+    """Page size and margins, as measured from the reference contract's own `sectPr`."""
+    from docx.shared import Inches
+
+    section = _docx(template).sections[0]
+    assert section.page_width == Inches(house_style.PAGE_WIDTH_IN)
+    assert section.page_height == Inches(house_style.PAGE_HEIGHT_IN)
+    # The asymmetric left margin is the reference's, not a typo: 1.125in against 1.0in right.
+    assert section.left_margin == Inches(1.125)
+    assert section.right_margin == Inches(1.0)
+    assert section.top_margin == Inches(1.0)
+
+
+@pytest.mark.parametrize("template", sorted(TEMPLATES_BY_TYPE.values(), key=lambda t: t.filename))
+def test_every_template_carries_the_letterhead_on_every_page(template) -> None:
+    """The mark and the registered-entity block live in the section header and footer.
+
+    Which is what makes them repeat on continuation pages by themselves - the reference contract
+    carries both on all three of its pages, including a signature page with nothing else on it.
+    """
+    document = _docx(template)
+    section = document.sections[0]
+
+    assert not section.header.is_linked_to_previous
+    header_xml = section.header.paragraphs[0]._p.xml
+    assert "graphicData" in header_xml, "the letterhead mark is not in the page header"
+
+    footer_text = "\n".join(p.text for p in section.footer.paragraphs)
+    for line in ("Adani Global FZE", "Post Box 17186,", "www.adani.com"):
+        assert line in footer_text, f"the letterhead footer is missing {line!r}"
+    assert house_style.FOOTER_LEGAL_ENGLISH in footer_text
+    # The footer is the entity block and nothing else. Bank details belong to the deal, change
+    # from one to the next, and are carried as fields - never baked into the paper.
+    assert "IBAN" not in footer_text and "SWIFT" not in footer_text
+
+
+def test_the_issuing_entity_is_the_one_the_references_name() -> None:
+    """`ADANI GLOBAL FZE`, from every reference document, not an invented trading name."""
+    assert draft_service.SELLER_LEGAL_NAME == "ADANI GLOBAL FZE"
+
+
+def test_every_generated_type_routes_to_exactly_one_template() -> None:
+    """No document type can render with another type's layout."""
+    for document_type, template in TEMPLATES_BY_TYPE.items():
+        assert draft_service.resolve_template(document_type) is template
+        assert template.document_type == document_type
+    filenames = [template.filename for template in TEMPLATES_BY_TYPE.values()]
+    assert len(set(filenames)) == len(filenames), "two document types share a template file"
+
+
+def test_the_contracts_sign_bilaterally_with_agfze_in_the_left_column() -> None:
+    """AGFZE keeps the left column on both contracts; the role it plays is what flips.
+
+    The reference purchase contract has AGFZE as THE BUYER and the supplier as THE SELLER; the
+    reference sales contract has it the other way round. Getting this backwards would name the
+    wrong party as the seller on a signed contract.
+    """
+    from app.services.templates.sales_templates import (
+        PURCHASE_CONTRACT_TEMPLATE,
+        SALES_CONTRACT_TEMPLATE as SALES,
+    )
+
+    assert [(c.role, c.entity_field) for c in SALES.signature_columns] == [
+        ("THE SELLER", "agfze"),
+        ("THE BUYER", "buyer"),
+    ]
+    assert [(c.role, c.entity_field) for c in PURCHASE_CONTRACT_TEMPLATE.signature_columns] == [
+        ("THE BUYER", "agfze"),
+        ("THE SELLER", "supplier"),
+    ]
+
+
+def test_a_rendered_invoice_prices_its_line_item_from_the_transaction() -> None:
+    """The line-item table populates, and its rate and amount come from the same source.
+
+    A produced invoice whose unit price and amount disagree is worse than one that fails to
+    generate, so the two are proved to come from one precedence rather than two.
+    """
+    values = {name: f"value-{name}" for name in SALES_INVOICE_TEMPLATE.field_names}
+    values.update(
+        {
+            "agfze": draft_service.SELLER_LEGAL_NAME,
+            "buyer": CUSTOMER,
+            "commodity": "COPPER INGOTS",
+            "quantity": "52.660 MT",
+            "unit_rate": "9,577.43",
+            "currency": "USD",
+            "total_value": "504,347.46",
+            "territory_reference": territory_reference(Territory.CHINA.value),
+            "generated_at": "2026-08-30T10:00:00",
+            "generated_by": "Sales User",
+        }
+    )
+    result = render_template(
+        SALES_INVOICE_TEMPLATE,
+        template_bytes=template_path(SALES_INVOICE_TEMPLATE).read_bytes(),
+        values=values,
+        directives=[],
+    )
+
+    from docx import Document as DocxDocument
+
+    document = DocxDocument(io.BytesIO(result.content))
+    table_text = "\n".join(
+        cell.text for table in document.tables for row in table.rows for cell in row.cells
+    )
+    assert "DESCRIPTION" in table_text and "UNIT PRICE" in table_text
+    assert "COPPER INGOTS" in table_text
+    assert "9,577.43" in table_text
+    assert "504,347.46" in table_text
+    assert "{{" not in table_text
+    # The single signature column names AGFZE, as the reference invoice's does.
+    assert draft_service.SELLER_LEGAL_NAME in table_text

@@ -14,7 +14,9 @@ from pydantic import BaseModel, Field
 from app.core.config import settings
 from app.models.enums import (
     BUSINESS_STREAMS,
+    DOCUMENT_KINDS,
     DOCUMENT_TYPES,
+    INBOUND_DOCUMENT_TYPES,
     REQUEST_CATEGORIES,
     TERRITORIES,
     DocumentType,
@@ -56,13 +58,38 @@ CLASSIFY_REQUEST_SCHEMA = {
 CLASSIFY_DOCUMENT_SCHEMA = {
     "type": "object",
     "properties": {
-        "document_type": {"type": "string", "enum": list(DOCUMENT_TYPES)},
+        "document_type": {"type": "string", "enum": list(INBOUND_DOCUMENT_TYPES)},
         "confidence": {"type": "number"},
         "rationale": {"type": "string"},
         "territory": {"type": "string", "nullable": True, "enum": list(TERRITORIES)},
+        "document_kinds": {
+            "type": "array",
+            "items": {"type": "string", "enum": list(DOCUMENT_KINDS)},
+            "description": (
+                "Every checklist entry this one document genuinely evidences. Empty where none "
+                "of them applies."
+            ),
+        },
     },
     "required": ["document_type", "confidence", "rationale"],
 }
+
+# What each kind means, in the words the checklists use. Rendered into the prompt so the
+# vocabulary and its description can never drift apart in two places.
+KIND_GUIDE = """\
+bill_of_lading                 - a bill of lading, sea waybill or carrier shipping confirmation
+packing_list                   - a list of packages, bundles or pieces and their weights
+certificate_of_origin          - a certificate stating the country the goods originate in
+chemical_analysis_certificate  - an assay: elements and their percentages by mass
+mill_test_certificate          - a mill, quality or inspection test certificate for the material
+freight_certificate            - a certificate stating the freight charged or prepaid
+form_6                         - an India-bound Form 6
+form_9                         - an India-bound Form 9
+weight_slip                    - a weighbridge ticket or draft survey weight note
+inspection_certificate         - a pre-shipment or third-party inspection report
+bank_document                  - a covering letter, collection instruction or other bank paper
+other                          - shipment paperwork that is none of the above\
+"""
 
 
 class RequestClassification(BaseModel):
@@ -76,13 +103,27 @@ class RequestClassification(BaseModel):
 
 
 class DocumentClassification(BaseModel):
-    document_type: str = Field(pattern="^(" + "|".join(DOCUMENT_TYPES) + ")$")
+    document_type: str = Field(pattern="^(" + "|".join(INBOUND_DOCUMENT_TYPES) + ")$")
     confidence: float = Field(ge=0.0, le=1.0)
     rationale: str = Field(min_length=1, max_length=600)
     territory: str | None = None
+    document_kinds: list[str] = Field(default_factory=list)
 
     def normalised_territory(self) -> str | None:
         return self.territory if self.territory in TERRITORIES else None
+
+    def normalised_kinds(self) -> list[str]:
+        """Keep only known kinds, de-duplicated, in the order the model reported them.
+
+        A value outside the vocabulary is dropped rather than stored: BR-04 reads this list to
+        decide whether a required document is present, and an entry nothing can ever match would
+        be a checklist item quietly satisfied by a word the model made up.
+        """
+        seen: list[str] = []
+        for value in self.document_kinds:
+            if value in DOCUMENT_KINDS and value not in seen:
+                seen.append(value)
+        return seen
 
 
 @dataclass(frozen=True)
@@ -166,6 +207,7 @@ class DocumentClassificationOutcome:
     territory: str | None
     needs_review: bool
     error: str | None = None
+    kinds: tuple[str, ...] = ()
 
 
 def _document_prompt(filename: str, text: str, has_images: bool) -> str:
@@ -174,9 +216,10 @@ def _document_prompt(filename: str, text: str, has_images: bool) -> str:
             "Identify what kind of trade document this is.",
             "",
             "Types:",
-            "invoice            - a commercial or proforma invoice",
+            "invoice            - a commercial, provisional or proforma invoice",
             "contract           - a sale or purchase contract or deal confirmation",
-            "bl                 - a bill of lading",
+            "bl                 - a bill of lading or sea waybill",
+            "bl_draft           - a draft bill of lading",
             "shipping_document  - packing list, certificate of origin, freight certificate and "
             "other shipment paperwork",
             "tracker            - a spreadsheet export listing many shipments or batches",
@@ -184,8 +227,24 @@ def _document_prompt(filename: str, text: str, has_images: bool) -> str:
             "fa_document        - paperwork belonging to the finished aluminium desk",
             "unknown            - none of the above, or too illegible to tell",
             "",
+            "Rules:",
+            "- Where a file is a composite packet containing multiple documents (for example an invoice followed by supporting contracts, cost sheets or bill of lading), classify it by the primary document presented on the opening pages (e.g. invoice if the leading document is an invoice).",
+            "- A provisional, proforma or commercial invoice should be classified as invoice.",
+            "",
             "Also report the territory the document belongs to (india, china, japan, other) when "
             "the language, addresses, forms or authorities make it clear, otherwise null.",
+            "",
+            "Then report `document_kinds`: every entry below that this one document genuinely "
+            "evidences, on its own face. Most documents evidence exactly one; some evidence two, "
+            "and a commercial invoice or a contract evidences none of them - return an empty "
+            "list rather than the nearest guess.",
+            "",
+            KIND_GUIDE,
+            "",
+            "Report a kind only where the document itself carries what that kind is: a mill "
+            "certificate that prints an elemental assay table on its face is both a mill test "
+            "certificate and a chemical analysis certificate; one that merely says an assay was "
+            "performed elsewhere is only the mill test certificate.",
             "",
             f"File name as supplied by the sender (untrusted, may be wrong): {filename}",
             "The page images attached below are the document." if has_images else "",
@@ -223,4 +282,5 @@ async def classify_document(
         territory=result.normalised_territory(),
         needs_review=below_threshold(result.confidence)
         or result.document_type == DocumentType.UNKNOWN.value,
+        kinds=tuple(result.normalised_kinds()),
     )

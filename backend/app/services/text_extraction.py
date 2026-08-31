@@ -25,11 +25,6 @@ from app.services.file_intake import DOCX, IMAGE, PDF, SPREADSHEET
 
 logger = get_logger(__name__)
 
-# A text layer thinner than this per page is treated as incidental (a scanner's stamp, a header
-# watermark) rather than as the document's actual content.
-MIN_TEXT_CHARS_PER_PAGE = 40
-
-
 class ExtractionRoute(str, Enum):
     TEXT_LAYER = "text_layer"
     MULTIMODAL = "multimodal"
@@ -98,33 +93,26 @@ def _rasterise(page: pymupdf.Page, dpi: int) -> bytes:
     return pixmap.tobytes("png")
 
 
-def read_pdf(data: bytes, *, force_multimodal: bool = False) -> DocumentContent:
-    """Read a PDF, choosing the text-layer path or the multimodal path per document."""
+def read_pdf(data: bytes) -> DocumentContent:
+    """Read a PDF, converting each page into an image for multimodal AI processing."""
     pages: list[PageContent] = []
     with pymupdf.open(stream=data, filetype="pdf") as document:
         limit = min(document.page_count, settings.EXTRACTION_MAX_PAGES)
-        harvested: list[tuple[int, str, list[dict[str, object]]]] = []
         for index in range(limit):
-            text, blocks = _pdf_page_text(document.load_page(index))
-            harvested.append((index + 1, text, blocks))
-
-        total_characters = sum(len(text) for _, text, _ in harvested)
-        has_text_layer = (
-            not force_multimodal
-            and limit > 0
-            and total_characters >= MIN_TEXT_CHARS_PER_PAGE * limit
-        )
-        route = ExtractionRoute.TEXT_LAYER if has_text_layer else ExtractionRoute.MULTIMODAL
-
-        for page_number, text, blocks in harvested:
-            image: bytes | None = None
-            if route is ExtractionRoute.MULTIMODAL:
-                image = _rasterise(document.load_page(page_number - 1), settings.PAGE_RASTER_DPI)
+            page = document.load_page(index)
+            text, blocks = _pdf_page_text(page)
+            image = _rasterise(page, settings.PAGE_RASTER_DPI)
             pages.append(
-                PageContent(page_number=page_number, text=text, blocks=blocks, image=image)
+                PageContent(
+                    page_number=index + 1,
+                    text=text,
+                    blocks=blocks,
+                    image=image,
+                    image_mime="image/png",
+                )
             )
 
-    return DocumentContent(route=route, pages=pages)
+    return DocumentContent(route=ExtractionRoute.MULTIMODAL, pages=pages)
 
 
 def render_pdf_pages(data: bytes, page_numbers: list[int] | None = None) -> list[bytes]:
@@ -138,6 +126,33 @@ def render_pdf_pages(data: bytes, page_numbers: list[int] | None = None) -> list
                 page = document.load_page(page_number - 1)
                 rendered.append(_rasterise(page, settings.PAGE_RASTER_DPI))
     return rendered
+
+
+def render_document_preview_pages(filename: str, content: DocumentContent, dpi: int = 150) -> list[bytes]:
+    """Generate rendered PNG page previews for any document content."""
+    rendered_images: list[bytes] = []
+    pages = content.pages or [PageContent(page_number=1, text="")]
+    for page in pages:
+        if page.image is not None:
+            rendered_images.append(page.image)
+            continue
+
+        doc = pymupdf.open()
+        p = doc.new_page(width=595, height=842)
+        p.insert_text((40, 40), filename, fontsize=11, fontname="helv", color=(0.2, 0.2, 0.2))
+        page_label = f"Page {page.page_number}"
+        text_len = pymupdf.get_text_length(page_label, fontname="helv", fontsize=9)
+        p.insert_text((555 - text_len, 40), page_label, fontsize=9, fontname="helv", color=(0.4, 0.4, 0.4))
+        p.draw_line(pymupdf.Point(40, 48), pymupdf.Point(555, 48), color=(0.8, 0.8, 0.8), width=0.6)
+
+        text = page.text if hasattr(page, "text") and page.text else "(empty document)"
+        rect = pymupdf.Rect(40, 60, 555, 800)
+        p.insert_textbox(rect, text, fontsize=9.5, fontname="helv", color=(0.1, 0.1, 0.1))
+
+        pix = p.get_pixmap(dpi=dpi)
+        rendered_images.append(pix.tobytes("png"))
+
+    return rendered_images
 
 
 def read_image(data: bytes, mime: str) -> DocumentContent:

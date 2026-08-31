@@ -164,36 +164,46 @@ export const FIXATION_STATUS_LABELS: Record<FixationStatus, string> = {
   fixed: "Fixed",
 };
 
-/** The four documents this platform writes. Nothing else is generatable. */
+export const PURCHASE_GENERATED_DOCUMENT_TYPES = [
+  "draft_purchase_contract",
+  "draft_cost_sheet",
+] as const;
+export type PurchaseGeneratedDocumentType =
+  (typeof PURCHASE_GENERATED_DOCUMENT_TYPES)[number];
+
+export const SALES_GENERATED_DOCUMENT_TYPES = [
+  "draft_contract",
+  "draft_invoice",
+] as const;
+export type SalesGeneratedDocumentType =
+  (typeof SALES_GENERATED_DOCUMENT_TYPES)[number];
+
+/** The sales documents this platform writes. */
 export const GENERATED_DOCUMENT_TYPES = [
   "draft_contract",
   "draft_invoice",
-  "draft_performa_invoice",
-  "draft_bank_cover_letter",
 ] as const;
-export type GeneratedDocumentType = (typeof GENERATED_DOCUMENT_TYPES)[number];
+export type GeneratedDocumentType =
+  | SalesGeneratedDocumentType
+  | PurchaseGeneratedDocumentType;
 
 export const GENERATED_DOCUMENT_LABELS: Record<GeneratedDocumentType, string> = {
   draft_contract: "Draft sales contract",
   draft_invoice: "Draft sales invoice",
-  draft_performa_invoice: "Draft Performa invoice",
-  draft_bank_cover_letter: "Draft bank cover letter",
+  draft_purchase_contract: "Purchase contract",
+  draft_cost_sheet: "Cost sheet",
 };
 
 /**
  * What each generated document is for, shown beside the choice.
- *
- * The Performa invoice's note earns its place: it is the one document here that is *correct*
- * without a weight slip behind it, and a preparer who did not know that would reasonably assume
- * the platform had produced an unfinished invoice.
  */
 export const GENERATED_DOCUMENT_NOTES: Record<GeneratedDocumentType, string> = {
   draft_contract: "The sales contract, from the recorded terms.",
   draft_invoice: "The commercial invoice, stating the shipped weight. Needs a bill of lading.",
-  draft_performa_invoice:
-    "The advance invoice, raised before the cargo is weighed. It states the contracted quantity, not a shipped weight, and needs no weight slip or bill of lading.",
-  draft_bank_cover_letter:
-    "The covering note for a documentary set going to the bank. It lists what is enclosed and carries no commercial terms of its own.",
+  draft_purchase_contract:
+    "The purchase contract, populated from the recorded transaction terms.",
+  draft_cost_sheet:
+    "The internal cost calculation and margin analysis sheet for this transaction.",
 };
 
 /**

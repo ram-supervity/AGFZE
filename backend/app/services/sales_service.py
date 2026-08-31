@@ -44,6 +44,8 @@ from app.models.configuration import RuleConfiguration
 from app.models.enums import (
     DRAFT_BL_DOCUMENT_TYPES,
     FINAL_BL_DOCUMENT_TYPES,
+    SALES_TRIGGER_DOCUMENT_KINDS,
+    DocumentType,
     FixationStatus,
     MatchMethod,
     RequestCategory,
@@ -72,6 +74,11 @@ logger = get_logger(__name__)
 SALES_TRIGGER_DOCUMENT_TYPES: frozenset[str] = frozenset(
     (*FINAL_BL_DOCUMENT_TYPES, *DRAFT_BL_DOCUMENT_TYPES)
 )
+
+# The one type in that set that is not, on its own, evidence of a shipment. `bl` and `bl_draft`
+# say what they are; `shipping_document` is the family's catch-all and has to be read together
+# with the document's kind before it is treated as a trigger.
+SUPPORTING_PACK_TYPES: frozenset[str] = frozenset({DocumentType.SHIPPING_DOCUMENT.value})
 
 
 class AuditEvent:
@@ -103,7 +110,21 @@ def is_sales_document(document: Document) -> bool:
     Type is the primary signal, because a bill of lading is a bill of lading whatever the mail it
     arrived on was classified as. A document whose request was explicitly categorised sales
     counts too, so a shipping confirmation that the classifier typed loosely is not stranded.
+
+    `shipping_document` is the one type that needs a second look, and getting it wrong costs a
+    whole deal. It is the classifier's catch-all for the shipment family, so a packing list, a
+    certificate of origin and a mill test certificate all land on it - and every one of those
+    arrives in the *supplier's* pack, beside the provisional invoice, weeks before there is a
+    sale to trigger. Sending them down the sales route left them attached to nothing: they never
+    joined the purchase batch, so BR-04 could not see them and reported a pack as incomplete
+    while four fifths of it sat one table away. The document's own kind settles it - a bill of
+    lading starts sales work, supporting paperwork does not - and a document whose kind could
+    not be established keeps the old behaviour rather than being reassigned on a guess.
     """
+    if document.document_type in SUPPORTING_PACK_TYPES:
+        kinds = tuple(document.document_kinds or ())
+        if kinds and not set(kinds).intersection(SALES_TRIGGER_DOCUMENT_KINDS):
+            return False
     if document.document_type in SALES_TRIGGER_DOCUMENT_TYPES:
         return True
     request = document.request

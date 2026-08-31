@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime
 from enum import Enum
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base, utcnow
@@ -42,6 +42,12 @@ class BackgroundJob(Base):
     created_by_id: Mapped[uuid.UUID | None] = mapped_column(
         GUID, ForeignKey("users.id", ondelete="SET NULL"), index=True
     )
+    # Whether the platform raised this job for itself rather than for a person. Recorded at
+    # creation and never inferred from `created_by_id` being NULL afterwards: that column is
+    # ondelete="SET NULL", so a job whose owner was removed would otherwise silently become a
+    # system job and change who may read it. Mailbox intake is the case that matters - nobody
+    # asks for it, and every desk watching the inbox has to be able to see it running.
+    is_system: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utcnow, onupdate=utcnow

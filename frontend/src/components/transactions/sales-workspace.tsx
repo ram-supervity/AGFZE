@@ -42,7 +42,10 @@ import {
 import { labelFor } from "@/lib/intake";
 import {
   FIXATION_STATUS_LABELS,
+  GENERATED_DOCUMENT_LABELS,
+  GENERATED_DOCUMENT_NOTES,
   PAYMENT_CONDITION_LABELS,
+  SALES_GENERATED_DOCUMENT_TYPES,
   TERRITORY_LABELS,
   LOCKED_TRANSACTION_STATUSES,
   TRANSACTION_STATUS_CHIP,
@@ -361,25 +364,33 @@ export function SalesWorkspace({
         canManage={detail.can_manage_integrations}
       />
 
-      <GenerateDraftPanel
-        transactionId={detail.id}
-        drafts={detail.generated_drafts}
-        canGenerate={editable && detail.can_generate_draft}
-        blocker={
-          locked
-            ? "This transaction is awaiting approval, so its draft is frozen with it."
-            : detail.draft_blocker
-        }
-        accessToken={token}
-        onGenerated={refresh}
-        onRequestChanges={() => {
-          fieldsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-          toast(
-            "A draft says what the transaction says. Correct the fields below, save, then generate again - the earlier draft stays on the record.",
-            { icon: "✎" },
-          );
-        }}
-      />
+      {canEdit ? (
+        <GenerateDraftPanel
+          transactionId={detail.id}
+          drafts={detail.generated_drafts || []}
+          canGenerate={editable && detail.can_generate_draft}
+          blocker={
+            locked
+              ? "This transaction is awaiting approval, so its draft is frozen with it."
+              : detail.draft_blocker
+          }
+          accessToken={token}
+          title="Draft sales documents"
+          description="Populated from this transaction's own data into an approved Word template. For internal review only."
+          documentTypes={SALES_GENERATED_DOCUMENT_TYPES}
+          documentLabels={GENERATED_DOCUMENT_LABELS}
+          documentNotes={GENERATED_DOCUMENT_NOTES}
+          defaultDocumentType="draft_contract"
+          onGenerated={refresh}
+          onRequestChanges={() => {
+            fieldsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+            toast(
+              "A draft says what the transaction says. Correct the fields below, save, then generate again - the earlier draft stays on the record.",
+              { icon: "✎" },
+            );
+          }}
+        />
+      ) : null}
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="lg:sticky lg:top-20 lg:h-[calc(100vh-9rem)]">

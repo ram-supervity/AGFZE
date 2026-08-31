@@ -174,6 +174,16 @@ class Document(Base):
     content_type: Mapped[str] = mapped_column(String(128))
     byte_size: Mapped[int] = mapped_column(Integer)
     document_type: Mapped[str | None] = mapped_column(String(32), index=True)
+    # The specific paperwork this document is, in the vocabulary BR-04's checklists are written
+    # in. A list rather than a column because one document can genuinely be two entries on a
+    # checklist - a mill certificate printing its own assay table is both the mill test
+    # certificate and the chemical analysis - and because a document that is simply an invoice
+    # carries none at all. See `DocumentKind`.
+    document_kinds: Mapped[list[str]] = mapped_column(JSONBType, default=list)
+    # True once somebody has set the kinds by hand. A re-extraction refreshes a machine reading
+    # and leaves a human's alone, which is the same rule `extracted_fields.is_overridden` applies
+    # one level down.
+    kinds_overridden: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     original_document_type: Mapped[str | None] = mapped_column(String(32))
     document_type_hint: Mapped[str | None] = mapped_column(String(32))
     territory: Mapped[str | None] = mapped_column(String(16), index=True)

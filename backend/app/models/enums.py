@@ -209,6 +209,8 @@ class DocumentType(str, Enum):
     # states what is enclosed and against which contract; it carries no commercial terms of its own.
     DRAFT_PERFORMA_INVOICE = "draft_performa_invoice"
     DRAFT_BANK_COVER_LETTER = "draft_bank_cover_letter"
+    DRAFT_PURCHASE_CONTRACT = "draft_purchase_contract"
+    DRAFT_COST_SHEET = "draft_cost_sheet"
     UNKNOWN = "unknown"
 
 
@@ -218,11 +220,31 @@ FINAL_BL_DOCUMENT_TYPES: tuple[str, ...] = ("bl", "shipping_document")
 DRAFT_BL_DOCUMENT_TYPES: tuple[str, ...] = ("bl_draft",)
 
 # What the platform generates. Never received, never extracted from.
-GENERATED_DOCUMENT_TYPES: tuple[str, ...] = (
+PURCHASE_GENERATED_DOCUMENT_TYPES: tuple[str, ...] = (
+    "draft_purchase_contract",
+    "draft_cost_sheet",
+)
+
+SALES_GENERATED_DOCUMENT_TYPES: tuple[str, ...] = (
     "draft_contract",
     "draft_invoice",
-    "draft_performa_invoice",
-    "draft_bank_cover_letter",
+)
+
+GENERATED_DOCUMENT_TYPES: tuple[str, ...] = (
+    *SALES_GENERATED_DOCUMENT_TYPES,
+    *PURCHASE_GENERATED_DOCUMENT_TYPES,
+)
+
+INBOUND_DOCUMENT_TYPES: tuple[str, ...] = (
+    "invoice",
+    "contract",
+    "bl",
+    "bl_draft",
+    "shipping_document",
+    "tracker",
+    "approval_evidence",
+    "fa_document",
+    "unknown",
 )
 
 # The generated documents that are not gated on shipment evidence, and why each one is not.
@@ -242,7 +264,65 @@ GENERATED_DOCUMENT_TYPES: tuple[str, ...] = (
 NO_SHIPMENT_EVIDENCE_DRAFT_TYPES: tuple[str, ...] = (
     "draft_performa_invoice",
     "draft_bank_cover_letter",
+    "draft_purchase_contract",
+    "draft_cost_sheet",
 )
+
+
+class DocumentKind(str, Enum):
+    """What a document *is*, in the vocabulary the mandatory-document checklists are written in.
+
+    `DocumentType` answers a routing question - which extraction schema applies, and which desk's
+    workflow this triggers - and eight values is the right size for that. It is the wrong size for
+    BR-04, whose checklists name a packing list, a certificate of origin, a chemical analysis, a
+    mill test certificate and India's Form 6 and Form 9 as separate, individually required
+    documents. Every one of those classifies as a single `shipping_document`, so before this
+    vocabulary existed the completeness rule had nothing to read and fell back to looking for the
+    words in the file's name - which works exactly until a supplier attaches `scan001.pdf`.
+
+    A document may carry more than one kind, because a real one often does: the sample mill
+    certificate in AGFZE's own pack prints the XRF assay table on its face, and is genuinely both
+    the mill test certificate and the chemical analysis the China checklist asks for. Recording
+    that as two kinds is what lets one document satisfy two entries honestly, instead of an
+    equivalence hard-coded somewhere that says a mill certificate always implies an assay.
+    """
+
+    BILL_OF_LADING = "bill_of_lading"
+    PACKING_LIST = "packing_list"
+    CERTIFICATE_OF_ORIGIN = "certificate_of_origin"
+    CHEMICAL_ANALYSIS_CERTIFICATE = "chemical_analysis_certificate"
+    MILL_TEST_CERTIFICATE = "mill_test_certificate"
+    FREIGHT_CERTIFICATE = "freight_certificate"
+    FORM_6 = "form_6"
+    FORM_9 = "form_9"
+    WEIGHT_SLIP = "weight_slip"
+    INSPECTION_CERTIFICATE = "inspection_certificate"
+    BANK_DOCUMENT = "bank_document"
+    OTHER = "other"
+
+
+# The kinds that mean "the cargo has shipped", and so the kinds that genuinely start sales-side
+# work. Everything else in the family is supporting paperwork that belongs to the pack being
+# assembled around the purchase - a packing list arriving with a supplier's provisional invoice is
+# evidence for that purchase, not a trigger to open a sale.
+SALES_TRIGGER_DOCUMENT_KINDS: tuple[str, ...] = (DocumentKind.BILL_OF_LADING.value,)
+
+
+class BatchNumberSource(str, Enum):
+    """Where a transaction's batch number came from, and so whether it may still be corrected.
+
+    A batch number is the identity of the physical cargo - the Loading Sheet is keyed on it, and
+    every document in a pack quotes it. The first document to open a transaction does not always
+    state one: a purchase contract, for instance, carries a contract number and no batch. The
+    platform allocates one from its own sequence so the transaction has an identity at all, and
+    that number is a placeholder standing in for the real reference until a document states it.
+
+    `ALLOCATED` is that placeholder. `DOCUMENT` is a batch number read off a counterparty's own
+    paperwork, which is the authoritative one, and is never overwritten by anything.
+    """
+
+    ALLOCATED = "allocated"
+    DOCUMENT = "document"
 
 
 class ShipmentStatus(str, Enum):
@@ -405,6 +485,8 @@ REQUEST_CATEGORIES = _values(RequestCategory)
 BUSINESS_STREAMS = _values(BusinessStream)
 REQUEST_STATUSES = _values(RequestStatus)
 DOCUMENT_TYPES = _values(DocumentType)
+DOCUMENT_KINDS = _values(DocumentKind)
+BATCH_NUMBER_SOURCES = _values(BatchNumberSource)
 DOCUMENT_SOURCES = _values(DocumentSource)
 PAYMENT_CONDITIONS = _values(PaymentCondition)
 FIXATION_STATUSES = _values(FixationStatus)

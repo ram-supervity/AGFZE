@@ -17,6 +17,7 @@ from app.core.errors import ConflictError, NotFoundError
 from app.core.roles import PlatformRole
 from app.db.base import utcnow
 from app.models.enums import (
+    BatchNumberSource,
     BusinessStream,
     InvoiceStatus,
     MatchMethod,
@@ -64,6 +65,7 @@ class AuditEvent:
     TRANSACTION_VALIDATED = "transaction.validated"
     TRANSACTION_DOCUMENT_LINKED = "transaction.document_linked"
     TRANSACTION_COMMODITY_UNRESOLVED = "transaction.commodity_unresolved"
+    TRANSACTION_BATCH_NUMBER_ADOPTED = "transaction.batch_number_adopted"
     CONTAINER_RECORDED = "transaction.container_recorded"
 
 
@@ -349,7 +351,14 @@ async def create_transaction(
     that is genuinely all a second business line needed: the same parent row, the same batch
     numbering, the same commodity resolution, the same price basis, and a leg of its own.
     """
-    number = (batch_number or "").strip() or await next_batch_number(session)
+    stated = (batch_number or "").strip()
+    # The counterparty's own reference where a document stated one, otherwise a placeholder off
+    # the platform's sequence. Which of the two it is is recorded, because a placeholder is
+    # corrected onto the real reference later and a stated one never is.
+    number = stated or await next_batch_number(session)
+    batch_source = (
+        BatchNumberSource.DOCUMENT.value if stated else BatchNumberSource.ALLOCATED.value
+    )
 
     commodity_code, needs_review = await resolve_commodity(session, values.get("commodity_code"))
     price_basis, lme = infer_price_basis(values)
@@ -357,6 +366,7 @@ async def create_transaction(
     transaction = TradeTransaction(
         transaction_code=number,
         batch_number=number,
+        batch_number_source=batch_source,
         stream=stream,
         status=TransactionStatus.MATCHED.value,
         commodity_code=commodity_code,

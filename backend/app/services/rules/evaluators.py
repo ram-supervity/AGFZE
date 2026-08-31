@@ -111,14 +111,25 @@ async def evaluate_business_reference(context: RuleContext) -> list[RuleOutcome]
 def _pack_entry_present(entry: str, documents: list[Document]) -> Document | None:
     """Is this checklist entry evidenced by something actually attached?
 
-    The classifier's own vocabulary covers only a handful of types, and a territory checklist
-    names many more (a form 6, a mill test certificate). An entry counts as satisfied when a
-    linked document is classified as it, was uploaded under that hint, or names it in its
-    filename - which is how these packs actually arrive.
+    Three signals, strongest first.
+
+    The document's own **kind** is the real answer: it is the classifier reading the face of the
+    document and reporting, in the checklist's own vocabulary, what it is. One document may carry
+    two kinds, which is how a mill certificate that prints its assay table satisfies both the
+    mill test certificate and the chemical analysis entry without an equivalence hard-coded here.
+
+    The **type** covers the entries that are types in their own right - an invoice, a contract.
+
+    The **filename** is the fall-back, kept because it is how a pack whose kinds predate this
+    vocabulary still resolves, and because an uploader's hint deserves to count. It is last on
+    purpose: a supplier who names a scan `IMG_0042.pdf` is not thereby short of a document, and a
+    checklist that could only be satisfied by a helpful filename was never really being checked.
     """
     needle = entry.strip().lower()
     compact = needle.replace("_", "")
     for document in documents:
+        if needle in (document.document_kinds or ()):
+            return document
         if document.document_type == needle or document.document_type_hint == needle:
             return document
         haystack = document.filename.lower()

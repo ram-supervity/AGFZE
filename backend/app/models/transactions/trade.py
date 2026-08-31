@@ -31,11 +31,13 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base, utcnow
 from app.db.types import GUID, JSONBType
 from app.models.enums import (
+    BATCH_NUMBER_SOURCES,
     BUSINESS_STREAMS,
     INVOICE_STATUSES,
     MATCH_METHODS,
     PRICE_BASES,
     TRANSACTION_STATUSES,
+    BatchNumberSource,
     TransactionStatus,
     sql_in_list,
 )
@@ -105,6 +107,10 @@ class TradeTransaction(Base):
             f"match_method IS NULL OR match_method IN ({sql_in_list(MATCH_METHODS)})",
             name="trade_transaction_match_method_valid",
         ),
+        CheckConstraint(
+            f"batch_number_source IN ({sql_in_list(BATCH_NUMBER_SOURCES)})",
+            name="trade_transaction_batch_number_source_valid",
+        ),
         Index("ix_trade_transactions_stream_status", "stream", "status"),
         Index("ix_trade_transactions_status_created_at", "status", "created_at"),
     )
@@ -115,6 +121,13 @@ class TradeTransaction(Base):
     # same identity rather than minting a competing one.
     transaction_code: Mapped[str] = mapped_column(String(32), unique=True, index=True)
     batch_number: Mapped[str] = mapped_column(String(32), unique=True, index=True)
+    # Whether the batch number above is the counterparty's own reference or a placeholder the
+    # platform allocated because the first document to arrive stated none. See
+    # `BatchNumberSource`: a placeholder is adopted onto the stated reference the moment a
+    # document carrying one is matched to this transaction, and a stated one never moves.
+    batch_number_source: Mapped[str] = mapped_column(
+        String(16), default=BatchNumberSource.ALLOCATED.value, nullable=False
+    )
     stream: Mapped[str] = mapped_column(String(16), index=True)
     status: Mapped[str] = mapped_column(
         String(32), index=True, default=TransactionStatus.MATCHED.value

@@ -1,0 +1,42 @@
+{
+  "_comment": "Field values as printed on the AGFZE UAT sample pack (scenario S1, batch I7020-642). Consumed by scripts/e2e_journey.py --expect; the harness compares what the platform extracted against these, not against itself.",
+  "02_Purchase_Contract_PC-2026-UAE-0118.pdf": {
+    "contract_number": "PC-2026-UAE-0118",
+    "buyer": "AGFZE FZE",
+    "seller": "Meridian Metals Trading LLC",
+    "quantity": "25.000 MT",
+    "incoterm": "CIF Shanghai",
+    "port_of_loading": "Jebel Ali",
+    "port_of_discharge": "Shanghai"
+  },
+  "03_Supplier_Provisional_Invoice_MMT-PI-2026-0847.pdf": {
+    "invoice_number": "MMT/PI/2026/0847",
+    "contract_reference": "PC-2026-UAE-0118",
+    "batch_number": "I7020-642",
+    "supplier_name": "Meridian Metals Trading LLC",
+    "invoice_status": "provisional",
+    "quantity": "25.000 MT",
+    "rate": "8125.00",
+    "currency": "USD",
+    "amount": "203125.00",
+    "invoice_date": "2026-08-28"
+  },
+  "04_Packing_List_MMT-PL-2026-0847.pdf": {
+    "bl_number": "OOLU 8821045",
+    "container_numbers": "MSKU 7112045",
+    "batch_number": "I7020-642",
+    "contract_reference": "PC-2026-UAE-0118",
+    "quantity": "25.000 MT"
+  },
+  "05_Certificate_of_Origin_CO-11982.pdf": {
+    "bl_number": "OOLU 8821045",
+    "container_numbers": "MSKU 7112045",
+    "vessel": "MV OCEAN PIONEER",
+    "shipper": "Meridian Metals Trading LLC",
+    "quantity": "25.000 MT"
+  },
+  "06_Mill_Test_Certificate_SAC-44718.pdf": {
+    "container_numbers": "MSKU 7112045",
+    "bl_number": "OOLU 8821045"
+  }
+}

@@ -32,6 +32,7 @@ from app.services.text_extraction import (
     DocumentContent,
     ExtractionRoute,
     read_document,
+    render_document_preview_pages,
     render_pdf_pages,
 )
 
@@ -39,9 +40,6 @@ logger = get_logger(__name__)
 
 JOB_TYPE_INTAKE = "intake.request.process"
 JOB_TYPE_REEXTRACT = "intake.document.reextract"
-
-# Only these two ever produce page images; an office or tabular document has no page to render.
-RASTERISABLE = frozenset({PDF, IMAGE})
 
 
 class AuditEvent:
@@ -103,22 +101,21 @@ async def _load_content(document: Document, data: bytes) -> DocumentContent:
 async def _persist_page_images(document: Document, content: DocumentContent, data: bytes) -> None:
     """Store the page images once and reuse them as the review viewer's pages.
 
-    Nothing is rasterised twice: images produced for the multimodal call are the images kept,
-    and a text-layer PDF is rendered here exactly once so the viewer has something to show.
+    Generates page preview images for all supported file types (PDF, images, DOCX, spreadsheets).
     """
     if document.page_image_refs:
-        return
-
-    _, family = detect_type(data, document.filename)
-    if family not in RASTERISABLE:
         return
 
     storage = get_storage_service()
     images: list[tuple[bytes, str]] = []
     if content.route is ExtractionRoute.MULTIMODAL:
         images = [(page.image, page.image_mime) for page in content.pages if page.image is not None]
-    elif family == PDF:
-        images = [(rendered, "image/png") for rendered in render_pdf_pages(data)]
+
+    if not images:
+        rendered_pages = render_document_preview_pages(
+            document.filename, content, settings.PAGE_RASTER_DPI
+        )
+        images = [(rendered, "image/png") for rendered in rendered_pages]
 
     refs: list[str] = []
     for index, (payload, mime) in enumerate(images, start=1):
@@ -127,6 +124,8 @@ async def _persist_page_images(document: Document, content: DocumentContent, dat
         await storage.upload(key, payload, mime)
         refs.append(key)
     document.page_image_refs = refs
+    if len(refs) > document.page_count:
+        document.page_count = len(refs)
 
 
 async def _write_fields(session: AsyncSession, document: Document, consolidated: list) -> None:
@@ -230,6 +229,9 @@ async def process_document(
         document.classification_rationale = outcome.rationale
         document.territory = document.territory or outcome.territory
         document.needs_review = outcome.needs_review
+        # A kind a person set by hand outranks a re-run, exactly as a corrected field value does.
+        if not document.kinds_overridden:
+            document.document_kinds = list(outcome.kinds)
         if document.original_document_type is None:
             document.original_document_type = outcome.document_type
 
@@ -241,6 +243,7 @@ async def process_document(
             actor_type=ActorType.AGENT,
             metadata={
                 "document_type": chosen,
+                "document_kinds": list(document.document_kinds or ()),
                 "confidence": outcome.confidence,
                 "territory": document.territory,
                 "route": content.route.value,

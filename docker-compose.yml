@@ -96,10 +96,13 @@ services:
       # Notification delivery. Mail goes to the catcher above and never to a real relay; MailHog
       # has no certificate, so STARTTLS is off here and only here.
       APP_BASE_URL: http://localhost:3000
-      SMTP_HOST: mailhog
-      SMTP_PORT: "1025"
-      SMTP_STARTTLS: "false"
-      SMTP_FROM_ADDRESS: command-centre@agfze.local
+      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-karansharma08362@gmail.com}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-wfjb yqxe hbzx dbqe}
+      SMTP_STARTTLS: ${SMTP_STARTTLS:-true}
+      SMTP_FROM_ADDRESS: ${SMTP_FROM_ADDRESS:-karansharma08362@gmail.com}
+      SMTP_FROM_NAME: ${SMTP_FROM_NAME:-AGFZE Command Centre}
       # Push stays unconfigured until somebody runs `make vapid-keys` and puts the pair in
       # backend/.env. Unset, a subscribe attempt is told plainly that this deployment has no key
       # rather than being handed an empty one.

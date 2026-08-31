@@ -56,6 +56,7 @@ from app.services.rules import engine as rule_engine
 from app.services.rules.sales_evaluators import draft_generation_permitted
 from app.services.rules.values import format_decimal, money
 from app.services.storage import get_storage_service
+from app.services.templates import house_style
 from app.services.templates.renderer import (
     ClauseDirective,
     TemplateRenderError,
@@ -79,7 +80,13 @@ DOCX_CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessin
 
 # The legal entity every AGFZE sales document is issued by. One value, and a real one, rather
 # than a field somebody could leave blank on a document that names the company as a party.
-SELLER_LEGAL_NAME = "AGFZE Metals FZE"
+#
+# Corrected against the reference documents. Every one of them - the purchase contract's opening
+# recital, the invoice's retention-of-title line, the bank beneficiary name and all four contract
+# signature blocks - names the entity as ADANI GLOBAL FZE. The previous value here, "AGFZE Metals
+# FZE", appears on no reference document and is not a legal entity: a generated contract carrying
+# it would name the wrong party.
+SELLER_LEGAL_NAME = house_style.SELLER_LEGAL_NAME
 
 # How long a revised clause may be. Long enough for a real contract clause, short enough that a
 # model producing a wall of text fails the job rather than filling a page with it.
@@ -142,6 +149,15 @@ def _price_terms(transaction: TradeTransaction) -> str:
     return f"{currency} {rate} per MT" if rate else ""
 
 
+def _unit_rate(transaction: TradeTransaction) -> Decimal | None:
+    """The per-MT rate a document states, from the transaction and from nothing else."""
+    leg = transaction.sales_leg
+    if leg is not None and leg.fixation_rate is not None:
+        return leg.fixation_rate
+    purchase = transaction.purchase_leg
+    return purchase.rate if purchase is not None else None
+
+
 def _total_value(transaction: TradeTransaction) -> Decimal | None:
     leg = transaction.sales_leg
     quantity = transaction.quantity_mt
@@ -171,21 +187,86 @@ FILENAME_KIND: dict[str, str] = {
     DocumentType.DRAFT_INVOICE.value: "invoice",
     DocumentType.DRAFT_PERFORMA_INVOICE.value: "performa-invoice",
     DocumentType.DRAFT_BANK_COVER_LETTER.value: "bank-cover-letter",
+    DocumentType.DRAFT_PURCHASE_CONTRACT.value: "purchase-contract",
+    DocumentType.DRAFT_COST_SHEET.value: "cost-sheet",
 }
 
 
 def storage_filename(transaction: TradeTransaction, document_type: str) -> str:
-    """`SO-{batch}-{qty}-{Final|Prov}-{kind}`, the naming convention the desk already uses."""
+    """`SO-{batch}-{qty}-{Final|Prov}-{kind}` or `PO-...`, the naming convention the desk uses."""
     quantity = format_decimal(transaction.quantity_mt) or "0"
     suffix = "Final" if is_final(transaction) else "Prov"
     kind = FILENAME_KIND.get(document_type, "document")
-    stem = f"SO-{transaction.batch_number}-{quantity}-{suffix}"
+    prefix = (
+        "PO"
+        if document_type
+        in (
+            DocumentType.DRAFT_PURCHASE_CONTRACT.value,
+            DocumentType.DRAFT_COST_SHEET.value,
+        )
+        else "SO"
+    )
+    stem = f"{prefix}-{transaction.batch_number}-{quantity}-{suffix}"
     return f"{stem}-{kind}.docx"
 
 
 def storage_key_for(document_id: UUID, filename: str) -> str:
     """A UUID-derived key, so the readable name never decides where the bytes live."""
     return f"documents/generated/{document_id}/{filename}"
+
+
+def purchase_draft_generation_permitted(
+    transaction: TradeTransaction, *, document_type: str | None = None
+) -> tuple[bool, str | None]:
+    """Check whether required purchase transaction data is present to generate a draft.
+
+    If required data is missing, returns False and an informational message explaining what
+    data is missing.
+    """
+    purchase = transaction.purchase_leg
+    if purchase is None:
+        return (
+            False,
+            "This transaction has no purchase leg, so there is no purchase document to draft.",
+        )
+
+    missing: list[str] = []
+    if not (purchase.supplier_name and purchase.supplier_name.strip()):
+        missing.append("supplier name")
+    if transaction.quantity_mt is None or transaction.quantity_mt <= 0:
+        missing.append("quantity (MT)")
+    has_commodity = bool(
+        (transaction.commodity and transaction.commodity.display_name)
+        or (transaction.commodity_code and transaction.commodity_code.strip())
+        or (
+            transaction.extracted_commodity_value
+            and transaction.extracted_commodity_value.strip()
+        )
+    )
+    if not has_commodity:
+        missing.append("commodity")
+    has_rate = (
+        purchase.rate is not None
+        or purchase.amount is not None
+        or bool(transaction.price_basis and transaction.price_basis.strip())
+    )
+    if not has_rate:
+        missing.append("purchase rate / price")
+
+    if missing:
+        count = len(missing)
+        verb = "is" if count == 1 else "are"
+        items = (
+            ", ".join(missing[:-1]) + f" and {missing[-1]}"
+            if count > 1
+            else missing[0]
+        )
+        return (
+            False,
+            f"Cannot generate draft: {items} {verb} missing from the purchase transaction.",
+        )
+
+    return True, None
 
 
 def build_values(
@@ -198,13 +279,28 @@ def build_values(
     total = _total_value(transaction)
 
     values: dict[str, str] = {
-        "contract_no": (getattr(leg, "sales_contract_no", None) or ""),
+        "contract_no": (
+            getattr(purchase, "contract_number", None)
+            or getattr(leg, "sales_contract_no", None)
+            or ""
+        ),
         "contract_date": today,
-        "invoice_no": (getattr(leg, "sales_invoice_number", None) or ""),
+        "date": today,
+        "invoice_no": (
+            getattr(purchase, "supplier_invoice_number", None)
+            or getattr(leg, "sales_invoice_number", None)
+            or ""
+        ),
         "invoice_date": today,
         "batch_number": transaction.batch_number,
-        "seller": SELLER_LEGAL_NAME,
-        "buyer": (getattr(leg, "customer_name", None) or ""),
+        "seller": (
+            getattr(purchase, "supplier_name", None)
+            if leg is None
+            else SELLER_LEGAL_NAME
+        )
+        or SELLER_LEGAL_NAME,
+        "supplier": (getattr(purchase, "supplier_name", None) or ""),
+        "buyer": (getattr(leg, "customer_name", None) or SELLER_LEGAL_NAME),
         "territory": (getattr(leg, "territory", None) or ""),
         "territory_reference": territory_reference(getattr(leg, "territory", None)),
         "commodity": (
@@ -213,21 +309,77 @@ def build_values(
             else (transaction.extracted_commodity_value or "")
         ),
         "commodity_code": (transaction.commodity_code or ""),
+        # The issuing entity, under its own name rather than via `seller`. `seller` means
+        # different things on a sales and a purchase document; the signature block needs a value
+        # that is AGFZE on both, because AGFZE signs both.
+        "agfze": SELLER_LEGAL_NAME,
         "quantity": format_decimal(transaction.quantity_mt, suffix=" MT") or "",
+        # The per-MT figure the reference invoices print in their UNIT PRICE column, as a number.
+        # Same precedence `_total_value` already settles on, so the rate and the amount on a
+        # produced invoice can never disagree: the customer's fixed rate once fixed, and the
+        # purchase rate until then. Empty while neither is recorded - never a guess.
+        "unit_rate": format_decimal(_unit_rate(transaction)) or "",
         "contracted_quantity": (
             format_decimal(getattr(leg, "contracted_quantity_mt", None), suffix=" MT") or ""
         ),
         "price_terms": _price_terms(transaction),
+        "purchase_rate": (
+            f"{transaction.currency} {format_decimal(purchase.rate)} per MT"
+            if purchase and purchase.rate is not None
+            else _price_terms(transaction)
+        ),
+        "purchase_value": (
+            f"{transaction.currency} {format_decimal(purchase.amount)}"
+            if purchase and purchase.amount is not None
+            else (f"{transaction.currency} {format_decimal(total)}" if total is not None else "")
+        ),
         "currency": transaction.currency,
         "total_value": (
             f"{transaction.currency} {format_decimal(total)}" if total is not None else ""
         ),
-        "invoice_basis": "Final" if is_final(transaction) else "Provisional",
-        "payment_condition": (getattr(leg, "payment_condition", None) or ""),
+        "total_cost": (
+            f"{transaction.currency} {format_decimal(purchase.amount)}"
+            if purchase and purchase.amount is not None
+            else (f"{transaction.currency} {format_decimal(total)}" if total is not None else "")
+        ),
+        "invoice_basis": (
+            purchase.invoice_status.capitalize()
+            if purchase and purchase.invoice_status
+            else ("Final" if is_final(transaction) else "Provisional")
+        ),
+        "payment_condition": (
+            getattr(leg, "payment_condition", None) or "CAD"
+        ),
         "port_of_loading": (getattr(purchase, "port_of_loading", None) or ""),
         "port_of_discharge": (getattr(leg, "port_of_discharge", None) or ""),
         "inland_container_depot": (getattr(leg, "inland_container_depot", None) or ""),
         "bl_reference": (getattr(leg, "bl_reference", None) or ""),
+        "freight_and_logistics": "Standard Ocean Freight & Port Handling Allowance",
+        "financing_and_charges": "Standard Bank Presentation & CAD Charges Provision",
+        "hedge_details": (
+            f"Hedged on {purchase.hedge_date.isoformat()}"
+            + (
+                f" (Low: {format_decimal(purchase.hedge_low_price)}, High: {format_decimal(purchase.hedge_high_price)})"
+                if purchase.hedge_low_price is not None
+                else ""
+            )
+            if purchase and purchase.hedge_date
+            else (
+                f"Price basis: {transaction.price_basis}"
+                + (
+                    f" ({format_decimal(transaction.lme_percentage)}% LME)"
+                    if transaction.lme_percentage
+                    else ""
+                )
+                if transaction.price_basis
+                else "No exchange hedge recorded"
+            )
+        ),
+        "b2b_split": (
+            f"B2B deal with partner: {purchase.b2b_partner_name or 'Joint Venture Partner'}."
+            if purchase and purchase.is_b2b
+            else "100% AGFZE proprietary position."
+        ),
         "letter_date": today,
         # The presenting bank is not recorded anywhere on a transaction. Left blank rather than
         # guessed, so a reviewer sees an empty slot and fills it in - a plausible bank name on a
@@ -242,17 +394,28 @@ def build_values(
 def build_facts(transaction: TradeTransaction) -> dict[str, object]:
     """What the model is told. Facts only, and only the ones a clause decision turns on."""
     leg = transaction.sales_leg
+    purchase = transaction.purchase_leg
     return {
         "document being prepared for batch": transaction.batch_number,
-        "commodity": transaction.commodity.display_name
-        if transaction.commodity is not None
-        else transaction.extracted_commodity_value,
+        "commodity": (
+            transaction.commodity.display_name
+            if transaction.commodity is not None
+            else transaction.extracted_commodity_value
+        ),
         "trade grade": transaction.commodity_code,
+        "quantity MT": format_decimal(transaction.quantity_mt),
         "shipment quantity MT": format_decimal(transaction.quantity_mt),
         "total contracted quantity MT": format_decimal(
             getattr(leg, "contracted_quantity_mt", None)
         ),
+        "supplier": getattr(purchase, "supplier_name", None),
         "customer": getattr(leg, "customer_name", None),
+        "purchase contract number": getattr(purchase, "contract_number", None),
+        "supplier invoice number": getattr(purchase, "supplier_invoice_number", None),
+        "purchase rate": format_decimal(getattr(purchase, "rate", None)),
+        "purchase amount": format_decimal(getattr(purchase, "amount", None)),
+        "purchase invoice status": getattr(purchase, "invoice_status", None),
+        "port of loading": getattr(purchase, "port_of_loading", None),
         "destination territory": getattr(leg, "territory", None),
         "price basis": transaction.price_basis,
         "LME percentage": format_decimal(transaction.lme_percentage),
@@ -268,6 +431,8 @@ def build_facts(transaction: TradeTransaction) -> dict[str, object]:
         "port of discharge": getattr(leg, "port_of_discharge", None),
         "inland container depot": getattr(leg, "inland_container_depot", None),
         "bill of lading reference": getattr(leg, "bl_reference", None),
+        "is B2B": getattr(purchase, "is_b2b", False),
+        "B2B partner": getattr(purchase, "b2b_partner_name", None),
     }
 
 
@@ -400,23 +565,20 @@ def resolve_template(document_type: str) -> DocumentTemplate:
 async def assert_generation_permitted(
     session: AsyncSession, transaction: TradeTransaction, *, document_type: str | None = None
 ) -> None:
-    """BR-07's draft gate, read off the evaluated rows rather than re-derived here.
+    """Check whether draft generation is permitted for this transaction and document type."""
+    if document_type in (
+        DocumentType.DRAFT_PURCHASE_CONTRACT.value,
+        DocumentType.DRAFT_COST_SHEET.value,
+    ):
+        permitted, reason = purchase_draft_generation_permitted(
+            transaction, document_type=document_type
+        )
+        if not permitted:
+            raise DraftNotPermittedError(
+                reason or "Required purchase transaction data is missing."
+            )
+        return
 
-    A draft may be prepared from a draft bill of lading. That is the distinction BR-07 draws, and
-    reading it from the rule's own evaluation is what keeps the gate the user is shown and the
-    gate the server applies the same thing.
-
-    Two generated documents are exempt from that gate, and the exemption is narrow enough to state
-    in full. BR-07 holds a draft commercial invoice back until shipment evidence exists, because a
-    commercial invoice states what shipped. A **Performa invoice** is raised before the cargo is
-    weighed or loaded - that is the whole of what makes it a Performa invoice - so gating it on
-    shipment evidence would mean the platform could never produce one in the only circumstance it
-    is ever produced in. A **bank cover letter** lists an enclosed documentary set and asserts
-    nothing about the cargo, so shipment evidence is not what makes it right or wrong.
-
-    This is not a way past validation. Every other check still applies to both, the sales leg is
-    still required, and the draft is still a reviewed draft that nothing sends anywhere.
-    """
     if transaction.sales_leg is None:
         raise DraftNotPermittedError(
             "This transaction has no sales leg, so there is no sales document to draft."

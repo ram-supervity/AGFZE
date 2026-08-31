@@ -578,9 +578,15 @@ async def reclassify_document(
 
     if document.original_document_type is None:
         document.original_document_type = previous_type
+    previous_kinds = list(document.document_kinds or ())
     document.document_type = payload.document_type
     if payload.territory is not None:
         document.territory = payload.territory
+    if payload.document_kinds is not None:
+        # BR-04 reads this list, so a correction here is a correction to whether the pack is
+        # complete. It is recorded as a human's and survives the re-extraction queued below.
+        document.document_kinds = payload.document_kinds
+        document.kinds_overridden = True
     document.extraction_status = ExtractionStatus.PENDING.value
     document.extraction_error = None
     document.confirmed_at = None
@@ -598,6 +604,8 @@ async def reclassify_document(
             "new_document_type": payload.document_type,
             "previous_territory": previous_territory,
             "new_territory": document.territory,
+            "previous_document_kinds": previous_kinds,
+            "new_document_kinds": list(document.document_kinds or ()),
             "original_ai_document_type": document.original_document_type,
             "reason": payload.reason,
         },

@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
 import { PageViewer } from "@/components/intake/page-viewer";
 import { AiDisclaimer } from "@/components/shared/ai-disclaimer";
 import { PageHeader } from "@/components/shared/page-header";
 import { CollapsiblePanel } from "@/components/transactions/collapsible-panel";
+import { GenerateDraftPanel } from "@/components/transactions/generate-draft-panel";
 import { HistoryPanel } from "@/components/transactions/history-panel";
 import { TracePanel } from "@/components/transactions/trace-panel";
 import { IntegrationPanel } from "@/components/transactions/integration-panel";
@@ -28,6 +29,7 @@ import {
   acknowledgeTolerance,
   correctTransactionFields,
   fetchDocumentDetail,
+  fetchTransactionDetail,
   submitTransaction,
   type CommodityCode,
   type DocumentDetail,
@@ -37,8 +39,11 @@ import {
 } from "@/lib/api-client";
 import { labelFor } from "@/lib/intake";
 import {
+  GENERATED_DOCUMENT_LABELS,
+  GENERATED_DOCUMENT_NOTES,
   INVOICE_STATUS_LABELS,
   LOCKED_TRANSACTION_STATUSES,
+  PURCHASE_GENERATED_DOCUMENT_TYPES,
   TRANSACTION_STATUS_CHIP,
   TRANSACTION_STATUS_LABELS,
   formatMoney,
@@ -69,6 +74,7 @@ export function PurchaseWorkspace({
   const [saving, setSaving] = useState(false);
   const [acknowledging, setAcknowledging] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const fieldsRef = useRef<HTMLDivElement>(null);
 
   const token = session?.accessToken;
   // Locked from the moment it leaves the desk: waiting on a decision, decided, or being posted
@@ -85,6 +91,15 @@ export function PurchaseWorkspace({
     const field = detail.fields.find((row) => row.name === name);
     return Boolean(field?.reason_required) && draft.reason.trim().length < MIN_REASON;
   });
+
+  const refresh = useCallback(async () => {
+    if (!token) return;
+    try {
+      setDetail(await fetchTransactionDetail(token, detail.id));
+    } catch {
+      // A failed refresh leaves the screen showing what it already had, which is still true.
+    }
+  }, [token, detail.id]);
 
   const openDocument = useCallback(
     async (documentId: string) => {
@@ -269,6 +284,34 @@ export function PurchaseWorkspace({
         canManage={detail.can_manage_integrations}
       />
 
+      {canEdit ? (
+        <GenerateDraftPanel
+          transactionId={detail.id}
+          drafts={detail.generated_drafts || []}
+          canGenerate={editable && detail.can_generate_draft}
+          blocker={
+            locked
+              ? "This transaction is awaiting approval, so its draft is frozen with it."
+              : detail.draft_blocker
+          }
+          accessToken={token}
+          title="Document Generation"
+          description="Populated from this transaction's own data into an approved template. For internal review only."
+          documentTypes={PURCHASE_GENERATED_DOCUMENT_TYPES}
+          documentLabels={GENERATED_DOCUMENT_LABELS}
+          documentNotes={GENERATED_DOCUMENT_NOTES}
+          defaultDocumentType="draft_purchase_contract"
+          onGenerated={refresh}
+          onRequestChanges={() => {
+            fieldsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+            toast(
+              "A draft says what the transaction says. Correct the fields below, save, then generate again - the earlier draft stays on the record.",
+              { icon: "✎" },
+            );
+          }}
+        />
+      ) : null}
+
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="lg:sticky lg:top-20 lg:h-[calc(100vh-9rem)]">
           {document ? (
@@ -310,7 +353,7 @@ export function PurchaseWorkspace({
           )}
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4" ref={fieldsRef}>
           <CollapsiblePanel
             title="Extraction"
             description="The deal's own fields, coloured by the confidence the machine reported for them."

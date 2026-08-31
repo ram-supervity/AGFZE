@@ -30,17 +30,17 @@ from tests.utils.fixtures import (
 )
 
 
-def test_a_digital_pdf_is_read_through_the_text_layer_not_a_vision_call() -> None:
+def test_a_digital_pdf_is_rasterised_and_sent_down_the_multimodal_path() -> None:
     data = text_layer_pdf()
     content_type, family = detect_type(data, "invoice.pdf")
     assert (content_type, family) == ("application/pdf", PDF)
 
     content = read_document(data, family=family, content_type=content_type)
 
-    assert content.route is ExtractionRoute.TEXT_LAYER
+    assert content.route is ExtractionRoute.MULTIMODAL
     assert "INV-2026-0451" in content.full_text
-    # A text-layer page is not rasterised for the model; nothing is sent as an image.
-    assert all(page.image is None for page in content.pages)
+    assert all(page.image is not None for page in content.pages)
+    assert all(page.image.startswith(b"\x89PNG") for page in content.pages)
     assert content.pages[0].blocks
 
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { FileText, Info } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
 
 import { Badge } from "@/components/ui/badge";
@@ -19,7 +19,7 @@ import { formatBytes } from "@/lib/intake";
 import {
   GENERATED_DOCUMENT_LABELS,
   GENERATED_DOCUMENT_NOTES,
-  GENERATED_DOCUMENT_TYPES,
+  SALES_GENERATED_DOCUMENT_TYPES,
   type GeneratedDocumentType,
 } from "@/lib/transactions";
 import { cn, formatDateTime } from "@/lib/utils";
@@ -30,6 +30,12 @@ export interface GenerateDraftPanelProps {
   canGenerate: boolean;
   blocker: string | null;
   accessToken: string | undefined;
+  title?: string;
+  description?: string;
+  documentTypes?: readonly GeneratedDocumentType[];
+  documentLabels?: Record<GeneratedDocumentType, string>;
+  documentNotes?: Record<GeneratedDocumentType, string>;
+  defaultDocumentType?: GeneratedDocumentType;
   /** Re-read the transaction so the finished draft appears in its document history. */
   onGenerated: () => Promise<void>;
   /** Opens the field editor so the user can change the deal before re-generating. */
@@ -60,14 +66,29 @@ export function GenerateDraftPanel({
   canGenerate,
   blocker,
   accessToken,
+  title = "Draft sales documents",
+  description = "Populated from this transaction's own data into an approved template. For internal review only.",
+  documentTypes = SALES_GENERATED_DOCUMENT_TYPES,
+  documentLabels = GENERATED_DOCUMENT_LABELS,
+  documentNotes = GENERATED_DOCUMENT_NOTES,
+  defaultDocumentType,
   onGenerated,
   onRequestChanges,
 }: GenerateDraftPanelProps) {
-  const [documentType, setDocumentType] = useState<GeneratedDocumentType>("draft_contract");
+  const [documentType, setDocumentType] = useState<GeneratedDocumentType>(
+    defaultDocumentType ?? documentTypes[0] ?? "draft_contract",
+  );
   const [job, setJob] = useState<JobStatus | null>(null);
   const [running, setRunning] = useState(false);
 
-  const latest = drafts.length > 0 ? drafts[drafts.length - 1] : null;
+  const relevantDrafts = useMemo(
+    () =>
+      drafts.filter((d) =>
+        d.document_type ? (documentTypes as readonly string[]).includes(d.document_type) : false,
+      ),
+    [drafts, documentTypes],
+  );
+  const latest = relevantDrafts.length > 0 ? relevantDrafts[relevantDrafts.length - 1] : null;
 
   async function generate() {
     if (!accessToken) {
@@ -90,7 +111,7 @@ export function GenerateDraftPanel({
       }
       await onGenerated();
       toast.success(
-        `${GENERATED_DOCUMENT_LABELS[documentType]} generated for review. It has not been sent anywhere.`,
+        `${documentLabels[documentType] ?? GENERATED_DOCUMENT_LABELS[documentType]} generated for review. It has not been sent anywhere.`,
       );
     } catch (error) {
       toast.error(
@@ -105,15 +126,14 @@ export function GenerateDraftPanel({
     <section className="space-y-4 rounded-lg border border-border bg-card p-4" aria-label="Generate draft">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h2 className="text-sm font-semibold text-foreground">Draft sales documents</h2>
+          <h2 className="text-sm font-semibold text-foreground">{title}</h2>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            Populated from this transaction&apos;s own data into an approved template. For
-            internal review only.
+            {description}
           </p>
         </div>
-        {drafts.length > 0 ? (
+        {relevantDrafts.length > 0 ? (
           <Badge variant="muted">
-            {drafts.length} draft{drafts.length === 1 ? "" : "s"} generated
+            {relevantDrafts.length} draft{relevantDrafts.length === 1 ? "" : "s"} generated
           </Badge>
         ) : null}
       </div>
@@ -134,20 +154,20 @@ export function GenerateDraftPanel({
               setDocumentType(event.target.value as GeneratedDocumentType)
             }
           >
-            {GENERATED_DOCUMENT_TYPES.map((value) => (
+            {documentTypes.map((value) => (
               <option key={value} value={value}>
-                {GENERATED_DOCUMENT_LABELS[value]}
+                {documentLabels[value] ?? value}
               </option>
             ))}
           </Select>
           <p className="text-xs leading-relaxed text-muted-foreground">
-            {GENERATED_DOCUMENT_NOTES[documentType]}
+            {documentNotes[documentType]}
           </p>
         </div>
         <Button onClick={generate} disabled={!canGenerate || running}>
-          {running ? "Generating…" : drafts.length > 0 ? "Generate again" : "Generate draft"}
+          {running ? "Generating…" : relevantDrafts.length > 0 ? "Generate again" : "Generate draft"}
         </Button>
-        {drafts.length > 0 ? (
+        {relevantDrafts.length > 0 ? (
           <Button variant="outline" onClick={onRequestChanges} disabled={running}>
             Request changes
           </Button>
@@ -184,6 +204,9 @@ export function GenerateDraftPanel({
               <div className="min-w-0">
                 <p className="truncate font-mono text-sm text-foreground">{latest.filename}</p>
                 <p className="text-xs text-muted-foreground">
+                  {documentLabels[latest.document_type as GeneratedDocumentType]
+                    ? `${documentLabels[latest.document_type as GeneratedDocumentType]} · `
+                    : ""}
                   Version {latest.version} · {formatBytes(latest.byte_size)} ·{" "}
                   {formatDateTime(latest.created_at)}
                   {latest.generated_by_name ? ` · requested by ${latest.generated_by_name}` : ""}
@@ -206,13 +229,13 @@ export function GenerateDraftPanel({
         </div>
       ) : null}
 
-      {drafts.length > 1 ? (
+      {relevantDrafts.length > 1 ? (
         <div className="space-y-1.5">
           <h3 className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
             Earlier drafts
           </h3>
           <ul className="space-y-1.5">
-            {drafts
+            {relevantDrafts
               .slice(0, -1)
               .reverse()
               .map((draft) => (

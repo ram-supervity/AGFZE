@@ -27,6 +27,9 @@ async def create_job(
         progress=0,
         created_by_id=created_by_id,
         transaction_id=transaction_id,
+        # A job nobody asked for is the platform's own. Mailbox intake raises one per captured
+        # message, and the desk the message is routed to has to be able to watch it.
+        is_system=created_by_id is None,
     )
     session.add(job)
     await session.flush()
@@ -77,6 +80,18 @@ async def fail_job(session: AsyncSession, job_id: UUID, *, error_message: str) -
 
 
 def user_may_read_job(user: User, job: BackgroundJob) -> bool:
+    """Who may poll a job's status.
+
+    A job a person started is theirs, plus the two roles that may read anything. A job the
+    platform started for itself - mailbox intake, and nothing else today - is readable by any
+    signed-in account, because otherwise the pipeline behind every email-originated request runs
+    where no desk can see it: the Inbox would show a row appear and never show it progressing,
+    and the platform's one polling convention would answer 404 to the people it exists for.
+    Nothing counterparty-specific is exposed by that; a job row carries a state, a progress
+    integer, a platform-authored error string and an opaque result reference.
+    """
+    if job.is_system:
+        return True
     return job.created_by_id == user.id or bool(READ_ANY_JOB_ROLES.intersection(user.roles or ()))
 
 

@@ -52,22 +52,11 @@ describe("the sales vocabulary", () => {
     expect(GENERATED_DOCUMENT_TYPES).toEqual([
       "draft_contract",
       "draft_invoice",
-      "draft_performa_invoice",
-      "draft_bank_cover_letter",
     ]);
     for (const value of GENERATED_DOCUMENT_TYPES) {
       expect(GENERATED_DOCUMENT_LABELS[value], value).toBeTruthy();
       expect(GENERATED_DOCUMENT_NOTES[value], value).toBeTruthy();
     }
-  });
-
-  it("tells a preparer that a Performa invoice needs no weight slip", () => {
-    // The one thing a preparer would otherwise get wrong: a Performa invoice with no shipped
-    // weight is complete, not unfinished, and the screen has to say so rather than leave it to
-    // be inferred from an empty field.
-    const note = GENERATED_DOCUMENT_NOTES.draft_performa_invoice;
-    expect(note).toMatch(/contracted quantity/i);
-    expect(note).toMatch(/no weight slip/i);
   });
 
   it("names the sales side's own no-match band, which is not a new batch", () => {

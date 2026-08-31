@@ -194,9 +194,13 @@ async def dispatch_deliveries(
         logger.exception("notification.dispatch_failed")
 
 
+EMAIL_CHANNEL = "email"
+EMAIL_CHANNELS = frozenset({"email", "both"})
+
+
 async def _deliver_email(session: AsyncSession, row: Notification, user: User) -> None:
     """Email, for a recipient who asked for it. In-app has already happened either way."""
-    if (user.notification_channel or "").strip().lower() != EMAIL_CHANNEL:
+    if (user.notification_channel or "").strip().lower() not in EMAIL_CHANNELS:
         return
     try:
         sent = await email_service.send_notification_email(

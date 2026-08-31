@@ -26,6 +26,8 @@ from app.db.base import utcnow
 from app.models.audit import AuditEvent
 from app.models.enums import (
     BUSINESS_STREAMS,
+    PURCHASE_GENERATED_DOCUMENT_TYPES,
+    SALES_GENERATED_DOCUMENT_TYPES,
     TRANSACTION_STATUSES,
     BusinessStream,
     DocumentType,
@@ -613,13 +615,42 @@ async def _detail(
         ]
         detail.fa_field_schema = await _fa_schema(session)
 
-    if sales is not None:
+    all_drafts = await _drafts(session, transaction)
+    roles = set(user.roles or ())
+    is_admin = PlatformRole.ADMIN.value in roles
+    is_sales = PlatformRole.SALES_USER.value in roles
+    is_purchase = PlatformRole.PURCHASE_USER.value in roles
+
+    if is_admin or (is_sales and is_purchase):
+        detail.generated_drafts = all_drafts
+    elif is_sales:
+        detail.generated_drafts = [
+            d for d in all_drafts if d.document_type in SALES_GENERATED_DOCUMENT_TYPES
+        ]
+    elif is_purchase:
+        detail.generated_drafts = [
+            d for d in all_drafts if d.document_type in PURCHASE_GENERATED_DOCUMENT_TYPES
+        ]
+    else:
+        detail.generated_drafts = []
+
+    if (is_admin or is_purchase) and transaction.purchase_leg is not None and not is_sales:
+        permitted, blocker = draft_service.purchase_draft_generation_permitted(transaction)
+        detail.can_generate_draft = editable and permitted
+        detail.draft_blocker = blocker
+    elif (is_admin or is_sales) and sales is not None:
         detail.linked_purchase = await _linked_purchase(session, transaction)
         detail.contract_coverage = await _coverage(session, transaction)
-        detail.generated_drafts = await _drafts(session, transaction)
         permitted, blocker = draft_generation_permitted(evaluations)
         detail.can_generate_draft = editable and permitted
         detail.draft_blocker = blocker
+    elif (is_admin or is_purchase) and transaction.purchase_leg is not None:
+        permitted, blocker = draft_service.purchase_draft_generation_permitted(transaction)
+        detail.can_generate_draft = editable and permitted
+        detail.draft_blocker = blocker
+    else:
+        detail.can_generate_draft = False
+        detail.draft_blocker = "You do not have permission to generate draft documents for this transaction."
 
     names = dict(
         (
@@ -1136,18 +1167,18 @@ async def attach_sales_leg(
     "/{transaction_id}/generate-draft",
     response_model=ResponseEnvelope[DraftGenerationAccepted],
     status_code=202,
-    summary="Generate a draft sales contract or invoice for review",
+    summary="Generate a draft contract, invoice, or cost sheet for review",
 )
 async def generate_draft(
     transaction_id: UUID,
     payload: DraftGenerationRequest,
-    user: SalesUser,
+    user: PreparingUser,
     session: DbSession,
 ) -> ResponseEnvelope[DraftGenerationAccepted]:
     """Queue a draft generation and hand back the job id to poll.
 
     The document produced is a draft for a person to read. Nothing here, and nothing anywhere in
-    this platform, sends it to a customer or a counterparty: the journey of a sales document ends
+    this platform, sends it to a customer or a counterparty: the journey of a document ends
     with a wet signature on paper, outside this system.
 
     Re-running this against a transaction that already has a draft produces a *new* draft beside
@@ -1155,10 +1186,32 @@ async def generate_draft(
     of what was generated and when.
     """
     transaction = await _load(session, transaction_id, user)
-    if not _may_write(user, transaction):
+    roles = set(user.roles or ())
+    is_admin = PlatformRole.ADMIN.value in roles
+    is_sales = PlatformRole.SALES_USER.value in roles
+    is_purchase = PlatformRole.PURCHASE_USER.value in roles
+
+    if payload.document_type in SALES_GENERATED_DOCUMENT_TYPES:
+        if not (is_admin or is_sales):
+            raise AuthorizationError(
+                "Only users with the Sales role may generate sales draft documents."
+            )
+        if transaction.sales_leg is None:
+            raise AuthorizationError(
+                "This transaction has no sales leg to generate sales documents for."
+            )
+    elif payload.document_type in PURCHASE_GENERATED_DOCUMENT_TYPES:
+        if not (is_admin or is_purchase):
+            raise AuthorizationError(
+                "Only users with the Purchase role may generate purchase draft documents."
+            )
+        if transaction.purchase_leg is None:
+            raise AuthorizationError(
+                "This transaction has no purchase leg to generate purchase documents for."
+            )
+    else:
         raise AuthorizationError(
-            "This transaction carries no sales leg your desk prepares, so no draft may be "
-            "generated against it."
+            f"Document type '{payload.document_type}' is not available for generation."
         )
     if transaction.status in transaction_fields.LOCKED_STATUSES:
         raise ConflictError(

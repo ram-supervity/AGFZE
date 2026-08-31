@@ -9,7 +9,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.core.config import settings
-from app.models.enums import DOCUMENT_TYPES, TERRITORIES
+from app.models.enums import DOCUMENT_KINDS, DOCUMENT_TYPES, TERRITORIES
 from app.schemas.intake import Page
 from app.schemas.transaction import MatchOutcomeRead
 
@@ -61,6 +61,10 @@ class DocumentListItem(BaseModel):
     request_code: str | None = None
     filename: str
     document_type: str | None
+    # What this document is in the mandatory-document checklist's own vocabulary. Empty for a
+    # document that is not a checklist entry at all - an invoice, a contract - and occasionally
+    # two entries long for one that genuinely evidences both.
+    document_kinds: list[str] = Field(default_factory=list)
     territory: str | None
     extraction_status: str
     classification_confidence: float | None
@@ -113,7 +117,24 @@ class FieldCorrectionRequest(BaseModel):
 class ReclassifyRequest(BaseModel):
     document_type: str
     territory: str | None = None
+    # Omitted leaves the machine reading in place; supplied replaces it and marks it a human's,
+    # so a later re-extraction refreshes the fields around it without overwriting the decision.
+    document_kinds: list[str] | None = None
     reason: str = Field(min_length=5, max_length=1000)
+
+    @field_validator("document_kinds")
+    @classmethod
+    def _known_kinds(cls, value: list[str] | None) -> list[str] | None:
+        if value is None:
+            return None
+        unknown = [item for item in value if item not in DOCUMENT_KINDS]
+        if unknown:
+            raise ValueError(f"Document kind must be one of: {', '.join(DOCUMENT_KINDS)}")
+        deduplicated: list[str] = []
+        for item in value:
+            if item not in deduplicated:
+                deduplicated.append(item)
+        return deduplicated
 
     @field_validator("document_type")
     @classmethod

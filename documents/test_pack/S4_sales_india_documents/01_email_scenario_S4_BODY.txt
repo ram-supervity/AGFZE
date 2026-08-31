@@ -1,0 +1,33 @@
+From: AGF Singapore - Sales Desk <sales@agfze.com.sg>
+To: trade.docs@agfze.com
+Cc: logistics@agfze.com, accounts@agfze.com
+Subject: Please share sales documents - Aluminium to Mundra - Batch I7030-214 - B/L MEDU3309712 (CAD/DP)
+Date: Tue, 01 Sep 2026 12:30:00 +0400
+Attachments: 02_Sales_Contract_SC-2026-SG-0307.pdf, 03_Sales_Invoice_AGF-SI-2026-0934.pdf, 04_Freight_Certificate_FCR-77120.pdf, 05_Packing_List_AGF-PL-2026-0934.pdf
+----------------------------------------------------------------------
+
+Dear Documentation Team,
+
+For our India-bound sale (CAD/DP through bank), please prepare and share the complete sales document set for the below aluminium shipment.
+
+  Sales Contract     : SC-2026-SG-0307
+  Sales Invoice No.  : AGF/SI/2026/0934
+  Batch / Lot        : I7030-214 (Singapore entity 3010)
+  Customer           : Bharat Metal Recyclers Pvt. Ltd., Mundra
+  Commodity          : Aluminium Tense / Taint Tabor (HS 7602.00)
+  Quantity           : 24.000 MT net, 1 x 20' GP
+  Container / Seal   : TCLU4421890 / GS7712045
+  B/L No.            : MEDU3309712
+  Fixed rate         : USD 2,310.00 / MT, CIF Mundra
+  Sales value        : USD 55,440.00
+  Broker commission  : USD 600.00 (USD 25/MT)
+  POL / POD          : Jebel Ali (AEJEA) -> Mundra (INMUN)
+  Vessel / Voyage    : MV TRADE HORIZON / 044W
+
+For India clearance the set must include: Commercial Invoice, Packing List, Certificate of Origin, Freight Certificate, Mill/Chemical Test Certificate, and Form 6 / Form 9 as applicable.
+
+Attached: Sales Contract, Sales Commercial Invoice, Freight Certificate and Packing List. Please confirm the OBL will be routed to the negotiating bank for CAD/DP release.
+
+Regards,
+Sales Desk
+AGF Singapore Pte. Ltd.
